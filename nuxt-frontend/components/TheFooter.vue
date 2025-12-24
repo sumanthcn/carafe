@@ -1,31 +1,17 @@
 <script setup lang="ts">
-import type { GlobalSettings } from "~/types/strapi";
-
-const props = defineProps<{
-  settings?: GlobalSettings | null;
-}>();
-
+// Use global settings composable instead of props
 const { getStrapiMediaUrl } = useStrapi();
+const {
+  globalSettings: settings,
+  logo,
+  siteName,
+  address,
+  openingHours,
+  socialLinks,
+  contactInfo,
+} = useGlobalSettings();
 
 const currentYear = new Date().getFullYear();
-
-const footerColumns = [
-  {
-    title: "VISIT US",
-    content: [
-      {
-        type: "text",
-        value: props.settings?.address?.street || "29 Station Street",
-      },
-      {
-        type: "text",
-        value: `${props.settings?.address?.city || "Lewes"}, ${
-          props.settings?.address?.postcode || "BN7 2DB"
-        }, UK`,
-      },
-    ],
-  },
-];
 
 const socialIcons: Record<string, string> = {
   instagram:
@@ -47,9 +33,9 @@ const socialIcons: Record<string, string> = {
         <div class="footer__brand">
           <NuxtLink to="/" class="footer__logo">
             <img
-              v-if="settings?.logo"
-              :src="getStrapiMediaUrl(settings.logo)"
-              :alt="settings?.siteName || 'Carafe Coffee'"
+              v-if="logo"
+              :src="getStrapiMediaUrl(logo)"
+              :alt="siteName"
               width="150"
               height="50"
             />
@@ -62,15 +48,15 @@ const socialIcons: Record<string, string> = {
         <div class="footer__column">
           <h4 class="footer__heading">VISIT US</h4>
           <address class="footer__address">
-            <p>{{ settings?.address?.street || "29 Station Street" }}</p>
+            <p>{{ address?.street || "29 Station Street" }}</p>
             <p>
-              {{ settings?.address?.city || "Lewes" }},
-              {{ settings?.address?.postcode || "BN7 2DB" }}, UK
+              {{ address?.city || "Lewes" }},
+              {{ address?.postcode || "BN7 2DB" }}, UK
             </p>
           </address>
-          <div v-if="settings?.openingHours?.length" class="footer__hours">
+          <div v-if="openingHours?.length" class="footer__hours">
             <h5 class="footer__subheading">OPENING HOURS:</h5>
-            <p v-for="(hours, index) in settings.openingHours" :key="index">
+            <p v-for="(hours, index) in openingHours" :key="index">
               {{ hours.days }}: {{ hours.hours }}
             </p>
           </div>
@@ -85,7 +71,7 @@ const socialIcons: Record<string, string> = {
         <div class="footer__column">
           <h4 class="footer__heading">CONNECT</h4>
           <ul class="footer__links">
-            <li v-for="link in settings?.socialLinks" :key="link.platform">
+            <li v-for="link in socialLinks" :key="link.platform">
               <a
                 :href="link.url"
                 target="_blank"
@@ -97,7 +83,7 @@ const socialIcons: Record<string, string> = {
                 }}
               </a>
             </li>
-            <template v-if="!settings?.socialLinks?.length">
+            <template v-if="!socialLinks?.length">
               <li>
                 <a
                   href="https://instagram.com/carafecoffee"

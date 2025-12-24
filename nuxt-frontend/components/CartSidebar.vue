@@ -1,10 +1,29 @@
 <script setup lang="ts">
+const props = defineProps<{
+  isOpen?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:isOpen", value: boolean): void;
+}>();
+
 const cartStore = useCartStore();
-const isOpen = ref(false);
+
+// Internal state for when not using v-model
+const internalOpen = ref(false);
+
+// Use either prop or internal state
+const isOpenState = computed({
+  get: () => props.isOpen ?? internalOpen.value,
+  set: (value: boolean) => {
+    internalOpen.value = value;
+    emit("update:isOpen", value);
+  },
+});
 
 // Toggle cart sidebar
 const toggleCart = () => {
-  isOpen.value = !isOpen.value;
+  isOpenState.value = !isOpenState.value;
 };
 
 // Expose toggle function
@@ -13,8 +32,8 @@ defineExpose({ toggleCart });
 // Close on escape key
 onMounted(() => {
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape" && isOpen.value) {
-      isOpen.value = false;
+    if (e.key === "Escape" && isOpenState.value) {
+      isOpenState.value = false;
     }
   };
   document.addEventListener("keydown", handleEscape);
@@ -28,13 +47,17 @@ onMounted(() => {
   <Teleport to="body">
     <!-- Overlay -->
     <Transition name="fade">
-      <div v-if="isOpen" class="cart-overlay" @click="isOpen = false" />
+      <div
+        v-if="isOpenState"
+        class="cart-overlay"
+        @click="isOpenState = false"
+      />
     </Transition>
 
     <!-- Sidebar -->
     <Transition name="slide">
       <aside
-        v-if="isOpen"
+        v-if="isOpenState"
         class="cart-sidebar"
         role="dialog"
         aria-label="Shopping cart"
@@ -44,7 +67,7 @@ onMounted(() => {
           <button
             class="cart-sidebar__close"
             aria-label="Close cart"
-            @click="isOpen = false"
+            @click="isOpenState = false"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +106,11 @@ onMounted(() => {
             ></path>
           </svg>
           <p>Your cart is empty</p>
-          <NuxtLink to="/shop" class="btn btn--primary" @click="isOpen = false">
+          <NuxtLink
+            to="/shop"
+            class="btn btn--primary"
+            @click="isOpenState = false"
+          >
             Shop Coffee
           </NuxtLink>
         </div>
@@ -199,14 +226,14 @@ onMounted(() => {
             <NuxtLink
               to="/checkout"
               class="btn btn--primary btn--full"
-              @click="isOpen = false"
+              @click="isOpenState = false"
             >
               Checkout
             </NuxtLink>
             <NuxtLink
               to="/cart"
               class="btn btn--outline btn--full"
-              @click="isOpen = false"
+              @click="isOpenState = false"
             >
               View Cart
             </NuxtLink>

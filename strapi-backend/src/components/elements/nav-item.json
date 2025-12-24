@@ -3,7 +3,7 @@
   "info": {
     "displayName": "Navigation Item",
     "icon": "link",
-    "description": "Navigation menu item"
+    "description": "Navigation menu item for header/footer"
   },
   "options": {},
   "attributes": {
@@ -13,11 +13,32 @@
     },
     "url": {
       "type": "string",
+      "required": true,
+      "default": "/"
+    },
+    "linkType": {
+      "type": "enumeration",
+      "enum": ["internal", "external"],
+      "default": "internal",
       "required": true
+    },
+    "page": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::page.page"
     },
     "order": {
       "type": "integer",
-      "default": 0
+      "default": 0,
+      "min": 0
+    },
+    "isVisible": {
+      "type": "boolean",
+      "default": true
+    },
+    "openInNewTab": {
+      "type": "boolean",
+      "default": false
     },
     "children": {
       "type": "component",

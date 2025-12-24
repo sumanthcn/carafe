@@ -1,27 +1,32 @@
 <script setup lang="ts">
-import type { GlobalSettings } from "~/types/strapi";
+import type { NavItem } from "~/types/strapi";
 
-const props = defineProps<{
-  settings?: GlobalSettings | null;
+// Emits
+const emit = defineEmits<{
+  (e: "toggle-cart"): void;
 }>();
 
+// Composables
 const { getStrapiMediaUrl } = useStrapi();
+const { fetchSettings, headerNavigation, logo, siteName, isLoading } =
+  useGlobalSettings();
 const route = useRoute();
+const cartStore = useCartStore();
 
 // Mobile menu state
 const isMobileMenuOpen = ref(false);
 const isScrolled = ref(false);
 
-// Cart
-const cartStore = useCartStore();
+// Fetch global settings on mount (if not already cached)
+await fetchSettings();
 
-// Handle scroll
+// Handle scroll for sticky header styling
 onMounted(() => {
   const handleScroll = () => {
     isScrolled.value = window.scrollY > 50;
   };
 
-  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("scroll", handleScroll, { passive: true });
   onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll);
   });
@@ -35,16 +40,63 @@ watch(
   }
 );
 
-const navigation = computed(
-  () =>
-    props.settings?.navigation || [
-      { label: "Shop Coffee", url: "/shop" },
-      { label: "Visit Café", url: "/visit-cafe" },
-      { label: "Art & Culture", url: "/art-culture" },
-      { label: "Wholesale", url: "/wholesale" },
-      { label: "About", url: "/about" },
-    ]
-);
+/**
+ * Resolves the correct URL for a navigation item
+ * Handles both internal and external links, and page relations
+ */
+function resolveNavUrl(
+  item:
+    | NavItem
+    | { url: string; page?: { slug?: string } | null; linkType?: string }
+): string {
+  // If linked to a CMS page, use the page slug
+  if (item.page?.slug) {
+    return `/${item.page.slug}`;
+  }
+  return item.url || "/";
+}
+
+/**
+ * Determines if link should open in new tab
+ */
+function shouldOpenInNewTab(
+  item: NavItem | { linkType?: string; openInNewTab?: boolean }
+): boolean {
+  // External links should open in new tab by default
+  if (item.linkType === "external") {
+    return true;
+  }
+  return item.openInNewTab || false;
+}
+
+/**
+ * Get link target attribute
+ */
+function getLinkTarget(
+  item: NavItem | { linkType?: string; openInNewTab?: boolean }
+): string | undefined {
+  return shouldOpenInNewTab(item) ? "_blank" : undefined;
+}
+
+/**
+ * Get rel attribute for external links
+ */
+function getLinkRel(
+  item: NavItem | { linkType?: string; openInNewTab?: boolean }
+): string | undefined {
+  return shouldOpenInNewTab(item) ? "noopener noreferrer" : undefined;
+}
+
+/**
+ * Check if a nav item is currently active
+ */
+function isNavActive(item: NavItem): boolean {
+  const url = resolveNavUrl(item);
+  if (url === "/") {
+    return route.path === "/";
+  }
+  return route.path.startsWith(url);
+}
 </script>
 
 <template>
@@ -54,108 +106,221 @@ const navigation = computed(
       'header--scrolled': isScrolled,
       'header--menu-open': isMobileMenuOpen,
     }"
+    role="banner"
   >
     <div class="header__container">
       <!-- Logo -->
-      <NuxtLink to="/" class="header__logo" aria-label="Carafe Coffee - Home">
+      <NuxtLink to="/" class="header__logo" :aria-label="`${siteName} - Home`">
         <img
-          v-if="settings?.logo"
-          :src="getStrapiMediaUrl(settings.logo)"
-          :alt="settings?.siteName || 'Carafe Coffee'"
+          v-if="logo"
+          :src="getStrapiMediaUrl(logo)"
+          :alt="siteName"
           width="120"
           height="40"
+          loading="eager"
+          fetchpriority="high"
         />
         <span v-else class="header__logo-text">CARAFE</span>
       </NuxtLink>
 
       <!-- Desktop Navigation -->
-      <nav class="header__nav" aria-label="Main navigation">
-        <ul class="header__nav-list">
+      <nav class="header__nav" aria-label="Main navigation" role="navigation">
+        <ul class="header__nav-list" role="menubar">
           <li
-            v-for="item in navigation"
-            :key="item.url"
+            v-for="item in headerNavigation"
+            :key="item.id || item.url"
             class="header__nav-item"
+            role="none"
           >
+            <!-- Internal Link -->
             <NuxtLink
-              :to="item.url"
+              v-if="item.linkType !== 'external'"
+              :to="resolveNavUrl(item)"
               class="header__nav-link"
-              :class="{ 'header__nav-link--active': route.path === item.url }"
+              :class="{ 'header__nav-link--active': isNavActive(item) }"
+              role="menuitem"
+              :aria-current="isNavActive(item) ? 'page' : undefined"
             >
               {{ item.label }}
             </NuxtLink>
 
+            <!-- External Link -->
+            <a
+              v-else
+              :href="resolveNavUrl(item)"
+              class="header__nav-link"
+              :target="getLinkTarget(item)"
+              :rel="getLinkRel(item)"
+              role="menuitem"
+            >
+              {{ item.label }}
+              <span class="sr-only">(opens in new tab)</span>
+            </a>
+
             <!-- Dropdown for children -->
-            <ul v-if="item.children?.length" class="header__dropdown">
-              <li v-for="child in item.children" :key="child.url">
-                <NuxtLink :to="child.url" class="header__dropdown-link">
+            <ul
+              v-if="item.children?.length"
+              class="header__dropdown"
+              role="menu"
+              :aria-label="`${item.label} submenu`"
+            >
+              <li
+                v-for="child in item.children"
+                :key="child.id || child.url"
+                role="none"
+              >
+                <NuxtLink
+                  v-if="child.linkType !== 'external'"
+                  :to="resolveNavUrl(child)"
+                  class="header__dropdown-link"
+                  role="menuitem"
+                >
                   {{ child.label }}
                 </NuxtLink>
+                <a
+                  v-else
+                  :href="resolveNavUrl(child)"
+                  class="header__dropdown-link"
+                  :target="getLinkTarget(child)"
+                  :rel="getLinkRel(child)"
+                  role="menuitem"
+                >
+                  {{ child.label }}
+                </a>
               </li>
             </ul>
+          </li>
+
+          <!-- Cart button in nav -->
+          <li class="header__nav-item header__nav-item--cart" role="none">
+            <button
+              class="header__cart-btn"
+              aria-label="Open shopping cart"
+              @click="emit('toggle-cart')"
+            >
+              <img
+                src="~/assets/images/shopping-cart.svg"
+                alt=""
+                width="24"
+                height="24"
+                aria-hidden="true"
+              />
+              <span
+                v-if="cartStore.itemCount > 0"
+                class="header__cart-badge"
+                aria-label="items in cart"
+              >
+                {{ cartStore.itemCount }}
+              </span>
+            </button>
           </li>
         </ul>
       </nav>
 
       <!-- Actions -->
       <div class="header__actions">
-        <!-- Cart button -->
-        <button
-          class="header__cart-btn"
-          aria-label="Open cart"
-          @click="$emit('toggle-cart')"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path
-              d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
-            ></path>
-          </svg>
-          <span v-if="cartStore.itemCount > 0" class="header__cart-badge">
-            {{ cartStore.itemCount }}
-          </span>
-        </button>
-
         <!-- Mobile menu toggle -->
         <button
           class="header__menu-toggle"
           :aria-expanded="isMobileMenuOpen"
-          aria-label="Toggle menu"
+          aria-controls="mobile-navigation"
+          aria-label="Toggle mobile menu"
           @click="isMobileMenuOpen = !isMobileMenuOpen"
         >
-          <span class="header__menu-icon"></span>
+          <span class="header__menu-icon" aria-hidden="true"></span>
         </button>
       </div>
     </div>
 
     <!-- Mobile Navigation -->
     <nav
+      id="mobile-navigation"
       class="header__mobile-nav"
       :class="{ 'header__mobile-nav--open': isMobileMenuOpen }"
       aria-label="Mobile navigation"
+      role="navigation"
+      :hidden="!isMobileMenuOpen"
     >
-      <ul class="header__mobile-list">
-        <li v-for="item in navigation" :key="item.url">
-          <NuxtLink :to="item.url" class="header__mobile-link">
+      <ul class="header__mobile-list" role="menu">
+        <li
+          v-for="item in headerNavigation"
+          :key="`mobile-${item.id || item.url}`"
+          role="none"
+        >
+          <NuxtLink
+            v-if="item.linkType !== 'external'"
+            :to="resolveNavUrl(item)"
+            class="header__mobile-link"
+            :class="{ 'header__mobile-link--active': isNavActive(item) }"
+            role="menuitem"
+          >
             {{ item.label }}
           </NuxtLink>
+          <a
+            v-else
+            :href="resolveNavUrl(item)"
+            class="header__mobile-link"
+            :target="getLinkTarget(item)"
+            :rel="getLinkRel(item)"
+            role="menuitem"
+          >
+            {{ item.label }}
+          </a>
+
+          <!-- Mobile dropdown children -->
+          <ul
+            v-if="item.children?.length"
+            class="header__mobile-children"
+            role="menu"
+          >
+            <li
+              v-for="child in item.children"
+              :key="`mobile-child-${child.id || child.url}`"
+              role="none"
+            >
+              <NuxtLink
+                v-if="child.linkType !== 'external'"
+                :to="resolveNavUrl(child)"
+                class="header__mobile-child-link"
+                role="menuitem"
+              >
+                {{ child.label }}
+              </NuxtLink>
+              <a
+                v-else
+                :href="resolveNavUrl(child)"
+                class="header__mobile-child-link"
+                :target="getLinkTarget(child)"
+                :rel="getLinkRel(child)"
+                role="menuitem"
+              >
+                {{ child.label }}
+              </a>
+            </li>
+          </ul>
         </li>
       </ul>
     </nav>
+
+    <!-- Loading indicator -->
+    <div v-if="isLoading" class="header__loading" aria-hidden="true"></div>
   </header>
 </template>
 
 <style lang="scss" scoped>
+// Screen reader only utility
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .header {
   position: fixed;
   top: 0;
@@ -188,10 +353,17 @@ const navigation = computed(
     display: flex;
     align-items: center;
     text-decoration: none;
+    flex-shrink: 0;
 
     img {
       height: 40px;
       width: auto;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 4px;
+      border-radius: 4px;
     }
   }
 
@@ -206,13 +378,14 @@ const navigation = computed(
   &__nav {
     display: none;
 
-    @media (min-width: 1024px) {
+    @include desktop {
       display: block;
     }
   }
 
   &__nav-list {
     display: flex;
+    align-items: center;
     gap: 2rem;
     list-style: none;
     margin: 0;
@@ -222,10 +395,11 @@ const navigation = computed(
   &__nav-item {
     position: relative;
 
-    &:hover .header__dropdown {
+    &:hover .header__dropdown,
+    &:focus-within .header__dropdown {
       opacity: 1;
       visibility: visible;
-      transform: translateY(0);
+      transform: translateX(-50%) translateY(0);
     }
   }
 
@@ -235,31 +409,39 @@ const navigation = computed(
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: white;
     text-decoration: none;
     padding: 0.5rem 0;
     transition: color 0.2s ease;
+    display: inline-block;
 
     &:hover,
     &--active {
       color: $color-primary;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 4px;
+      border-radius: 2px;
     }
   }
 
   &__dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
-    min-width: 200px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    min-width: 220px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     padding: 0.5rem 0;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
     transition: all 0.3s ease;
     list-style: none;
+    margin: 0;
+    z-index: 10;
   }
 
   &__dropdown-link {
@@ -268,11 +450,22 @@ const navigation = computed(
     color: $color-text;
     text-decoration: none;
     font-size: 0.875rem;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
 
     &:hover {
       background-color: $color-background-alt;
+      color: $color-primary;
     }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: -2px;
+    }
+  }
+
+  &__nav-item--cart {
+    margin-left: 1rem;
   }
 
   &__actions {
@@ -283,18 +476,31 @@ const navigation = computed(
 
   &__cart-btn {
     position: relative;
-    background: none;
+    background: #ccd0d1;
     border: none;
     cursor: pointer;
-    color: inherit;
-    padding: 0.5rem;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 
-    svg {
-      color: white;
+    img {
+      width: 24px;
+      height: 24px;
+      display: block;
     }
 
-    .header--scrolled & svg {
-      color: $color-text;
+    &:hover {
+      background-color: #c0c0c0;
+      transform: scale(1.05);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
     }
   }
 
@@ -323,9 +529,24 @@ const navigation = computed(
     background: none;
     border: none;
     cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
 
-    @media (min-width: 1024px) {
+    @include desktop {
       display: none;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+
+      .header--scrolled & {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
     }
   }
 
@@ -378,12 +599,14 @@ const navigation = computed(
     display: none;
     background: white;
     border-top: 1px solid #eee;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
 
     &--open {
       display: block;
     }
 
-    @media (min-width: 1024px) {
+    @include desktop {
       display: none !important;
     }
   }
@@ -401,6 +624,65 @@ const navigation = computed(
     text-decoration: none;
     font-weight: 500;
     border-bottom: 1px solid #eee;
+    transition: color 0.2s ease;
+
+    &:hover,
+    &--active {
+      color: $color-primary;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+  }
+
+  &__mobile-children {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 1rem;
+  }
+
+  &__mobile-child-link {
+    display: block;
+    padding: 0.5rem 0;
+    color: $color-text-light;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $color-primary;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+  }
+
+  &__loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      $color-primary,
+      transparent
+    );
+    animation: loading 1.5s infinite;
+  }
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
   }
 }
 </style>

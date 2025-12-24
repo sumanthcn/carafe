@@ -3,7 +3,7 @@
   "info": {
     "displayName": "Navigation Child",
     "icon": "link",
-    "description": "Child navigation item"
+    "description": "Child/dropdown navigation item"
   },
   "options": {},
   "attributes": {
@@ -13,7 +13,26 @@
     },
     "url": {
       "type": "string",
-      "required": true
+      "required": true,
+      "default": "/"
+    },
+    "linkType": {
+      "type": "enumeration",
+      "enum": ["internal", "external"],
+      "default": "internal"
+    },
+    "page": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::page.page"
+    },
+    "isVisible": {
+      "type": "boolean",
+      "default": true
+    },
+    "openInNewTab": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

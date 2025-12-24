@@ -1,32 +1,51 @@
 <script setup lang="ts">
-const { getGlobalSettings } = useStrapi();
-const { data: globalSettings } = await useAsyncData(
-  "global-settings",
-  getGlobalSettings
-);
+// Initialize global settings using the composable (fetched once, cached globally)
+const {
+  fetchSettings,
+  globalSettings,
+  error: settingsError,
+} = useGlobalSettings();
 
-// Provide global settings to all components
+// Fetch settings but don't block render if it fails
+try {
+  await fetchSettings();
+} catch (e) {
+  console.error("Failed to load global settings:", e);
+}
+
+// Log any settings errors for debugging
+if (settingsError.value) {
+  console.warn("Global settings error:", settingsError.value);
+}
+
+// Provide global settings to components that may need them via provide/inject
 provide("globalSettings", globalSettings);
 
 // Initialize cart on client
 const cartStore = useCartStore();
+const isCartOpen = ref(false);
+
 onMounted(() => {
   cartStore.loadCart();
 });
+
+function toggleCart() {
+  isCartOpen.value = !isCartOpen.value;
+}
 </script>
 
 <template>
   <div class="app">
-    <TheHeader :settings="globalSettings" />
+    <TheHeader @toggle-cart="toggleCart" />
 
     <main class="main-content">
       <slot />
     </main>
 
-    <TheFooter :settings="globalSettings" />
+    <TheFooter />
 
     <!-- Cart sidebar -->
-    <CartSidebar />
+    <CartSidebar v-model:is-open="isCartOpen" />
   </div>
 </template>
 

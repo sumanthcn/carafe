@@ -79,28 +79,50 @@ export interface ElementsFooterColumn extends Struct.ComponentSchema {
 export interface ElementsNavChild extends Struct.ComponentSchema {
   collectionName: 'components_elements_nav_child';
   info: {
-    description: 'Child navigation item';
+    description: 'Child/dropdown navigation item';
     displayName: 'Navigation Child';
     icon: 'link';
   };
   attributes: {
+    isVisible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     label: Schema.Attribute.String & Schema.Attribute.Required;
-    url: Schema.Attribute.String & Schema.Attribute.Required;
+    linkType: Schema.Attribute.Enumeration<['internal', 'external']> &
+      Schema.Attribute.DefaultTo<'internal'>;
+    openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    page: Schema.Attribute.Relation<'oneToOne', 'api::page.page'>;
+    url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'/'>;
   };
 }
 
 export interface ElementsNavItem extends Struct.ComponentSchema {
   collectionName: 'components_elements_nav_item';
   info: {
-    description: 'Navigation menu item';
+    description: 'Navigation menu item for header/footer';
     displayName: 'Navigation Item';
     icon: 'link';
   };
   attributes: {
     children: Schema.Attribute.Component<'elements.nav-child', true>;
+    isVisible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     label: Schema.Attribute.String & Schema.Attribute.Required;
-    order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    url: Schema.Attribute.String & Schema.Attribute.Required;
+    linkType: Schema.Attribute.Enumeration<['internal', 'external']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'internal'>;
+    openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    order: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    page: Schema.Attribute.Relation<'oneToOne', 'api::page.page'>;
+    url: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'/'>;
   };
 }
 

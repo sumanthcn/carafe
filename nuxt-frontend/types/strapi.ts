@@ -79,15 +79,26 @@ export interface SocialLink {
 
 // Navigation
 export interface NavItem {
+  id?: number;
   label: string;
   url: string;
+  linkType: "internal" | "external";
+  page?: Page | null;
   order?: number;
+  isVisible?: boolean;
+  openInNewTab?: boolean;
   children?: NavChild[];
 }
 
 export interface NavChild {
+  id?: number;
   label: string;
   url: string;
+  linkType?: "internal" | "external";
+  page?: Page | null;
+  order?: number;
+  isVisible?: boolean;
+  openInNewTab?: boolean;
 }
 
 // Feature Item

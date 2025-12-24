@@ -32,7 +32,7 @@ export function useStrapi() {
   async function fetchApi<T>(
     endpoint: string,
     options: {
-      populate?: string | Record<string, unknown>;
+      populate?: string | string[] | Record<string, unknown>;
       filters?: Record<string, unknown>;
       sort?: string[];
       pagination?: {
@@ -45,12 +45,40 @@ export function useStrapi() {
 
     const params = new URLSearchParams();
 
-    // Handle populate
+    // Handle populate - convert complex objects to nested query params
     if (populate) {
       if (typeof populate === "string") {
         params.append("populate", populate);
+      } else if (Array.isArray(populate)) {
+        populate.forEach((field) => {
+          params.append("populate", field);
+        });
       } else {
-        params.append("populate", JSON.stringify(populate));
+        // For complex nested populate, convert to query string format
+        const flattenPopulate = (
+          obj: Record<string, unknown>,
+          prefix = ""
+        ): void => {
+          Object.entries(obj).forEach(([key, value]) => {
+            const paramKey = prefix ? `${prefix}[${key}]` : key;
+
+            if (value === true || value === "*") {
+              params.append(`populate[${paramKey}]`, "*");
+            } else if (typeof value === "object" && value !== null) {
+              if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                  if (typeof item === "string") {
+                    params.append(`populate[${paramKey}][${index}]`, item);
+                  }
+                });
+              } else {
+                flattenPopulate(value as Record<string, unknown>, paramKey);
+              }
+            }
+          });
+        };
+
+        flattenPopulate(populate);
       }
     }
 
@@ -87,6 +115,7 @@ export function useStrapi() {
     });
 
     if (error.value) {
+      console.error(`Strapi API Error (${endpoint}):`, error.value);
       throw createError({
         statusCode: 500,
         statusMessage: `Failed to fetch from Strapi: ${endpoint}`,
@@ -144,27 +173,8 @@ export function useStrapi() {
     const response = await fetchApi<{ data: GlobalSettings }>(
       "global-setting",
       {
-        populate: {
-          logo: true,
-          favicon: true,
-          defaultOgImage: true,
-          address: true,
-          openingHours: true,
-          socialLinks: true,
-          navigation: {
-            populate: ["children"],
-          },
-          footer: {
-            populate: {
-              footerLinks: {
-                populate: ["links"],
-              },
-            },
-          },
-          defaultSeo: {
-            populate: ["ogImage"],
-          },
-        },
+        // Use wildcard to populate all first-level relations
+        populate: "*",
       }
     );
     return response.data;
