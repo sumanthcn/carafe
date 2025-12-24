@@ -328,6 +328,24 @@ export interface SectionsHeroSection extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsHeroSlide extends Struct.ComponentSchema {
+  collectionName: 'components_sections_hero_slides';
+  info: {
+    description: 'Carousel slide for homepage hero';
+    displayName: 'Hero Slide';
+  };
+  attributes: {
+    backgroundImage: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.Required;
+    buttons: Schema.Attribute.Component<'shared.button', true>;
+    description: Schema.Attribute.Text;
+    headline: Schema.Attribute.String & Schema.Attribute.Required;
+    subheadline: Schema.Attribute.String;
+    textPosition: Schema.Attribute.Enumeration<['left', 'center', 'right']> &
+      Schema.Attribute.DefaultTo<'left'>;
+  };
+}
+
 export interface SectionsImageGallery extends Struct.ComponentSchema {
   collectionName: 'components_sections_image_gallery';
   info: {
@@ -417,6 +435,59 @@ export interface SectionsWholesaleSection extends Struct.ComponentSchema {
     cta: Schema.Attribute.Component<'elements.cta-button', false>;
     headline: Schema.Attribute.String;
     image: Schema.Attribute.Media<'images'>;
+  };
+}
+
+export interface SharedButton extends Struct.ComponentSchema {
+  collectionName: 'components_shared_buttons';
+  info: {
+    description: 'Call-to-action button';
+    displayName: 'Button';
+  };
+  attributes: {
+    icon: Schema.Attribute.Media<'images'>;
+    iconPosition: Schema.Attribute.Enumeration<['left', 'right']> &
+      Schema.Attribute.DefaultTo<'left'>;
+    openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    text: Schema.Attribute.String & Schema.Attribute.Required;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
+    variant: Schema.Attribute.Enumeration<['primary', 'secondary', 'outline']> &
+      Schema.Attribute.DefaultTo<'primary'>;
+  };
+}
+
+export interface SharedCarouselSettings extends Struct.ComponentSchema {
+  collectionName: 'components_shared_carousel_settings';
+  info: {
+    description: 'Configuration for carousel behavior and appearance';
+    displayName: 'Carousel Settings';
+  };
+  attributes: {
+    autoplay: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    autoplayDelay: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 30000;
+          min: 1000;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<5000>;
+    effect: Schema.Attribute.Enumeration<['fade', 'slide']> &
+      Schema.Attribute.DefaultTo<'fade'>;
+    loop: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    pauseOnHover: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    showNavigation: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    showPagination: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    speed: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 3000;
+          min: 300;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<600>;
   };
 }
 
@@ -516,12 +587,15 @@ declare module '@strapi/strapi' {
       'sections.faq-section': SectionsFaqSection;
       'sections.footer-section': SectionsFooterSection;
       'sections.hero-section': SectionsHeroSection;
+      'sections.hero-slide': SectionsHeroSlide;
       'sections.image-gallery': SectionsImageGallery;
       'sections.newsletter-section': SectionsNewsletterSection;
       'sections.product-categories': SectionsProductCategories;
       'sections.team-section': SectionsTeamSection;
       'sections.text-content': SectionsTextContent;
       'sections.wholesale-section': SectionsWholesaleSection;
+      'shared.button': SharedButton;
+      'shared.carousel-settings': SharedCarouselSettings;
       'shared.product-schema': SharedProductSchema;
       'shared.seo': SharedSeo;
     }

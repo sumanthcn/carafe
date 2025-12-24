@@ -1,0 +1,42 @@
+{
+  "collectionName": "components_sections_hero_slides",
+  "info": {
+    "displayName": "Hero Slide",
+    "description": "Carousel slide for homepage hero"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string",
+      "required": true
+    },
+    "subheadline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "buttons": {
+      "type": "component",
+      "component": "shared.button",
+      "repeatable": true
+    },
+    "textPosition": {
+      "type": "enumeration",
+      "default": "left",
+      "enum": [
+        "left",
+        "center",
+        "right"
+      ]
+    }
+  }
+}

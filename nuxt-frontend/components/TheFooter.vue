@@ -32,15 +32,15 @@ const socialIcons: Record<string, string> = {
         <!-- Logo & Description -->
         <div class="footer__brand">
           <NuxtLink to="/" class="footer__logo">
-            <img
-              v-if="logo"
-              :src="getStrapiMediaUrl(logo)"
-              :alt="siteName"
-              width="150"
-              height="50"
-            />
-            <span v-else class="footer__logo-text">CARAFE</span>
+            <span class="footer__logo-text">CARAFE</span>
           </NuxtLink>
+          <div class="footer__man-logo">
+            <img
+              src="~/assets/images/man_logo.png"
+              alt="Carafe Coffee Roaster"
+              class="footer__man-logo-img"
+            />
+          </div>
           <p class="footer__tagline">SPECIALITY COFFEE ROASTERS</p>
         </div>
 
@@ -144,7 +144,7 @@ const socialIcons: Record<string, string> = {
 .footer {
   background-color: $color-dark;
   color: white;
-  padding: 4rem 0 2rem;
+  padding: 2rem 0;
 
   &__container {
     max-width: 1400px;
@@ -169,12 +169,13 @@ const socialIcons: Record<string, string> = {
   &__brand {
     @media (min-width: 1024px) {
       padding-right: 2rem;
+      text-align: center;
     }
   }
 
   &__logo {
     display: inline-block;
-    margin-bottom: 1rem;
+    text-decoration: none;
 
     img {
       height: 50px;
@@ -184,25 +185,36 @@ const socialIcons: Record<string, string> = {
 
   &__logo-text {
     font-family: $font-heading;
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: bold;
     letter-spacing: 0.1em;
     color: white;
+    text-align: center;
+    text-decoration: none;
+    padding-bottom: 0.25rem;
+    display: block;
   }
 
   &__tagline {
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
     color: rgba(white, 0.7);
   }
 
-  &__column {
-    // Column styles
+  &__man-logo {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__man-logo-img {
+    width: 120px;
+    height: auto;
   }
 
   &__heading {
     font-family: $font-heading;
-    font-size: 0.875rem;
+    font-size: $font-size-lg;
     font-weight: 600;
     letter-spacing: 0.1em;
     margin-bottom: 1.5rem;
@@ -210,7 +222,7 @@ const socialIcons: Record<string, string> = {
   }
 
   &__subheading {
-    font-size: 0.75rem;
+    font-size: $font-size-lg;
     font-weight: 600;
     letter-spacing: 0.1em;
     margin: 1rem 0 0.5rem;
@@ -219,15 +231,13 @@ const socialIcons: Record<string, string> = {
 
   &__address {
     font-style: normal;
-    line-height: 1.8;
-    font-size: 0.875rem;
-    color: rgba(white, 0.8);
+    line-height: $line-height-base;
+    font-size: 1rem;
   }
 
   &__hours {
-    font-size: 0.875rem;
-    line-height: 1.8;
-    color: rgba(white, 0.8);
+    font-size: $font-size-base;
+    line-height: $line-height-base;
   }
 
   &__links {
@@ -240,13 +250,12 @@ const socialIcons: Record<string, string> = {
     }
 
     a {
-      color: rgba(white, 0.8);
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: $font-size-base;
       transition: color 0.2s ease;
 
       &:hover {
-        color: $color-primary;
+        color: $color-primary-light;
       }
     }
   }

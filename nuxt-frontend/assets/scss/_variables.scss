@@ -5,14 +5,14 @@
 // Colors
 $color-white: #ffffff;
 $color-black: #000000;
-$color-primary: #0891b2;       // Teal/Cyan - brand color
-$color-primary-dark: #0e7490;
+$color-primary: #007ba7;       // Teal/Cyan - brand color
+$color-primary-dark: #007ba7;
 $color-primary-light: #22d3ee;
 
 $color-secondary: #1e3a5f;     // Dark blue
 $color-accent: #f59e0b;        // Amber/Gold
 
-$color-dark: #1a1a1a;
+$color-dark: #001219;
 $color-text: #333333;
 $color-text-light: #666666;
 $color-text-muted: #999999;
@@ -40,6 +40,7 @@ $color-gray-900: #111827;
 // Typography
 $font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 $font-body: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+$font-myriad: 'Myriad Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 
 // Aliases for consistency
 $font-family-heading: $font-heading;
@@ -53,10 +54,11 @@ $font-size-xl: 1.25rem;        // 20px
 $font-size-2xl: 1.5rem;        // 24px
 $font-size-3xl: 1.875rem;      // 30px
 $font-size-4xl: 2.25rem;       // 36px
+$font-size-5xl: 3rem;          // 48px
+$font-size-6xl: 3.75rem;       // 60px
 
 $line-height-base: 1.6;
-$line-height-heading: 1.2;
-
+$line-height-heading: 1;
 // Spacing (numeric scale for convenience)
 $spacing-0: 0;
 $spacing-1: 0.25rem;           // 4px

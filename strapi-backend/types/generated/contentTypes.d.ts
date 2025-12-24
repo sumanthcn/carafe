@@ -487,6 +487,10 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
   attributes: {
     brandStory: Schema.Attribute.Component<'sections.brand-story', false>;
     cafeLocation: Schema.Attribute.Component<'sections.cafe-location', false>;
+    carouselSettings: Schema.Attribute.Component<
+      'shared.carousel-settings',
+      false
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -494,7 +498,7 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
       'sections.culture-section',
       false
     >;
-    hero: Schema.Attribute.Component<'sections.hero-section', false>;
+    heroCarousel: Schema.Attribute.Component<'sections.hero-slide', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',

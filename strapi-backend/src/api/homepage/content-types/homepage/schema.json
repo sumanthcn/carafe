@@ -12,10 +12,15 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "hero": {
+    "heroCarousel": {
+      "type": "component",
+      "repeatable": true,
+      "component": "sections.hero-slide"
+    },
+    "carouselSettings": {
       "type": "component",
       "repeatable": false,
-      "component": "sections.hero-section"
+      "component": "shared.carousel-settings"
     },
     "productCategories": {
       "type": "component",

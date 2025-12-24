@@ -1,0 +1,47 @@
+{
+  "collectionName": "components_shared_carousel_settings",
+  "info": {
+    "displayName": "Carousel Settings",
+    "description": "Configuration for carousel behavior and appearance"
+  },
+  "options": {},
+  "attributes": {
+    "autoplay": {
+      "type": "boolean",
+      "default": true
+    },
+    "autoplayDelay": {
+      "type": "integer",
+      "default": 5000,
+      "min": 1000,
+      "max": 30000
+    },
+    "showNavigation": {
+      "type": "boolean",
+      "default": true
+    },
+    "showPagination": {
+      "type": "boolean",
+      "default": true
+    },
+    "loop": {
+      "type": "boolean",
+      "default": true
+    },
+    "effect": {
+      "type": "enumeration",
+      "default": "fade",
+      "enum": ["fade", "slide"]
+    },
+    "speed": {
+      "type": "integer",
+      "default": 600,
+      "min": 300,
+      "max": 3000
+    },
+    "pauseOnHover": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}
