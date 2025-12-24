@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_elements_address",
+  "info": {
+    "displayName": "Address",
+    "icon": "pinMap",
+    "description": "Physical address"
+  },
+  "options": {},
+  "attributes": {
+    "street": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "decimal"
+    },
+    "longitude": {
+      "type": "decimal"
+    }
+  }
+}

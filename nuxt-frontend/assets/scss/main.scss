@@ -1,0 +1,340 @@
+// =============================================================================
+// MAIN STYLESHEET
+// =============================================================================
+
+// Import Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+// Variables and Mixins (imported via nuxt.config)
+// @use 'variables' as *;
+// @use 'mixins' as *;
+
+// =============================================================================
+// RESET & BASE
+// =============================================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: $font-body;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $color-text;
+  background-color: $color-background;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+// =============================================================================
+// TYPOGRAPHY
+// =============================================================================
+
+h1, h2, h3, h4, h5, h6 {
+  @include heading-style;
+  color: $color-dark;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, $font-size-4xl);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, $font-size-3xl);
+}
+
+h3 {
+  font-size: $font-size-2xl;
+}
+
+h4 {
+  font-size: $font-size-xl;
+}
+
+h5 {
+  font-size: $font-size-lg;
+}
+
+h6 {
+  font-size: $font-size-base;
+}
+
+p {
+  margin-bottom: 1rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// =============================================================================
+// BUTTONS
+// =============================================================================
+
+.btn {
+  @include button-base;
+  
+  // Primary
+  &--primary {
+    background-color: $color-primary;
+    color: white;
+    border-color: $color-primary;
+    
+    &:hover:not(:disabled) {
+      background-color: $color-primary-dark;
+      border-color: $color-primary-dark;
+    }
+  }
+  
+  // Secondary
+  &--secondary {
+    background-color: $color-dark;
+    color: white;
+    border-color: $color-dark;
+    
+    &:hover:not(:disabled) {
+      background-color: lighten($color-dark, 10%);
+    }
+  }
+  
+  // Outline
+  &--outline {
+    background-color: transparent;
+    color: $color-text;
+    border-color: $color-border;
+    
+    &:hover:not(:disabled) {
+      border-color: $color-primary;
+      color: $color-primary;
+    }
+  }
+  
+  // Ghost/Text
+  &--text {
+    background-color: transparent;
+    color: $color-text;
+    padding-left: 0;
+    padding-right: 0;
+    
+    &:hover:not(:disabled) {
+      color: $color-primary;
+    }
+  }
+  
+  // Sizes
+  &--small {
+    padding: 0.5rem 1rem;
+    font-size: $font-size-xs;
+  }
+  
+  &--large {
+    padding: 1rem 2rem;
+    font-size: $font-size-base;
+  }
+  
+  &--full {
+    width: 100%;
+  }
+}
+
+// =============================================================================
+// FORMS
+// =============================================================================
+
+.form-group {
+  margin-bottom: $spacing-md;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: $spacing-xs;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: $font-size-base;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-sm;
+  transition: border-color $transition-base;
+  
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+  
+  &::placeholder {
+    color: $color-text-muted;
+  }
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-error {
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-error;
+}
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+
+.container {
+  @include container;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.visually-hidden {
+  @include visually-hidden;
+}
+
+// Spacing utilities
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: $spacing-xs; }
+.mt-2 { margin-top: $spacing-sm; }
+.mt-3 { margin-top: $spacing-md; }
+.mt-4 { margin-top: $spacing-lg; }
+.mt-5 { margin-top: $spacing-xl; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: $spacing-xs; }
+.mb-2 { margin-bottom: $spacing-sm; }
+.mb-3 { margin-bottom: $spacing-md; }
+.mb-4 { margin-bottom: $spacing-lg; }
+.mb-5 { margin-bottom: $spacing-xl; }
+
+// =============================================================================
+// ANIMATIONS
+// =============================================================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.4s ease;
+}
+
+// =============================================================================
+// ACCESSIBILITY
+// =============================================================================
+
+// Skip to main content link
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 0.5rem 1rem;
+  background: $color-primary;
+  color: white;
+  z-index: 1000;
+  
+  &:focus {
+    top: 0;
+  }
+}
+
+// Focus visible
+:focus-visible {
+  @include focus-outline;
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

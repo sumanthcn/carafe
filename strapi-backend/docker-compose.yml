@@ -1,0 +1,71 @@
+# =============================================================================
+# STRAPI BACKEND - DOCKER COMPOSE
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: carafe_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-carafe_strapi}
+      POSTGRES_USER: ${DATABASE_USERNAME:-strapi}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-change-me-in-production}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - carafe_network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DATABASE_USERNAME:-strapi} -d ${DATABASE_NAME:-carafe_strapi}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Strapi CMS
+  strapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carafe_strapi
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HOST: 0.0.0.0
+      PORT: 1337
+      APP_KEYS: ${APP_KEYS}
+      API_TOKEN_SALT: ${API_TOKEN_SALT}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT}
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-carafe_strapi}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-strapi}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-change-me-in-production}
+      DATABASE_SSL: "false"
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:1337}
+    volumes:
+      - strapi_uploads:/opt/app/public/uploads
+    ports:
+      - "1337:1337"
+    networks:
+      - carafe_network
+
+volumes:
+  postgres_data:
+  strapi_uploads:
+
+networks:
+  carafe_network:
+    driver: bridge

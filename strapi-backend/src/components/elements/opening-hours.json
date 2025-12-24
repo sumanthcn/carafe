@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_elements_opening_hours",
+  "info": {
+    "displayName": "Opening Hours",
+    "icon": "clock",
+    "description": "Business opening hours"
+  },
+  "options": {},
+  "attributes": {
+    "days": {
+      "type": "string",
+      "required": true
+    },
+    "hours": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "kind": "singleType",
+  "collectionName": "global_settings",
+  "info": {
+    "singularName": "global-setting",
+    "pluralName": "global-settings",
+    "displayName": "Global Settings",
+    "description": "Global site settings and configurations"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "siteName": {
+      "type": "string",
+      "required": true,
+      "default": "Carafe Coffee House & Roasters"
+    },
+    "siteDescription": {
+      "type": "text"
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "favicon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "defaultOgImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "address": {
+      "type": "component",
+      "repeatable": false,
+      "component": "elements.address"
+    },
+    "openingHours": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.opening-hours"
+    },
+    "socialLinks": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.social-link"
+    },
+    "contactEmail": {
+      "type": "email"
+    },
+    "contactPhone": {
+      "type": "string"
+    },
+    "footer": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.footer-section"
+    },
+    "navigation": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.nav-item"
+    },
+    "defaultSeo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

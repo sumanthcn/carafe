@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_elements_social_link",
+  "info": {
+    "displayName": "Social Link",
+    "icon": "link",
+    "description": "Social media link"
+  },
+  "options": {},
+  "attributes": {
+    "platform": {
+      "type": "enumeration",
+      "enum": [
+        "instagram",
+        "facebook",
+        "twitter",
+        "tripadvisor",
+        "youtube",
+        "linkedin",
+        "tiktok"
+      ],
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

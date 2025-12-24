@@ -1,0 +1,56 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": {
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "displayName": "Homepage",
+    "description": "Homepage content for Carafe Coffee"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "hero": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.hero-section"
+    },
+    "productCategories": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.product-categories"
+    },
+    "brandStory": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.brand-story"
+    },
+    "cafeLocation": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.cafe-location"
+    },
+    "cultureSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.culture-section"
+    },
+    "wholesaleSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.wholesale-section"
+    },
+    "newsletter": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.newsletter-section"
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

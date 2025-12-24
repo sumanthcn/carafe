@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_sections_team_section",
+  "info": {
+    "displayName": "Team Section",
+    "icon": "user",
+    "description": "Team members section"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "members": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.team-member"
+    }
+  }
+}

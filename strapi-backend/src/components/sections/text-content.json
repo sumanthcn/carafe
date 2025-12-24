@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_sections_text_content",
+  "info": {
+    "displayName": "Text Content",
+    "icon": "file",
+    "description": "Rich text content section"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "richtext"
+    }
+  }
+}

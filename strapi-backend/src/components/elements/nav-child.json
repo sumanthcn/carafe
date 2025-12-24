@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_elements_nav_child",
+  "info": {
+    "displayName": "Navigation Child",
+    "icon": "link",
+    "description": "Child navigation item"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

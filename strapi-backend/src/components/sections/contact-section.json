@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_sections_contact_section",
+  "info": {
+    "displayName": "Contact Section",
+    "icon": "phone",
+    "description": "Contact information section"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "showContactForm": {
+      "type": "boolean",
+      "default": true
+    },
+    "mapEmbed": {
+      "type": "text"
+    }
+  }
+}

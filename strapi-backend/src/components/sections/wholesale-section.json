@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_sections_wholesale_section",
+  "info": {
+    "displayName": "Wholesale Section",
+    "icon": "briefcase",
+    "description": "B2B wholesale CTA section"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "elements.cta-button"
+    },
+    "benefits": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.feature-item"
+    }
+  }
+}

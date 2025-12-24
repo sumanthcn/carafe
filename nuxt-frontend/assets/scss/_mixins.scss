@@ -1,0 +1,206 @@
+// =============================================================================
+// MIXINS
+// =============================================================================
+
+// Note: Variables are globally available via nuxt.config.ts additionalData
+
+// Responsive breakpoints
+@mixin sm {
+  @media (min-width: $breakpoint-sm) {
+    @content;
+  }
+}
+
+@mixin md {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+// Semantic aliases for breakpoints
+@mixin tablet {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+@mixin lg {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+@mixin xl {
+  @media (min-width: $breakpoint-xl) {
+    @content;
+  }
+}
+
+@mixin xxl {
+  @media (min-width: $breakpoint-2xl) {
+    @content;
+  }
+}
+
+// Container
+@mixin container {
+  max-width: $container-max;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $container-padding;
+  padding-right: $container-padding;
+}
+
+// Flex utilities
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Typography
+@mixin heading-style {
+  font-family: $font-heading;
+  font-weight: 700;
+  line-height: $line-height-heading;
+}
+
+@mixin body-style {
+  font-family: $font-body;
+  font-weight: 400;
+  line-height: $line-height-base;
+}
+
+// Truncate text
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Aspect ratio
+@mixin aspect-ratio($width, $height) {
+  aspect-ratio: #{$width} / #{$height};
+}
+
+// Visually hidden (for accessibility)
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Focus outline
+@mixin focus-outline {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+// Button base
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: $font-body;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: $border-radius-sm;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:focus-visible {
+    @include focus-outline;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Card style
+@mixin card {
+  background: $color-background;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+}
+
+// Overlay
+@mixin overlay($opacity: 0.5) {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, $opacity);
+}
+
+// Gradient overlay
+@mixin gradient-overlay($direction: to bottom, $from: rgba(0,0,0,0), $to: rgba(0,0,0,0.7)) {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient($direction, $from, $to);
+}
+
+// Scrollbar styling
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $color-background-alt;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $color-border;
+    border-radius: 4px;
+
+    &:hover {
+      background: $color-text-muted;
+    }
+  }
+}
+
+// Grid
+@mixin grid($columns: 3, $gap: $spacing-lg) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+// Auto grid (responsive)
+@mixin auto-grid($min-width: 280px, $gap: $spacing-lg) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: $gap;
+}

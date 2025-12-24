@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_sections_cta_section",
+  "info": {
+    "displayName": "CTA Section",
+    "icon": "cursor",
+    "description": "Call to action section"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "elements.cta-button"
+    }
+  }
+}

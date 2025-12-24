@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_sections_product_categories",
+  "info": {
+    "displayName": "Product Categories Section",
+    "icon": "grid",
+    "description": "Product categories display section"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product-category.product-category"
+    }
+  }
+}

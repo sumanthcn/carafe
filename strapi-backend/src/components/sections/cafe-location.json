@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_sections_cafe_location",
+  "info": {
+    "displayName": "Café Location Section",
+    "icon": "pinMap",
+    "description": "Café location and visit CTA"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "elements.cta-button"
+    },
+    "features": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.feature-item"
+    }
+  }
+}
