@@ -54,7 +54,11 @@
               :key="btnIndex"
               :to="button.url || '/'"
               :target="button.openInNewTab ? '_blank' : undefined"
-              :class="['btn', `btn--${button.variant || 'primary'}`, 'hero-btn']"
+              :class="[
+                'btn',
+                `btn--${button.variant || 'primary'}`,
+                'hero-btn',
+              ]"
             >
               <img
                 v-if="button.icon"
