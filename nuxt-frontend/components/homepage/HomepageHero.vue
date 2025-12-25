@@ -1,230 +1,279 @@
 <template>
-  <section class="hero">
-    <div class="hero__background">
-      <NuxtImg
-        v-if="hero?.backgroundImage?.url"
-        :src="hero.backgroundImage.url"
-        :alt="hero?.backgroundImage?.alternativeText || 'Carafe Coffee'"
-        preset="hero"
-        loading="eager"
-        class="hero__image"
-      />
-      <div class="hero__overlay"></div>
-    </div>
-
-    <div class="container hero__content">
-      <span v-if="hero?.badge" class="hero__badge">
-        {{ hero.badge }}
-      </span>
-
-      <h1 class="hero__title">
-        {{ hero?.heading || "Carafe Coffee House" }}
-      </h1>
-
-      <p v-if="hero?.subheading" class="hero__subtitle">
-        {{ hero.subheading }}
-      </p>
-
-      <div v-if="hero?.ctaButtons?.length" class="hero__cta">
-        <NuxtLink
-          v-for="(button, index) in hero.ctaButtons"
-          :key="index"
-          :to="button.url"
-          :class="[
-            'btn',
-            button.variant === 'primary' ? 'btn--primary' : 'btn--outline',
-          ]"
-        >
-          {{ button.label }}
-        </NuxtLink>
-      </div>
-
-      <div v-if="hero?.features?.length" class="hero__features">
+  <section v-if="heroCarousel?.length" class="hero-carousel">
+    <Swiper
+      :modules="modules"
+      :slides-per-view="1"
+      :space-between="0"
+      :navigation="carouselSettings.showNavigation"
+      :pagination="
+        carouselSettings.showPagination ? { clickable: true } : false
+      "
+      :autoplay="
+        carouselSettings.autoplay
+          ? {
+              delay: carouselSettings.autoplayDelay,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: carouselSettings.pauseOnHover,
+            }
+          : false
+      "
+      :effect="carouselSettings.effect"
+      :loop="carouselSettings.loop"
+      :speed="carouselSettings.speed"
+      class="hero-swiper"
+    >
+      <SwiperSlide
+        v-for="(slide, index) in heroCarousel"
+        :key="index"
+        class="hero-slide"
+      >
         <div
-          v-for="(feature, index) in hero.features"
-          :key="index"
-          class="hero__feature"
+          class="hero-slide__background"
+          :style="{
+            backgroundImage: `url(${getStrapiMediaUrl(slide.backgroundImage)})`,
+          }"
+        ></div>
+        <div
+          class="hero-slide__overlay"
+          :style="{ opacity: (slide.overlayOpacity || 50) / 100 }"
+        ></div>
+        <div
+          class="hero-slide__content container"
+          :class="`text-${slide.textPosition || 'left'}`"
         >
-          <span class="hero__feature-icon">{{ feature.icon }}</span>
-          <span class="hero__feature-text">{{ feature.text }}</span>
+          <h1 class="hero-slide__headline">{{ slide.headline }}</h1>
+          <p v-if="slide.subheadline" class="hero-slide__subheadline">
+            {{ slide.subheadline }}
+          </p>
+          <p v-if="slide.description" class="hero-slide__description">
+            {{ slide.description }}
+          </p>
+          <div v-if="slide.buttons?.length" class="hero-slide__actions">
+            <NuxtLink
+              v-for="(button, btnIndex) in slide.buttons"
+              :key="btnIndex"
+              :to="button.url || '/'"
+              :target="button.openInNewTab ? '_blank' : undefined"
+              :class="['btn', `btn--${button.variant || 'primary'}`, 'hero-btn']"
+            >
+              <img
+                v-if="button.icon"
+                :src="getStrapiMediaUrl(button.icon)"
+                alt=""
+                :class="[
+                  'btn__icon',
+                  `btn__icon--${button.iconPosition || 'left'}`,
+                ]"
+              />
+              <span>{{ button.text }}</span>
+            </NuxtLink>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <div class="hero__scroll">
-      <span>Scroll to explore</span>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M7 13L12 18L17 13"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-        <path
-          d="M7 6L12 11L17 6"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        />
-      </svg>
-    </div>
+      </SwiperSlide>
+    </Swiper>
   </section>
 </template>
 
 <script setup lang="ts">
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-fade";
+
+const { getStrapiMediaUrl } = useStrapi();
+
 interface HeroProps {
-  hero?: {
-    badge?: string;
-    heading?: string;
-    subheading?: string;
-    backgroundImage?: {
-      url: string;
-      alternativeText?: string;
-    };
-    ctaButtons?: Array<{
-      label: string;
-      url: string;
-      variant?: string;
-    }>;
-    features?: Array<{
-      icon: string;
-      text: string;
-    }>;
-  };
+  heroCarousel?: any[];
+  settings?: any;
 }
 
-defineProps<HeroProps>();
+const props = defineProps<HeroProps>();
+
+// Swiper modules
+const modules = [Navigation, Pagination, Autoplay, EffectFade];
+
+// Carousel settings with defaults
+const carouselSettings = computed(() => {
+  const settings = props.settings;
+  return {
+    autoplay: settings?.autoplay ?? true,
+    autoplayDelay: settings?.autoplayDelay ?? 5000,
+    showNavigation: settings?.showNavigation ?? true,
+    showPagination: settings?.showPagination ?? true,
+    loop: settings?.loop ?? true,
+    effect: settings?.effect ?? "fade",
+    speed: settings?.speed ?? 600,
+    pauseOnHover: settings?.pauseOnHover ?? true,
+  };
+});
 </script>
 
 <style lang="scss" scoped>
-.hero {
+.hero-carousel {
   position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  color: $color-white;
+  height: 580px;
+
+  @media (min-width: 768px) {
+    height: 580px;
+  }
+}
+
+.hero-swiper {
+  width: 100%;
+  height: 100%;
+
+  :deep(.swiper-button-next),
+  :deep(.swiper-button-prev) {
+    color: white;
+    width: 30px;
+    height: 30px;
+  }
+
+  :deep(.swiper-button-next::after),
+  :deep(.swiper-button-prev::after) {
+    font-size: 2rem;
+  }
+
+  :deep(.swiper-pagination-bullet) {
+    width: 30px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+  }
+
+  :deep(.swiper-pagination-bullet-active) {
+    background: white;
+    width: 60px;
+    border-radius: 6px;
+  }
+}
+
+.hero-slide {
+  position: relative;
+  height: 100%;
 
   &__background {
     position: absolute;
-    inset: 0;
-    z-index: -1;
-  }
-
-  &__image {
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    background-size: cover;
+    background-position: center;
   }
 
   &__overlay {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.4) 0%,
-      rgba(0, 0, 0, 0.6) 100%
-    );
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
   }
 
   &__content {
-    text-align: center;
-    padding: $spacing-8 $spacing-4;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  &__badge {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    padding: $spacing-2 $spacing-4;
-    border-radius: $border-radius-full;
-    font-size: $font-size-sm;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: $spacing-6;
-  }
-
-  &__title {
-    font-family: $font-family-heading;
-    font-size: clamp(2.5rem, 8vw, 5rem);
-    font-weight: 400;
-    line-height: 1.1;
-    margin-bottom: $spacing-6;
-  }
-
-  &__subtitle {
-    font-size: $font-size-lg;
-    opacity: 0.9;
-    max-width: 600px;
-    margin: 0 auto $spacing-8;
-    line-height: 1.7;
-  }
-
-  &__cta {
-    display: flex;
-    gap: $spacing-4;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: $spacing-12;
-
-    .btn--outline {
-      border-color: $color-white;
-      color: $color-white;
-
-      &:hover {
-        background: $color-white;
-        color: $color-dark;
-      }
-    }
-  }
-
-  &__features {
-    display: flex;
-    gap: $spacing-8;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  &__feature {
-    display: flex;
-    align-items: center;
-    gap: $spacing-2;
-    font-size: $font-size-sm;
-    opacity: 0.9;
-
-    &-icon {
-      font-size: 1.25rem;
-    }
-  }
-
-  &__scroll {
-    position: absolute;
-    bottom: $spacing-8;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    z-index: 2;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: $spacing-2;
-    font-size: $font-size-sm;
-    opacity: 0.7;
-    animation: bounce 2s infinite;
+    justify-content: center;
+    padding: 2rem;
 
-    span {
-      text-transform: uppercase;
-      letter-spacing: 1px;
+    &.text-left {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    &.text-center {
+      align-items: center;
+      text-align: center;
+    }
+
+    &.text-right {
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+
+  &__headline {
+    font-family: $font-myriad;
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: white;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    line-height: 1;
+    max-width: 800px;
+    text-transform: uppercase;
+  }
+
+  &__subheadline {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1rem;
+    max-width: 600px;
+  }
+
+  &__description {
+    font-size: clamp(0.9rem, 1.5vw, 1.125rem);
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 2rem;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.hero-btn {
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+
+  // Hero-specific overrides for button variants
+  &.btn--primary {
+    .btn__icon {
+      filter: brightness(0) invert(1);
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  &.btn--secondary,
+  &.btn--outline {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+
+    .btn__icon {
+      filter: brightness(0) invert(1);
+    }
+
+    &:hover {
+      background: white;
+      color: $color-text;
+
+      .btn__icon {
+        filter: none;
+      }
     }
   }
 }
 
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateX(-50%) translateY(0);
-  }
-  50% {
-    transform: translateX(-50%) translateY(10px);
-  }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 </style>

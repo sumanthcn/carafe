@@ -14,9 +14,9 @@
       "type": "text"
     },
     "categories": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::product-category.product-category"
+      "type": "component",
+      "component": "elements.category",
+      "repeatable": true
     }
   }
 }

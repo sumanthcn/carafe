@@ -12,50 +12,50 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "tasteTheCraft": {
+      "type": "component",
+      "component": "sections.product-categories",
+      "repeatable": false
+    },
     "heroCarousel": {
       "type": "component",
-      "repeatable": true,
-      "component": "sections.hero-slide"
+      "component": "sections.hero-slide",
+      "repeatable": true
     },
     "carouselSettings": {
       "type": "component",
-      "repeatable": false,
-      "component": "shared.carousel-settings"
-    },
-    "productCategories": {
-      "type": "component",
-      "repeatable": false,
-      "component": "sections.product-categories"
+      "component": "shared.carousel-settings",
+      "repeatable": false
     },
     "brandStory": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.brand-story"
+      "component": "sections.brand-story",
+      "repeatable": false
     },
     "cafeLocation": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.cafe-location"
+      "component": "sections.cafe-location",
+      "repeatable": false
     },
     "cultureSection": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.culture-section"
+      "component": "sections.brand-story",
+      "repeatable": false
     },
     "wholesaleSection": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.wholesale-section"
+      "component": "sections.wholesale-section",
+      "repeatable": false
     },
     "newsletter": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.newsletter-section"
+      "component": "sections.newsletter-section",
+      "repeatable": false
     },
     "seo": {
       "type": "component",
-      "repeatable": false,
-      "component": "shared.seo"
+      "component": "shared.seo",
+      "repeatable": false
     }
   }
 }

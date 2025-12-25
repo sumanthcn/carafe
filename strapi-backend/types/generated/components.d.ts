@@ -17,6 +17,17 @@ export interface ElementsAddress extends Struct.ComponentSchema {
   };
 }
 
+export interface ElementsCategory extends Struct.ComponentSchema {
+  collectionName: 'components_elements_categories';
+  info: {
+    displayName: 'Category';
+  };
+  attributes: {
+    icon: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    name: Schema.Attribute.String;
+  };
+}
+
 export interface ElementsCtaButton extends Struct.ComponentSchema {
   collectionName: 'components_elements_cta_button';
   info: {
@@ -25,7 +36,9 @@ export interface ElementsCtaButton extends Struct.ComponentSchema {
     icon: 'cursor';
   };
   attributes: {
-    icon: Schema.Attribute.String;
+    icon: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    iconPosition: Schema.Attribute.Enumeration<['left', 'right']> &
+      Schema.Attribute.DefaultTo<'left'>;
     openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     style: Schema.Attribute.Enumeration<
       ['primary', 'secondary', 'outline', 'text']
@@ -232,7 +245,6 @@ export interface SectionsCafeLocation extends Struct.ComponentSchema {
     backgroundImage: Schema.Attribute.Media<'images'>;
     cta: Schema.Attribute.Component<'elements.cta-button', false>;
     description: Schema.Attribute.Text;
-    features: Schema.Attribute.Component<'elements.feature-item', true>;
     headline: Schema.Attribute.String;
   };
 }
@@ -265,21 +277,6 @@ export interface SectionsCtaSection extends Struct.ComponentSchema {
     cta: Schema.Attribute.Component<'elements.cta-button', false>;
     description: Schema.Attribute.Text;
     headline: Schema.Attribute.String;
-  };
-}
-
-export interface SectionsCultureSection extends Struct.ComponentSchema {
-  collectionName: 'components_sections_culture_section';
-  info: {
-    description: 'Art & Culture section';
-    displayName: 'Culture Section';
-    icon: 'paint';
-  };
-  attributes: {
-    content: Schema.Attribute.RichText;
-    cta: Schema.Attribute.Component<'elements.cta-button', false>;
-    headline: Schema.Attribute.String;
-    image: Schema.Attribute.Media<'images'>;
   };
 }
 
@@ -388,10 +385,7 @@ export interface SectionsProductCategories extends Struct.ComponentSchema {
     icon: 'grid';
   };
   attributes: {
-    categories: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::product-category.product-category'
-    >;
+    categories: Schema.Attribute.Component<'elements.category', true>;
     description: Schema.Attribute.Text;
     headline: Schema.Attribute.String;
   };
@@ -569,6 +563,7 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'elements.address': ElementsAddress;
+      'elements.category': ElementsCategory;
       'elements.cta-button': ElementsCtaButton;
       'elements.faq-item': ElementsFaqItem;
       'elements.feature-item': ElementsFeatureItem;
@@ -583,7 +578,6 @@ declare module '@strapi/strapi' {
       'sections.cafe-location': SectionsCafeLocation;
       'sections.contact-section': SectionsContactSection;
       'sections.cta-section': SectionsCtaSection;
-      'sections.culture-section': SectionsCultureSection;
       'sections.faq-section': SectionsFaqSection;
       'sections.footer-section': SectionsFooterSection;
       'sections.hero-section': SectionsHeroSection;

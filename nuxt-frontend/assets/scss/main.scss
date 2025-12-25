@@ -232,6 +232,21 @@ p {
   &--full {
     width: 100%;
   }
+  
+  // Icon styles
+  &__icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    
+    &--left {
+      order: -1;
+    }
+    
+    &--right {
+      order: 1;
+    }
+  }
 }
 
 // =============================================================================

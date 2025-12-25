@@ -129,50 +129,41 @@ export function useStrapi() {
    * Fetch homepage data
    */
   async function getHomepage() {
-    // Use manual URL construction for complex populate
     const params = new URLSearchParams();
 
-    // Hero Carousel - populate deeply
-    params.append("populate[0]", "heroCarousel");
-    params.append("populate[1]", "heroCarousel.backgroundImage");
-    params.append("populate[2]", "heroCarousel.buttons");
-    params.append("populate[3]", "heroCarousel.buttons.icon");
-
-    // Carousel Settings
-    params.append("populate[4]", "carouselSettings");
-
-    // Product Categories
-    params.append("populate[5]", "productCategories");
-    params.append("populate[6]", "productCategories.categories");
-    params.append("populate[7]", "productCategories.categories.icon");
-    params.append("populate[8]", "productCategories.categories.image");
-
-    // Brand Story
-    params.append("populate[9]", "brandStory");
-    params.append("populate[10]", "brandStory.image");
-    params.append("populate[11]", "brandStory.cta");
-
-    // Cafe Location
-    params.append("populate[12]", "cafeLocation");
-    params.append("populate[13]", "cafeLocation.backgroundImage");
-    params.append("populate[14]", "cafeLocation.cta");
-
-    // Culture Section
-    params.append("populate[15]", "cultureSection");
-    params.append("populate[16]", "cultureSection.image");
-    params.append("populate[17]", "cultureSection.cta");
-
-    // Wholesale Section
-    params.append("populate[18]", "wholesaleSection");
-    params.append("populate[19]", "wholesaleSection.image");
-    params.append("populate[20]", "wholesaleSection.cta");
-
-    // Newsletter
-    params.append("populate[21]", "newsletter");
-
-    // SEO
-    params.append("populate[22]", "seo");
-    params.append("populate[23]", "seo.ogImage");
+    // Populate hero carousel components
+    params.append(
+      "populate[heroCarousel][populate][buttons][populate][icon]",
+      "true"
+    );
+    params.append("populate[heroCarousel][populate][backgroundImage]", "true");
+    params.append("populate[carouselSettings]", "*");
+    params.append(
+      "populate[tasteTheCraft][populate][categories][populate][icon]",
+      "true"
+    );
+    params.append("populate[brandStory][populate][image]", "true");
+    params.append(
+      "populate[brandStory][populate][cta][populate][icon]",
+      "true"
+    );
+    params.append("populate[cafeLocation][populate][backgroundImage]", "true");
+    params.append(
+      "populate[cafeLocation][populate][cta][populate][icon]",
+      "true"
+    );
+    params.append("populate[cultureSection][populate][image]", "true");
+    params.append(
+      "populate[cultureSection][populate][cta][populate][icon]",
+      "true"
+    );
+    params.append("populate[wholesaleSection][populate][image]", "true");
+    params.append(
+      "populate[wholesaleSection][populate][cta][populate][icon]",
+      "true"
+    );
+    // params.append("populate[newsletter]", "*");
+    // params.append("populate[seo][populate]", "*");
 
     return fetchApi(`homepage?${params.toString()}`);
   }

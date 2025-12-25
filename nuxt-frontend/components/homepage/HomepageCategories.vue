@@ -1,221 +1,131 @@
 <template>
-  <section class="categories">
+  <section v-if="tasteTheCraft" class="taste-the-craft">
     <div class="container">
-      <div class="section-header">
-        <span v-if="data?.badge" class="section-badge">{{ data.badge }}</span>
-        <h2 class="section-title">
-          {{ data?.heading || "Our Coffee Selection" }}
-        </h2>
-        <p v-if="data?.subheading" class="section-subtitle">
-          {{ data.subheading }}
-        </p>
-      </div>
+      <h2 class="taste-the-craft__title">
+        {{ tasteTheCraft.headline }}
+      </h2>
+      <p v-if="tasteTheCraft.description" class="taste-the-craft__description">
+        {{ tasteTheCraft.description }}
+      </p>
 
-      <div class="categories__grid">
-        <NuxtLink
-          v-for="category in categories"
+      <div
+        v-if="tasteTheCraft.categories?.length"
+        class="taste-the-craft__categories"
+      >
+        <div
+          v-for="category in tasteTheCraft.categories"
           :key="category.id"
-          :to="`/shop?category=${category.slug}`"
-          class="category-card"
+          class="category-item"
         >
-          <div class="category-card__image">
-            <NuxtImg
-              v-if="category.image?.url"
-              :src="category.image.url"
-              :alt="category.image.alternativeText || category.name"
-              preset="card"
-              loading="lazy"
-            />
-            <div class="category-card__overlay"></div>
+          <div v-if="category.icon" class="category-item__icon">
+            <img :src="getStrapiMediaUrl(category.icon)" :alt="category.name" />
           </div>
-
-          <div class="category-card__content">
-            <span v-if="category.icon" class="category-card__icon">
-              {{ category.icon }}
-            </span>
-            <h3 class="category-card__title">{{ category.name }}</h3>
-            <p v-if="category.description" class="category-card__description">
-              {{ category.description }}
-            </p>
-            <span class="category-card__link">
-              Shop Now
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M5 12H19M19 12L12 5M19 12L12 19"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </span>
-          </div>
-        </NuxtLink>
-      </div>
-
-      <div v-if="data?.ctaButton" class="categories__cta">
-        <NuxtLink :to="data.ctaButton.url" class="btn btn--primary">
-          {{ data.ctaButton.label }}
-        </NuxtLink>
+          <h3 class="category-item__name">{{ category.name }}</h3>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import type { ProductCategory } from "~/types/strapi";
+const { getStrapiMediaUrl } = useStrapi();
 
-interface CategoriesProps {
-  data?: {
-    badge?: string;
-    heading?: string;
-    subheading?: string;
-    ctaButton?: {
-      label: string;
-      url: string;
-    };
+interface TasteTheCraftProps {
+  tasteTheCraft?: {
+    headline?: string;
+    description?: string;
+    categories?: Array<{
+      id: number;
+      documentId: string;
+      name: string;
+      icon?: any;
+    }>;
   };
-  categories?: ProductCategory[];
 }
 
-defineProps<CategoriesProps>();
+defineProps<TasteTheCraftProps>();
 </script>
 
 <style lang="scss" scoped>
-.categories {
-  padding: $spacing-16 0;
-  background: $color-gray-50;
-
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: $spacing-6;
-    margin-top: $spacing-12;
-  }
-
-  &__cta {
-    text-align: center;
-    margin-top: $spacing-12;
-  }
-}
-
-.section-header {
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.section-badge {
-  display: inline-block;
-  color: $color-primary;
-  font-size: $font-size-sm;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: $spacing-4;
-}
-
-.section-title {
-  font-family: $font-family-heading;
-  font-size: $font-size-3xl;
-  color: $color-dark;
-  margin-bottom: $spacing-4;
-
-  @include tablet {
-    font-size: $font-size-4xl;
-  }
-}
-
-.section-subtitle {
-  color: $color-gray-600;
-  font-size: $font-size-lg;
-  line-height: 1.7;
-}
-
-.category-card {
-  position: relative;
-  display: block;
-  border-radius: $border-radius-lg;
-  overflow: hidden;
-  aspect-ratio: 4 / 5;
-  text-decoration: none;
-  color: $color-white;
-
-  &__image {
-    position: absolute;
-    inset: 0;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.5s ease;
-    }
-  }
-
-  &__overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0.2) 50%,
-      rgba(0, 0, 0, 0.1) 100%
-    );
-  }
-
-  &__content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: $spacing-6;
-    z-index: 1;
-  }
-
-  &__icon {
-    font-size: 2rem;
-    margin-bottom: $spacing-2;
-    display: block;
-  }
+.taste-the-craft {
+  padding: 4rem 0;
+  background: $color-background-alt;
 
   &__title {
     font-family: $font-family-heading;
-    font-size: $font-size-2xl;
-    margin-bottom: $spacing-2;
+    font-size: $font-size-4xl;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: $color-text;
   }
 
   &__description {
-    font-size: $font-size-sm;
-    opacity: 0.9;
-    margin-bottom: $spacing-4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    text-align: center;
+    font-size: 1.1rem;
+    color: $color-text;
+    max-width: 65%;
+    margin: 0 auto 3rem;
   }
 
-  &__link {
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-2;
-    font-size: $font-size-sm;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-
-    svg {
-      transition: transform 0.3s ease;
-    }
+  &__categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
   }
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 25px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   &:hover {
-    .category-card__image img {
-      transform: scale(1.05);
-    }
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
 
-    .category-card__link svg {
-      transform: translateX(4px);
+  &__icon {
+    width: 100px;
+    height: 100px;
+    background-color: $color-primary;
+    border-radius: 50%;
+    padding: $spacing-3;
+    position: relative;
+
+    img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 55%;
+      object-fit: contain;
+      margin-bottom: 1rem;
     }
   }
+
+  &__name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $color-text;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 </style>

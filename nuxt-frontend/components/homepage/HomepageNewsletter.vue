@@ -1,249 +1,102 @@
 <template>
-  <section class="newsletter">
+  <section class="newsletter-section">
     <div class="container">
-      <div class="newsletter__inner">
-        <div class="newsletter__content">
-          <span v-if="badge" class="newsletter__badge">{{ badge }}</span>
-          <h2 class="newsletter__title">
-            {{ title || "Join Our Coffee Community" }}
-          </h2>
-          <p v-if="description" class="newsletter__description">
-            {{ description }}
-          </p>
-        </div>
-
-        <form class="newsletter__form" @submit.prevent="subscribe">
-          <div class="newsletter__input-group">
-            <input
-              v-model="email"
-              type="email"
-              placeholder="Enter your email address"
-              required
-              :disabled="isLoading"
-            />
-            <button
-              type="submit"
-              class="btn btn--primary"
-              :disabled="isLoading"
-            >
-              <span v-if="!isLoading">Subscribe</span>
-              <span v-else class="loading-spinner"></span>
-            </button>
-          </div>
-
-          <Transition name="fade">
-            <p
-              v-if="message"
-              :class="[
-                'newsletter__message',
-                {
-                  'newsletter__message--success': isSuccess,
-                  'newsletter__message--error': !isSuccess,
-                },
-              ]"
-            >
-              {{ message }}
-            </p>
-          </Transition>
-
-          <p class="newsletter__privacy">
-            By subscribing, you agree to our
-            <NuxtLink to="/privacy-policy">Privacy Policy</NuxtLink>
-          </p>
-        </form>
-      </div>
+      <h2>{{ data?.headline || "JOIN OUR COFFEE CIRCLE" }}</h2>
+      <p v-if="data?.description">{{ data.description }}</p>
+      <form class="newsletter-form" @submit.prevent="() => {}">
+        <input type="email" placeholder="ENTER YOUR EMAIL ADDRESS" required />
+        <button type="submit" class="btn-primary">SUBSCRIBE</button>
+      </form>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
 interface NewsletterProps {
-  title?: string;
-  description?: string;
-  badge?: string;
+  data?: {
+    headline?: string;
+    description?: string;
+  };
 }
 
-withDefaults(defineProps<NewsletterProps>(), {
-  title: "Join Our Coffee Community",
-});
-
-const email = ref("");
-const isLoading = ref(false);
-const message = ref("");
-const isSuccess = ref(false);
-
-const subscribe = async () => {
-  if (!email.value) return;
-
-  isLoading.value = true;
-  message.value = "";
-
-  try {
-    await $fetch("/api/newsletter/subscribe", {
-      method: "POST",
-      body: { email: email.value },
-    });
-
-    isSuccess.value = true;
-    message.value =
-      "Thank you for subscribing! Check your email for confirmation.";
-    email.value = "";
-  } catch (error: any) {
-    isSuccess.value = false;
-    message.value =
-      error.data?.message || "Something went wrong. Please try again.";
-  } finally {
-    isLoading.value = false;
-  }
-};
+defineProps<NewsletterProps>();
 </script>
 
 <style lang="scss" scoped>
-.newsletter {
-  padding: $spacing-16 0;
-  background: $color-primary;
-  color: $color-white;
+.newsletter-section {
+  padding: 4rem 2rem;
+  background: $color-secondary;
+  color: white;
+  text-align: center;
 
-  &__inner {
-    display: grid;
-    gap: $spacing-8;
-    align-items: center;
-
-    @include tablet {
-      grid-template-columns: 1fr 1fr;
-      gap: $spacing-12;
-    }
-  }
-
-  &__badge {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    padding: $spacing-1 $spacing-3;
-    border-radius: $border-radius-full;
-    font-size: $font-size-xs;
+  h2 {
+    font-family: $font-heading;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    margin-bottom: 1rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: $spacing-4;
   }
 
-  &__title {
-    font-family: $font-family-heading;
-    font-size: $font-size-2xl;
-    margin-bottom: $spacing-3;
-
-    @include tablet {
-      font-size: $font-size-3xl;
-    }
-  }
-
-  &__description {
+  p {
+    margin-bottom: 2rem;
     opacity: 0.9;
-    line-height: 1.7;
-  }
-
-  &__form {
-    background: rgba(0, 0, 0, 0.2);
-    padding: $spacing-6;
-    border-radius: $border-radius-lg;
-  }
-
-  &__input-group {
-    display: flex;
-    gap: $spacing-3;
-
-    input {
-      flex: 1;
-      padding: $spacing-3 $spacing-4;
-      border: none;
-      border-radius: $border-radius-md;
-      font-size: $font-size-base;
-      background: $color-white;
-      color: $color-dark;
-
-      &::placeholder {
-        color: $color-gray-400;
-      }
-
-      &:focus {
-        outline: 2px solid rgba(255, 255, 255, 0.5);
-        outline-offset: 2px;
-      }
-
-      &:disabled {
-        opacity: 0.7;
-      }
-    }
-
-    .btn {
-      white-space: nowrap;
-      background: $color-dark;
-
-      &:hover {
-        background: darken($color-dark, 10%);
-      }
-
-      &:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-      }
-    }
-  }
-
-  &__message {
-    margin-top: $spacing-3;
-    padding: $spacing-2 $spacing-3;
-    border-radius: $border-radius-sm;
-    font-size: $font-size-sm;
-
-    &--success {
-      background: rgba($color-success, 0.2);
-      color: lighten($color-success, 20%);
-    }
-
-    &--error {
-      background: rgba($color-error, 0.2);
-      color: lighten($color-error, 20%);
-    }
-  }
-
-  &__privacy {
-    margin-top: $spacing-4;
-    font-size: $font-size-xs;
-    opacity: 0.7;
-
-    a {
-      color: inherit;
-      text-decoration: underline;
-
-      &:hover {
-        opacity: 1;
-      }
-    }
   }
 }
 
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid transparent;
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
+.newsletter-form {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+  input {
+    flex: 1;
+    min-width: 250px;
+    padding: 1rem 1.5rem;
+    border: 2px solid white;
+    border-radius: 4px;
+    background: transparent;
+    color: white;
+    font-size: 0.875rem;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    &:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  button {
+    padding: 1rem 2rem;
   }
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+.btn-primary {
+  display: inline-block;
+  background: $color-primary;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-primary-dark;
+    transform: translateY(-2px);
+  }
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 </style>

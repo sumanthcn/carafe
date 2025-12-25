@@ -16,11 +16,31 @@
     },
     "style": {
       "type": "enumeration",
-      "enum": ["primary", "secondary", "outline", "text"],
-      "default": "primary"
+      "default": "primary",
+      "enum": [
+        "primary",
+        "secondary",
+        "outline",
+        "text"
+      ]
     },
     "icon": {
-      "type": "string"
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "iconPosition": {
+      "type": "enumeration",
+      "enum": [
+        "left",
+        "right"
+      ],
+      "default": "left"
     },
     "openInNewTab": {
       "type": "boolean",

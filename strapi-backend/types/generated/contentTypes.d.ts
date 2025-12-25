@@ -494,10 +494,7 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    cultureSection: Schema.Attribute.Component<
-      'sections.culture-section',
-      false
-    >;
+    cultureSection: Schema.Attribute.Component<'sections.brand-story', false>;
     heroCarousel: Schema.Attribute.Component<'sections.hero-slide', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -509,12 +506,12 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
       'sections.newsletter-section',
       false
     >;
-    productCategories: Schema.Attribute.Component<
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    tasteTheCraft: Schema.Attribute.Component<
       'sections.product-categories',
       false
     >;
-    publishedAt: Schema.Attribute.DateTime;
-    seo: Schema.Attribute.Component<'shared.seo', false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -48,10 +48,11 @@ const socialIcons: Record<string, string> = {
         <div class="footer__column">
           <h4 class="footer__heading">VISIT US</h4>
           <address class="footer__address">
-            <p>{{ address?.street || "29 Station Street" }}</p>
+            <p>{{ address?.street || "Not Added By Admin" }}</p>
             <p>
-              {{ address?.city || "Lewes" }},
-              {{ address?.postcode || "BN7 2DB" }}, UK
+              {{ address?.city || "Not Added By Admin" }},
+              {{ address?.postcode || "Not Added By Admin" }},
+              {{ address?.country || "Not Added By Admin" }}
             </p>
           </address>
           <div v-if="openingHours?.length" class="footer__hours">
@@ -62,8 +63,7 @@ const socialIcons: Record<string, string> = {
           </div>
           <div v-else class="footer__hours">
             <h5 class="footer__subheading">OPENING HOURS:</h5>
-            <p>Mon-Fri: 7:30am-5pm</p>
-            <p>Sat-Sun: 8am-5pm</p>
+            <p>Not Added By Admin</p>
           </div>
         </div>
 
@@ -125,16 +125,16 @@ const socialIcons: Record<string, string> = {
       </div>
 
       <!-- Bottom bar -->
-      <div class="footer__bottom">
-        <p class="footer__copyright">
-          © {{ currentYear }}
-          {{ settings?.siteName || "CARAFE COFFEE HOUSE & ROASTERS" }}. CRAFTED
-          WITH <span class="footer__heart">❤</span> IN LEWES.
-        </p>
-        <div class="footer__legal">
-          <NuxtLink to="/privacy-policy">Privacy Policy</NuxtLink>
-          <NuxtLink to="/terms-conditions">Terms & Conditions</NuxtLink>
-        </div>
+    </div>
+    <div class="footer__bottom">
+      <p class="footer__copyright">
+        © {{ currentYear }}
+        {{ settings?.siteName || "CARAFE COFFEE HOUSE & ROASTERS" }}. CRAFTED
+        WITH <span class="footer__heart">❤</span> IN LEWES.
+      </p>
+      <div class="footer__legal">
+        <NuxtLink to="/privacy-policy">Privacy Policy</NuxtLink>
+        <NuxtLink to="/terms-conditions">Terms & Conditions</NuxtLink>
       </div>
     </div>
   </footer>
@@ -144,7 +144,7 @@ const socialIcons: Record<string, string> = {
 .footer {
   background-color: $color-dark;
   color: white;
-  padding: 2rem 0;
+  padding: 2rem 0 0;
 
   &__container {
     max-width: 1400px;
@@ -198,7 +198,6 @@ const socialIcons: Record<string, string> = {
   &__tagline {
     font-size: 1rem;
     letter-spacing: 0.3em;
-    color: rgba(white, 0.7);
   }
 
   &__man-logo {
@@ -262,28 +261,30 @@ const socialIcons: Record<string, string> = {
 
   &__bottom {
     margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid rgba(white, 0.1);
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     align-items: center;
     text-align: center;
+    background: $color-white;
+    color: $color-black;
 
     @media (min-width: 768px) {
       flex-direction: row;
       justify-content: space-between;
+      align-items: center;
       text-align: left;
     }
   }
 
   &__copyright {
-    font-size: 0.75rem;
-    color: rgba(white, 0.6);
+    font-size: $font-size-sm;
+    margin: 0;
   }
 
   &__heart {
-    color: $color-primary;
+    color: $color-error;
   }
 
   &__legal {
@@ -291,13 +292,12 @@ const socialIcons: Record<string, string> = {
     gap: 1.5rem;
 
     a {
-      font-size: 0.75rem;
-      color: rgba(white, 0.6);
+      font-size: $font-size-sm;
       text-decoration: none;
       transition: color 0.2s ease;
 
       &:hover {
-        color: white;
+        color: $color-primary-light;
       }
     }
   }

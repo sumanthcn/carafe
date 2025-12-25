@@ -1,19 +1,15 @@
 <template>
-  <section v-if="data" class="brand-story">
+  <section v-if="data" class="wholesale-section">
     <div class="container">
-      <div
-        class="brand-story-grid"
-        :class="{
-          'brand-story-grid--image-left': data.imagePosition === 'left',
-        }"
-      >
-        <div class="brand-story__content">
-          <h2>
-            {{ data.headline || "FROM LEWES TO YOUR CUP" }}
-          </h2>
+      <div class="wholesale-wrapper">
+        <div v-if="data.image" class="wholesale-image">
+          <img :src="getStrapiMediaUrl(data.image)" :alt="data.headline" />
+        </div>
+        <div class="wholesale-content">
+          <h2>{{ data.headline || "PARTNER WITH US" }}</h2>
           <div
             v-if="data.content"
-            class="brand-story__text"
+            class="wholesale-text"
             v-html="data.content"
           ></div>
           <NuxtLink
@@ -37,9 +33,6 @@
             />
           </NuxtLink>
         </div>
-        <div v-if="data.image" class="brand-story__image">
-          <img :src="getStrapiMediaUrl(data.image)" :alt="data.headline" />
-        </div>
       </div>
     </div>
   </section>
@@ -48,12 +41,11 @@
 <script setup lang="ts">
 const { getStrapiMediaUrl } = useStrapi();
 
-interface BrandStoryProps {
+interface WholesaleSectionProps {
   data?: {
     headline?: string;
     content?: string;
     image?: any;
-    imagePosition?: "left" | "right";
     cta?: {
       text: string;
       url: string;
@@ -65,40 +57,62 @@ interface BrandStoryProps {
   };
 }
 
-defineProps<BrandStoryProps>();
+defineProps<WholesaleSectionProps>();
 </script>
 
 <style lang="scss" scoped>
-.brand-story {
-  padding: 0rem 2rem;
-  background: $color-background;
-
-  &__content {
-    @media (min-width: 1024px) {
-      margin-top: -$spacing-14;
-    }
-  }
+.wholesale-section {
+  padding: 2rem;
+  background: linear-gradient(180deg, #f5f5f5 0%, #ffffff 100%);
 }
 
-.brand-story-grid {
-  display: grid;
-  gap: 3rem;
+.wholesale-wrapper {
+  position: relative;
+  min-height: 500px;
+  display: flex;
   align-items: center;
+}
 
-  @media (min-width: 1024px) {
-    grid-template-columns: 1fr 1fr;
+.wholesale-image {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60%;
+  max-width: 700px;
+  z-index: 1;
+
+  @media (max-width: 1023px) {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    transform: none;
+    top: auto;
+    margin-bottom: 2rem;
   }
 
-  &--image-left {
-    @media (min-width: 1024px) {
-      .brand-story__image {
-        order: -1;
-      }
-    }
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 24px;
+    object-fit: cover;
   }
 }
 
-.brand-story__content {
+.wholesale-content {
+  position: relative;
+  z-index: 2;
+  background: white;
+  padding: 3rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 10px solid rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+
+  @media (max-width: 1023px) {
+    max-width: 100%;
+  }
+
   h2 {
     font-family: $font-heading;
     font-size: $font-size-4xl;
@@ -108,19 +122,22 @@ defineProps<BrandStoryProps>();
     font-weight: bold;
   }
 
-  .brand-story__text {
+  .wholesale-text {
     :deep(p) {
       color: $color-text;
       line-height: 1.8;
       margin-bottom: 1rem;
+      font-size: 1rem;
     }
   }
 
-  // Brand story specific button overrides
   .btn {
-    margin-top: 1rem;
+    margin-top: 2rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
 
     &.btn--primary {
       .btn__icon {
@@ -131,14 +148,6 @@ defineProps<BrandStoryProps>();
         transform: translateY(-2px);
       }
     }
-  }
-}
-
-.brand-story__image {
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
   }
 }
 

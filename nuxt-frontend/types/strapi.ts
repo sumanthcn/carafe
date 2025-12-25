@@ -114,7 +114,6 @@ export interface HeroSection {
   headline: string;
   subheadline?: string;
   backgroundImage?: StrapiMedia;
-  overlayImage?: StrapiMedia;
   primaryCta?: CtaButton;
   secondaryCta?: CtaButton;
   alignment?: "left" | "center" | "right";
@@ -243,17 +242,51 @@ export interface Subscription {
   seo?: StrapiSeo;
 }
 
+// Hero Carousel Slide
+export interface HeroCarouselSlide {
+  headline: string;
+  subheadline?: string;
+  description?: string;
+  backgroundImage?: StrapiMedia;
+  buttons?: HeroButton[];
+  textPosition?: "left" | "center" | "right";
+  overlayOpacity?: number;
+}
+
+// Hero Button
+export interface HeroButton {
+  text: string;
+  url?: string;
+  variant?: "primary" | "secondary" | "outline";
+  icon?: StrapiMedia;
+  iconPosition?: "left" | "right";
+  openInNewTab?: boolean;
+}
+
+// Carousel Settings
+export interface CarouselSettings {
+  autoplay?: boolean;
+  autoplayDelay?: number;
+  showNavigation?: boolean;
+  showPagination?: boolean;
+  loop?: boolean;
+  effect?: "slide" | "fade";
+  speed?: number;
+  pauseOnHover?: boolean;
+}
+
 // Homepage
 export interface Homepage {
-  hero?: HeroSection;
-  productCategories?: {
+  heroCarousel?: HeroCarouselSlide[];
+  carouselSettings?: CarouselSettings;
+  tasteTheCraft?: {
     headline?: string;
     description?: string;
     categories?: ProductCategory[];
   };
   brandStory?: BrandStorySection;
   cafeLocation?: CafeLocationSection;
-  cultureSection?: CultureSection;
+  cultureSection?: BrandStorySection;
   wholesaleSection?: WholesaleSection;
   newsletter?: NewsletterSection;
   seo?: StrapiSeo;
