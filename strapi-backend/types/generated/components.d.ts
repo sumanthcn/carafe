@@ -358,25 +358,6 @@ export interface SectionsImageGallery extends Struct.ComponentSchema {
   };
 }
 
-export interface SectionsNewsletterSection extends Struct.ComponentSchema {
-  collectionName: 'components_sections_newsletter_section';
-  info: {
-    description: 'Newsletter subscription section';
-    displayName: 'Newsletter Section';
-    icon: 'envelope';
-  };
-  attributes: {
-    buttonText: Schema.Attribute.String &
-      Schema.Attribute.DefaultTo<'Subscribe'>;
-    description: Schema.Attribute.Text;
-    headline: Schema.Attribute.String;
-    placeholderText: Schema.Attribute.String &
-      Schema.Attribute.DefaultTo<'Enter your email address'>;
-    successMessage: Schema.Attribute.String &
-      Schema.Attribute.DefaultTo<'Thank you for subscribing!'>;
-  };
-}
-
 export interface SectionsProductCategories extends Struct.ComponentSchema {
   collectionName: 'components_sections_product_categories';
   info: {
@@ -583,7 +564,6 @@ declare module '@strapi/strapi' {
       'sections.hero-section': SectionsHeroSection;
       'sections.hero-slide': SectionsHeroSlide;
       'sections.image-gallery': SectionsImageGallery;
-      'sections.newsletter-section': SectionsNewsletterSection;
       'sections.product-categories': SectionsProductCategories;
       'sections.team-section': SectionsTeamSection;
       'sections.text-content': SectionsTextContent;

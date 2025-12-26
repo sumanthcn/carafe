@@ -63,7 +63,6 @@ defineProps<WholesaleSectionProps>();
 <style lang="scss" scoped>
 .wholesale-section {
   padding: 2rem;
-  background: linear-gradient(180deg, #f5f5f5 0%, #ffffff 100%);
 }
 
 .wholesale-wrapper {

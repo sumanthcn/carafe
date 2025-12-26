@@ -47,11 +47,6 @@
       "component": "sections.wholesale-section",
       "repeatable": false
     },
-    "newsletter": {
-      "type": "component",
-      "component": "sections.newsletter-section",
-      "repeatable": false
-    },
     "seo": {
       "type": "component",
       "component": "shared.seo",

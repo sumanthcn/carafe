@@ -1,5 +1,9 @@
 <template>
-  <section v-if="data" class="brand-story">
+  <section 
+    v-if="data" 
+    class="brand-story"
+    :class="`brand-story--${backgroundColor}`"
+  >
     <div class="container">
       <div
         class="brand-story-grid"
@@ -63,15 +67,25 @@ interface BrandStoryProps {
       openInNewTab?: boolean;
     };
   };
+  backgroundColor?: "default" | "alt";
 }
 
-defineProps<BrandStoryProps>();
+withDefaults(defineProps<BrandStoryProps>(), {
+  backgroundColor: "default",
+});
 </script>
 
 <style lang="scss" scoped>
 .brand-story {
   padding: 0rem 2rem;
-  background: $color-background;
+
+  &--default {
+    background: $color-background;
+  }
+
+  &--alt {
+    background: $color-background-alt;
+  }
 
   &__content {
     @media (min-width: 1024px) {

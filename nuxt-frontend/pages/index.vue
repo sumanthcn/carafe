@@ -7,7 +7,6 @@ const { data: homepage, error: homepageError } = await useAsyncData(
   async () => {
     try {
       const data = await getHomepage();
-      console.log("Fetched homepage data:", data);
       return data as any;
     } catch (err) {
       console.error("Failed to fetch homepage:", err);
@@ -55,6 +54,7 @@ useSeoMeta({
     <HomepageBrandStory
       v-if="homepage?.data?.cultureSection"
       :data="homepage.data.cultureSection"
+      backgroundColor="alt"
     />
 
     <!-- Wholesale Section -->
@@ -63,11 +63,8 @@ useSeoMeta({
       :data="homepage.data.wholesaleSection"
     />
 
-    <!-- Newsletter Section -->
-    <HomepageNewsletter
-      v-if="homepage?.data?.newsletter"
-      :data="homepage.data.newsletter"
-    />
+    <!-- Email Subscription -->
+    <EmailSubscribe source="homepage" />
   </div>
 </template>
 

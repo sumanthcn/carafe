@@ -46,6 +46,9 @@ function toggleCart() {
 
     <!-- Cart sidebar -->
     <CartSidebar v-model:is-open="isCartOpen" />
+
+    <!-- Toast notifications -->
+    <UNotifications class="toast-container" :timeout="0" />
   </div>
 </template>
 
@@ -58,5 +61,17 @@ function toggleCart() {
 
 .main-content {
   flex: 1;
+}
+
+.toast-container {
+  position: fixed;
+  top: 70px !important; // Just below header
+  right: 0;
+  bottom: unset !important;
+  // transform: translateX(-50%);
+  z-index: 9999;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 1rem;
 }
 </style>

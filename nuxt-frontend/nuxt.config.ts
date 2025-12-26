@@ -27,6 +27,7 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxtjs/sitemap",
     "@nuxtjs/robots",
+    "@nuxt/ui",
   ],
 
   // Sitemap configuration

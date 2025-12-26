@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "email_subscribers",
+  "info": {
+    "singularName": "email-subscriber",
+    "pluralName": "email-subscribers",
+    "displayName": "Email Subscriber",
+    "description": "Users who subscribed to receive promotional emails and updates"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "email": {
+      "type": "email",
+      "required": true,
+      "unique": true,
+      "configurable": false
+    },
+    "source": {
+      "type": "string",
+      "required": false,
+      "default": "footer"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    }
+  }
+}
