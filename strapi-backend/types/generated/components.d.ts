@@ -89,6 +89,20 @@ export interface ElementsFooterColumn extends Struct.ComponentSchema {
   };
 }
 
+export interface ElementsFooterLink extends Struct.ComponentSchema {
+  collectionName: 'components_elements_footer_links';
+  info: {
+    description: 'Footer navigation link';
+    displayName: 'Footer Link';
+  };
+  attributes: {
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ElementsNavChild extends Struct.ComponentSchema {
   collectionName: 'components_elements_nav_child';
   info: {
@@ -186,16 +200,9 @@ export interface ElementsSocialLink extends Struct.ComponentSchema {
     icon: 'link';
   };
   attributes: {
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     platform: Schema.Attribute.Enumeration<
-      [
-        'instagram',
-        'facebook',
-        'twitter',
-        'tripadvisor',
-        'youtube',
-        'linkedin',
-        'tiktok',
-      ]
+      ['instagram', 'facebook', 'google', 'tripadvisor']
     > &
       Schema.Attribute.Required;
     url: Schema.Attribute.String & Schema.Attribute.Required;
@@ -214,6 +221,20 @@ export interface ElementsTeamMember extends Struct.ComponentSchema {
     name: Schema.Attribute.String & Schema.Attribute.Required;
     photo: Schema.Attribute.Media<'images'>;
     role: Schema.Attribute.String;
+  };
+}
+
+export interface ElementsVisitCafeCard extends Struct.ComponentSchema {
+  collectionName: 'components_elements_visit_cafe_cards';
+  info: {
+    description: 'Card for cafe visit section with title, description and CTA button';
+    displayName: 'Visit Cafe Card';
+  };
+  attributes: {
+    cta: Schema.Attribute.Component<'elements.cta-button', false>;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -397,6 +418,21 @@ export interface SectionsTextContent extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsVisitCafeSection extends Struct.ComponentSchema {
+  collectionName: 'components_sections_visit_cafe_sections';
+  info: {
+    description: 'Section promoting cafe visits with image strip and cards';
+    displayName: 'Visit Cafe Section';
+  };
+  attributes: {
+    cards: Schema.Attribute.Component<'elements.visit-cafe-card', true>;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Visit Our Lewes Caf\u00E9'>;
+  };
+}
+
 export interface SectionsWholesaleSection extends Struct.ComponentSchema {
   collectionName: 'components_sections_wholesale_section';
   info: {
@@ -549,12 +585,14 @@ declare module '@strapi/strapi' {
       'elements.faq-item': ElementsFaqItem;
       'elements.feature-item': ElementsFeatureItem;
       'elements.footer-column': ElementsFooterColumn;
+      'elements.footer-link': ElementsFooterLink;
       'elements.nav-child': ElementsNavChild;
       'elements.nav-item': ElementsNavItem;
       'elements.opening-hours': ElementsOpeningHours;
       'elements.order-item': ElementsOrderItem;
       'elements.social-link': ElementsSocialLink;
       'elements.team-member': ElementsTeamMember;
+      'elements.visit-cafe-card': ElementsVisitCafeCard;
       'sections.brand-story': SectionsBrandStory;
       'sections.cafe-location': SectionsCafeLocation;
       'sections.contact-section': SectionsContactSection;
@@ -567,6 +605,7 @@ declare module '@strapi/strapi' {
       'sections.product-categories': SectionsProductCategories;
       'sections.team-section': SectionsTeamSection;
       'sections.text-content': SectionsTextContent;
+      'sections.visit-cafe-section': SectionsVisitCafeSection;
       'sections.wholesale-section': SectionsWholesaleSection;
       'shared.button': SharedButton;
       'shared.carousel-settings': SharedCarouselSettings;

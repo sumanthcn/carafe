@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import type { Product } from "~/types/strapi";
+import type { Product, ShopCoffee } from "~/types/strapi";
 import ProductCard from "~/components/shop/ProductCard.vue";
 import WhatsNewCarousel from "~/components/shop/WhatsNewCarousel.vue";
 import TestimonialsSection from "~/components/TestimonialsSection.vue";
+import VisitCafeSection from "~/components/VisitCafeSection.vue";
 
 const { fetchProducts } = useProducts();
+const { fetchShopCoffeeData } = useShopCoffee();
 
 const products = ref<Product[]>([]);
 const whatsNewProducts = ref<Product[]>([]);
+const shopCoffeeData = ref<ShopCoffee | null>(null);
 const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = 3;
@@ -101,9 +104,24 @@ async function loadMore() {
 // Load data - use onMounted with guard to prevent double loading
 onMounted(async () => {
   if (!initialized.value) {
-    await Promise.all([loadInitialProducts(), loadWhatsNewProducts()]);
+    await Promise.all([
+      loadInitialProducts(),
+      loadWhatsNewProducts(),
+      loadShopCoffeeData(),
+    ]);
   }
 });
+
+// Load shop coffee data (visit cafe section)
+async function loadShopCoffeeData() {
+  try {
+    const data = await fetchShopCoffeeData();
+    console.log("Shop Coffee Data:", data);
+    shopCoffeeData.value = data;
+  } catch (error) {
+    console.error("Failed to load shop coffee data:", error);
+  }
+}
 </script>
 
 <template>
@@ -184,6 +202,15 @@ onMounted(async () => {
 
     <!-- Testimonial Section -->
     <TestimonialsSection />
+
+    <!-- Visit Cafe Section -->
+    <VisitCafeSection
+      v-if="shopCoffeeData?.visitCafeSection"
+      :section="shopCoffeeData.visitCafeSection"
+    />
+
+    <!-- Email Subscription -->
+    <EmailSubscribe source="shopcoffeepage" />
   </div>
 </template>
 

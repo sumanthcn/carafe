@@ -44,7 +44,8 @@ export interface CtaButton {
   text: string;
   url?: string;
   style?: "primary" | "secondary" | "outline" | "text";
-  icon?: string;
+  icon?: StrapiMedia;
+  iconPosition?: "left" | "right";
   openInNewTab?: boolean;
 }
 
@@ -66,15 +67,17 @@ export interface OpeningHours {
 
 // Social Link
 export interface SocialLink {
-  platform:
-    | "instagram"
-    | "facebook"
-    | "twitter"
-    | "tripadvisor"
-    | "youtube"
-    | "linkedin"
-    | "tiktok";
+  platform: "instagram" | "facebook" | "google" | "tripadvisor";
   url: string;
+  displayOrder?: number;
+}
+
+// Footer Link
+export interface FooterLink {
+  label: string;
+  url: string;
+  displayOrder?: number;
+  isActive?: boolean;
 }
 
 // Navigation
@@ -258,6 +261,7 @@ export interface GlobalSettings {
   address?: Address;
   openingHours?: OpeningHours[];
   socialLinks?: SocialLink[];
+  footerLinks?: FooterLink[];
   contactEmail?: string;
   contactPhone?: string;
   navigation?: NavItem[];
@@ -368,6 +372,30 @@ export interface CustomerTestimonial {
   createdAt?: string;
   updatedAt?: string;
   publishedAt?: string;
+}
+
+// Visit Cafe Card
+export interface VisitCafeCard {
+  title: string;
+  description: string;
+  cta?: CtaButton;
+  displayOrder?: number;
+}
+
+// Visit Cafe Section
+export interface VisitCafeSection {
+  __component: "sections.visit-cafe-section";
+  title: string;
+  subtitle?: string;
+  cards?: VisitCafeCard[];
+}
+
+// Shop Coffee
+export interface ShopCoffee {
+  id: number;
+  documentId: string;
+  visitCafeSection?: VisitCafeSection;
+  seo?: StrapiSeo;
 }
 
 // API Response wrapper

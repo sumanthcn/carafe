@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_elements_visit_cafe_cards",
+  "info": {
+    "displayName": "Visit Cafe Card",
+    "description": "Card for cafe visit section with title, description and CTA button"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "elements.cta-button"
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

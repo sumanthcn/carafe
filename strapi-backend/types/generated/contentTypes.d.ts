@@ -536,6 +536,7 @@ export interface ApiGlobalSettingGlobalSetting extends Struct.SingleTypeSchema {
     defaultSeo: Schema.Attribute.Component<'shared.seo', false>;
     favicon: Schema.Attribute.Media<'images'>;
     footer: Schema.Attribute.Component<'sections.footer-section', false>;
+    footerLinks: Schema.Attribute.Component<'elements.footer-link', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -831,6 +832,39 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     weight: Schema.Attribute.Integer;
     weightUnit: Schema.Attribute.Enumeration<['g', 'kg']> &
       Schema.Attribute.DefaultTo<'g'>;
+  };
+}
+
+export interface ApiShopCoffeeShopCoffee extends Struct.SingleTypeSchema {
+  collectionName: 'shop_coffee';
+  info: {
+    description: 'Shop Coffee page content and sections';
+    displayName: 'Shop Coffee';
+    pluralName: 'shop-coffees';
+    singularName: 'shop-coffee';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::shop-coffee.shop-coffee'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    visitCafeSection: Schema.Attribute.Component<
+      'sections.visit-cafe-section',
+      false
+    >;
   };
 }
 
@@ -1407,6 +1441,7 @@ declare module '@strapi/strapi' {
       'api::page.page': ApiPagePage;
       'api::product-category.product-category': ApiProductCategoryProductCategory;
       'api::product.product': ApiProductProduct;
+      'api::shop-coffee.shop-coffee': ApiShopCoffeeShopCoffee;
       'api::subscription.subscription': ApiSubscriptionSubscription;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

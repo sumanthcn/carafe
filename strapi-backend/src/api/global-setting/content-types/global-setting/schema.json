@@ -50,6 +50,11 @@
       "repeatable": true,
       "component": "elements.social-link"
     },
+    "footerLinks": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.footer-link"
+    },
     "contactEmail": {
       "type": "email"
     },

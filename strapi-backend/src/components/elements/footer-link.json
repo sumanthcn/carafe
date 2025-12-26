@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_elements_footer_links",
+  "info": {
+    "displayName": "Footer Link",
+    "description": "Footer navigation link"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

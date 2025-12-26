@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_sections_visit_cafe_sections",
+  "info": {
+    "displayName": "Visit Cafe Section",
+    "description": "Section promoting cafe visits with image strip and cards"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "default": "Visit Our Lewes Café"
+    },
+    "subtitle": {
+      "type": "string",
+      "required": false
+    },
+    "cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.visit-cafe-card"
+    }
+  }
+}

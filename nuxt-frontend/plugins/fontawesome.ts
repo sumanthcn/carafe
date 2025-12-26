@@ -1,6 +1,12 @@
 import { library, config } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faMapMarkerAlt,
+  faUtensils,
+  faCamera,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   faFacebook,
   faFacebookF,
@@ -18,6 +24,9 @@ config.autoAddCss = false;
 library.add(
   faArrowLeft,
   faArrowRight,
+  faMapMarkerAlt,
+  faUtensils,
+  faCamera,
   faFacebook,
   faFacebookF,
   faPinterest,
