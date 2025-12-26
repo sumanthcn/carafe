@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "customer_testimonials",
+  "info": {
+    "singularName": "customer-testimonial",
+    "pluralName": "customer-testimonials",
+    "displayName": "Customer Testimonial",
+    "description": "Customer reviews and testimonials for the website"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "reviewerName": {
+      "type": "string"
+    },
+    "reviewText": {
+      "type": "text",
+      "required": true
+    },
+    "rating": {
+      "type": "decimal",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "default": 5
+    },
+    "reviewerImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "source": {
+      "type": "enumeration",
+      "enum": ["TripAdvisor", "Google", "Manual"],
+      "default": "Manual"
+    },
+    "sourceUrl": {
+      "type": "string"
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "default": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

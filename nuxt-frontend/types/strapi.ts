@@ -195,31 +195,21 @@ export interface Product {
   weightUnit?: "g" | "kg";
   stockQuantity?: number;
   inStock?: boolean;
-  isFeatured?: boolean;
   isTopSeller?: boolean;
-  isNewArrival?: boolean;
   isLimitedEdition?: boolean;
+  isWhatsNew?: boolean;
+  displayOrder?: number;
   roastDate?: string;
   origin?: string;
-  roastLevel?: "light" | "medium-light" | "medium" | "medium-dark" | "dark";
   tastingNotes?: string;
-  processingMethod?: string;
-  altitude?: string;
   variety?: string;
   images: StrapiMedia[];
-  category?: ProductCategory;
+  category?: ProductCategory | null;
   relatedProducts?: Product[];
   seo?: StrapiSeo;
-  productSchema?: ProductSchema;
-}
-
-export interface ProductSchema {
-  brand?: string;
-  gtin?: string;
-  mpn?: string;
-  aggregateRating?: number;
-  reviewCount?: number;
-  availability?: "InStock" | "OutOfStock" | "PreOrder" | "Discontinued";
+  createdAt?: string;
+  updatedAt?: string;
+  publishedAt?: string;
 }
 
 // Subscription
@@ -242,51 +232,17 @@ export interface Subscription {
   seo?: StrapiSeo;
 }
 
-// Hero Carousel Slide
-export interface HeroCarouselSlide {
-  headline: string;
-  subheadline?: string;
-  description?: string;
-  backgroundImage?: StrapiMedia;
-  buttons?: HeroButton[];
-  textPosition?: "left" | "center" | "right";
-  overlayOpacity?: number;
-}
-
-// Hero Button
-export interface HeroButton {
-  text: string;
-  url?: string;
-  variant?: "primary" | "secondary" | "outline";
-  icon?: StrapiMedia;
-  iconPosition?: "left" | "right";
-  openInNewTab?: boolean;
-}
-
-// Carousel Settings
-export interface CarouselSettings {
-  autoplay?: boolean;
-  autoplayDelay?: number;
-  showNavigation?: boolean;
-  showPagination?: boolean;
-  loop?: boolean;
-  effect?: "slide" | "fade";
-  speed?: number;
-  pauseOnHover?: boolean;
-}
-
 // Homepage
 export interface Homepage {
-  heroCarousel?: HeroCarouselSlide[];
-  carouselSettings?: CarouselSettings;
-  tasteTheCraft?: {
+  hero?: HeroSection;
+  productCategories?: {
     headline?: string;
     description?: string;
     categories?: ProductCategory[];
   };
   brandStory?: BrandStorySection;
   cafeLocation?: CafeLocationSection;
-  cultureSection?: BrandStorySection;
+  cultureSection?: CultureSection;
   wholesaleSection?: WholesaleSection;
   newsletter?: NewsletterSection;
   seo?: StrapiSeo;
@@ -394,6 +350,24 @@ export interface Cart {
   tax: number;
   total: number;
   currency: "EUR" | "GBP" | "USD";
+}
+
+// Customer Testimonial
+export interface CustomerTestimonial {
+  id: number;
+  documentId: string;
+  reviewerName?: string;
+  reviewText: string;
+  rating: number;
+  reviewerImage?: StrapiMedia | null;
+  source: "TripAdvisor" | "Google" | "Manual";
+  sourceUrl?: string;
+  isFeatured: boolean;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  publishedAt?: string;
 }
 
 // API Response wrapper

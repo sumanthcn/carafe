@@ -130,6 +130,19 @@ export default defineNuxtConfig({
     },
   },
 
+  // Add Font Awesome CSS
+  css: ['@fortawesome/fontawesome-svg-core/styles.css', '~/assets/scss/main.scss'],
+
+  // Build configuration
+  build: {
+    transpile: [
+      '@fortawesome/vue-fontawesome',
+      '@fortawesome/fontawesome-svg-core',
+      '@fortawesome/free-solid-svg-icons',
+      '@fortawesome/free-brands-svg-icons',
+    ],
+  },
+
   // SSR configuration
   ssr: true,
 

@@ -42,8 +42,8 @@
     },
     "currency": {
       "type": "enumeration",
-      "enum": ["EUR", "GBP", "USD"],
-      "default": "EUR"
+      "default": "EUR",
+      "enum": ["EUR", "GBP", "USD"]
     },
     "sku": {
       "type": "string",
@@ -54,8 +54,8 @@
     },
     "weightUnit": {
       "type": "enumeration",
-      "enum": ["g", "kg"],
-      "default": "g"
+      "default": "g",
+      "enum": ["g", "kg"]
     },
     "stockQuantity": {
       "type": "integer",
@@ -66,15 +66,7 @@
       "type": "boolean",
       "default": true
     },
-    "isFeatured": {
-      "type": "boolean",
-      "default": false
-    },
     "isTopSeller": {
-      "type": "boolean",
-      "default": false
-    },
-    "isNewArrival": {
       "type": "boolean",
       "default": false
     },
@@ -82,24 +74,22 @@
       "type": "boolean",
       "default": false
     },
+    "isWhatsNew": {
+      "type": "boolean",
+      "default": false
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    },
     "roastDate": {
       "type": "date"
     },
     "origin": {
       "type": "string"
     },
-    "roastLevel": {
-      "type": "enumeration",
-      "enum": ["light", "medium-light", "medium", "medium-dark", "dark"]
-    },
     "tastingNotes": {
       "type": "text"
-    },
-    "processingMethod": {
-      "type": "string"
-    },
-    "altitude": {
-      "type": "string"
     },
     "variety": {
       "type": "string"
@@ -123,13 +113,8 @@
     },
     "seo": {
       "type": "component",
-      "repeatable": false,
-      "component": "shared.seo"
-    },
-    "productSchema": {
-      "type": "component",
-      "repeatable": false,
-      "component": "shared.product-schema"
+      "component": "shared.seo",
+      "repeatable": false
     }
   }
 }

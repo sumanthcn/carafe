@@ -197,9 +197,6 @@ export function useStrapi() {
     if (options?.category) {
       filters["[category][slug][$eq]"] = options.category;
     }
-    if (options?.featured) {
-      filters["[isFeatured][$eq]"] = true;
-    }
     if (options?.topSeller) {
       filters["[isTopSeller][$eq]"] = true;
     }

@@ -430,6 +430,54 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCustomerTestimonialCustomerTestimonial
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'customer_testimonials';
+  info: {
+    description: 'Customer reviews and testimonials for the website';
+    displayName: 'Customer Testimonial';
+    pluralName: 'customer-testimonials';
+    singularName: 'customer-testimonial';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::customer-testimonial.customer-testimonial'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    rating: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<5>;
+    reviewerImage: Schema.Attribute.Media<'images'>;
+    reviewerName: Schema.Attribute.String;
+    reviewText: Schema.Attribute.Text & Schema.Attribute.Required;
+    source: Schema.Attribute.Enumeration<['TripAdvisor', 'Google', 'Manual']> &
+      Schema.Attribute.DefaultTo<'Manual'>;
+    sourceUrl: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiEmailSubscriberEmailSubscriber
   extends Struct.CollectionTypeSchema {
   collectionName: 'email_subscribers';
@@ -713,7 +761,6 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    altitude: Schema.Attribute.String;
     category: Schema.Attribute.Relation<
       'manyToOne',
       'api::product-category.product-category'
@@ -724,13 +771,13 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     currency: Schema.Attribute.Enumeration<['EUR', 'GBP', 'USD']> &
       Schema.Attribute.DefaultTo<'EUR'>;
     description: Schema.Attribute.RichText;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     images: Schema.Attribute.Media<'images', true> & Schema.Attribute.Required;
     inStock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    isFeatured: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     isLimitedEdition: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
-    isNewArrival: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     isTopSeller: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isWhatsNew: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -747,17 +794,12 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         },
         number
       >;
-    processingMethod: Schema.Attribute.String;
-    productSchema: Schema.Attribute.Component<'shared.product-schema', false>;
     publishedAt: Schema.Attribute.DateTime;
     relatedProducts: Schema.Attribute.Relation<
       'manyToMany',
       'api::product.product'
     >;
     roastDate: Schema.Attribute.Date;
-    roastLevel: Schema.Attribute.Enumeration<
-      ['light', 'medium-light', 'medium', 'medium-dark', 'dark']
-    >;
     salePrice: Schema.Attribute.Decimal &
       Schema.Attribute.SetMinMax<
         {
@@ -1357,6 +1399,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::customer-testimonial.customer-testimonial': ApiCustomerTestimonialCustomerTestimonial;
       'api::email-subscriber.email-subscriber': ApiEmailSubscriberEmailSubscriber;
       'api::global-setting.global-setting': ApiGlobalSettingGlobalSetting;
       'api::homepage.homepage': ApiHomepageHomepage;
