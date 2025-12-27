@@ -12,90 +12,170 @@
     </div>
 
     <div v-else-if="product" class="product-content">
-        <div class="container">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <ol class="breadcrumb__list">
-          <li class="breadcrumb__item">
-            <NuxtLink to="/">HOME</NuxtLink>
-          </li>
-          <li class="breadcrumb__separator">/</li>
-          <li><NuxtLink to="/shop-coffee">Shop Coffee</NuxtLink></li>
-          <li
-            class="breadcrumb__item breadcrumb__item--active"
-            aria-current="page"
-          >
-            {{ product.name }}
-          </li>
-        </ol>
-      </nav>
-    </div>
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <ol class="breadcrumb__list">
+            <li class="breadcrumb__item">
+              <NuxtLink to="/">HOME</NuxtLink>
+            </li>
+            <li class="breadcrumb__separator">/</li>
+            <li>
+              <NuxtLink to="/shop-coffee">Shop Coffee</NuxtLink>
+            </li>
+            <li class="breadcrumb__item breadcrumb__item--active" aria-current="page">
+              {{ product.name }}
+            </li>
+          </ol>
+        </nav>
+      </div>
       <section class="product-hero">
         <div class="container">
-          <!-- <nav class="breadcrumb" aria-label="Breadcrumb">
-            <ol>
-              <li><NuxtLink to="/">Home</NuxtLink></li>
-              <li><NuxtLink to="/shop-coffee">Shop Coffee</NuxtLink></li>
-              <li aria-current="page">{{ product.name }}</li>
-            </ol>
-          </nav> -->
-
           <div class="product-hero-grid">
             <div class="product-images">
               <div class="main-image">
                 <img :src="selectedImage.url" :alt="selectedImage.alternativeText || product.name" />
               </div>
               <div v-if="product.images.length > 1" class="thumbnail-gallery">
-                <button
-                  v-for="(image, index) in product.images"
-                  :key="index"
-                  class="thumbnail"
-                  :class="{ active: selectedImageIndex === index }"
-                  @click="selectedImageIndex = index"
-                >
-                  <img :src="`${strapiUrl}${image.formats?.thumbnail?.url || image.url}`" :alt="image.alternativeText" />
+                <button v-for="(image, index) in product.images" :key="index" class="thumbnail"
+                  :class="{ active: selectedImageIndex === index }" @click="selectedImageIndex = index">
+                  <img :src="`${strapiUrl}${image.formats?.thumbnail?.url || image.url}`"
+                    :alt="image.alternativeText" />
                 </button>
               </div>
             </div>
 
             <div class="product-info">
+              <!-- SECTION 1: REVIEW SUMMARY -->
+              <div class="review-summary">
+                <NuxtRating :rating-value="reviewStats.averageRating" :read-only="true" :rating-size="24"
+                  :rating-count="5" active-color="#007ba7" inactive-color="#fff" border-color="#007ba7"
+                  :border-width="2" :rating-spacing="5" />
+                <button class="review-link" @click="scrollToReviews">
+                  {{ reviewStats.totalReviews }} {{ reviewStats.totalReviews === 1 ? 'REVIEW' :
+                    'REVIEWS' }}
+                </button>
+              </div>
+
+              <!-- SECTION 2: PRODUCT CORE INFO -->
               <h1 class="product-title">{{ product.name }}</h1>
               <p v-if="product.subtitle" class="product-subtitle">{{ product.subtitle }}</p>
-              <p v-if="product.shortDescription" class="product-short-description">{{ product.shortDescription }}</p>
+              <p v-if="product.tastingNotes" class="product-tasting-notes">
+                <strong>Tasting Notes:</strong> {{ product.tastingNotes }}
+              </p>
 
+              <!-- Price Block -->
               <div class="product-pricing">
-                <span v-if="isOnSale(product)" class="original-price">{{ formatCurrency(product.price, product.currency) }}</span>
-                <span class="current-price">{{ formatCurrency(getDisplayPrice(product), product.currency) }}</span>
-                <span v-if="isOnSale(product)" class="discount-badge">-{{ calculateDiscount(product.price, product.salePrice) }}% OFF</span>
+                <div class="price-group">
+                  <span v-if="isOnSale(product)" class="original-price">{{
+                    formatCurrency(product.price, product.currency) }}</span>
+                  <span class="current-price">{{ formatCurrency(getDisplayPrice(product),
+                    product.currency) }}</span>
+                </div>
+                <span v-if="isOnSale(product)" class="discount-badge">-{{
+                  calculateDiscount(product.price, product.salePrice) }}% OFF</span>
               </div>
 
+              <!-- CTA Buttons -->
               <div class="product-actions">
-                <button class="btn btn-outline" @click="handleAddToCart" :disabled="!product.inStock">
-                  {{ product.inStock ? 'ADD TO CART' : 'OUT OF STOCK' }}
+                <button class="btn btn-outline" @click="handleAddToCart" :disabled="!product.inStock || isAddingToCart">
+                  {{ isAddingToCart ? 'ADDING...' : (product.inStock ? 'ADD TO CART' : 'OUT OF STOCK')
+                  }}
                 </button>
-                <button class="btn btn-primary" @click="handleBuyNow" :disabled="!product.inStock">BUY NOW</button>
+                <button class="btn btn-primary" @click="handleBuyNow" :disabled="!product.inStock || isBuyingNow">
+                  {{ isBuyingNow ? 'PROCESSING...' : 'BUY NOW' }}
+                </button>
+              </div>
+
+              <!-- SECTION 3: SOCIAL SHARE ICONS -->
+              <div class="social-share">
+                <a :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`"
+                  target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" class="social-icon">
+                  <FontAwesomeIcon :icon="['fab', 'facebook']" />
+                </a>
+                <a :href="`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(productUrl)}&description=${encodeURIComponent(product.name)}`"
+                  target="_blank" rel="noopener noreferrer" aria-label="Share on Pinterest" class="social-icon">
+                  <FontAwesomeIcon :icon="['fab', 'pinterest']" />
+                </a>
+                <a :href="`https://wa.me/?text=${encodeURIComponent(productUrl)}`" target="_blank"
+                  rel="noopener noreferrer" aria-label="Share on WhatsApp" class="social-icon">
+                  <FontAwesomeIcon :icon="['fab', 'whatsapp']" />
+                </a>
+                <a :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(productUrl)}&text=${encodeURIComponent(product.name)}`"
+                  target="_blank" rel="noopener noreferrer" aria-label="Share on X (Twitter)" class="social-icon">
+                  <FontAwesomeIcon :icon="['fab', 'x-twitter']" />
+                </a>
+              </div>
+
+              <!-- SECTION 4: PRODUCT INFO ACCORDION -->
+              <div class="product-accordion">
+                <!-- Product Info -->
+                <div class="accordion-item" :class="{ active: activeAccordion === 'info' }">
+                  <button class="accordion-header" @click="toggleAccordion('info')"
+                    :aria-expanded="activeAccordion === 'info'">
+                    <span>PRODUCT INFO</span>
+                    <span class="icon">{{ activeAccordion === 'info' ? '−' : '+' }}</span>
+                  </button>
+                  <transition name="accordion">
+                    <div v-show="activeAccordion === 'info'" class="accordion-content">
+                      <div v-if="product.description" v-html="product.description"></div>
+                      <div v-else-if="product.shortDescription">
+                        <p>{{ product.shortDescription }}</p>
+                      </div>
+                      <div class="product-attributes" v-if="product.origin || product.variety">
+                        <div v-if="product.origin" class="attribute">
+                          <strong>Origin:</strong> {{ product.origin }}
+                        </div>
+                        <div v-if="product.variety" class="attribute">
+                          <strong>Variety:</strong> {{ product.variety }}
+                        </div>
+                      </div>
+                    </div>
+                  </transition>
+                </div>
+
+                <!-- Return & Refund Policy -->
+                <div class="accordion-item" :class="{ active: activeAccordion === 'return' }">
+                  <button class="accordion-header" @click="toggleAccordion('return')"
+                    :aria-expanded="activeAccordion === 'return'">
+                    <span>RETURN & REFUND POLICY</span>
+                    <span class="icon">{{ activeAccordion === 'return' ? '−' : '+' }}</span>
+                  </button>
+                  <transition name="accordion">
+                    <div v-show="activeAccordion === 'return'" class="accordion-content">
+                      <div v-if="product.returnPolicy" v-html="product.returnPolicy"></div>
+                      <div v-else>
+                        <p>We offer a 30-day return policy for unopened products. Please
+                          contact our customer service team for return authorization.</p>
+                      </div>
+                    </div>
+                  </transition>
+                </div>
+
+                <!-- Shipping Info -->
+                <div class="accordion-item" :class="{ active: activeAccordion === 'shipping' }">
+                  <button class="accordion-header" @click="toggleAccordion('shipping')"
+                    :aria-expanded="activeAccordion === 'shipping'">
+                    <span>SHIPPING INFO</span>
+                    <span class="icon">{{ activeAccordion === 'shipping' ? '−' : '+' }}</span>
+                  </button>
+                  <transition name="accordion">
+                    <div v-show="activeAccordion === 'shipping'" class="accordion-content">
+                      <div v-if="product.shippingInfo" v-html="product.shippingInfo"></div>
+                      <div v-else>
+                        <p>Free shipping on orders over €50. Standard delivery takes 3-5
+                          business days. Express shipping available at checkout.</p>
+                      </div>
+                    </div>
+                  </transition>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="product-accordion">
-        <div class="container">
-          <div class="accordion-item">
-            <button class="accordion-header" @click="toggleAccordion('info')">
-              <span>PRODUCT INFO</span>
-              <span class="icon">{{ activeAccordion === 'info' ? '−' : '+' }}</span>
-            </button>
-            <div v-show="activeAccordion === 'info'" class="accordion-content">
-              <div v-if="product.description" v-html="product.description"></div>
-              <div class="product-attributes">
-                <div v-if="product.origin" class="attribute"><strong>Origin:</strong> {{ product.origin }}</div>
-                <div v-if="product.tastingNotes" class="attribute"><strong>Tasting Notes:</strong> {{ product.tastingNotes }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <!-- Related Products Section -->
+      <RelatedProducts v-if="product.relatedProducts && product.relatedProducts.length > 0" :products="product.relatedProducts" />
 
       <VisitCafeSection v-if="shopCoffeeData?.visitCafeSection" :section="shopCoffeeData.visitCafeSection" />
       <EmailSubscribe />
@@ -105,6 +185,8 @@
 
 <script setup lang="ts">
 import type { Product } from "~/types/strapi";
+import type { ReviewStats } from "~/composables/useProductReviews";
+import RelatedProducts from "~/components/shop/RelatedProducts.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -113,7 +195,42 @@ const config = useRuntimeConfig();
 
 const { fetchProductBySlug } = useProducts();
 const { fetchShopCoffeeData } = useShopCoffee();
+const { fetchReviewsByProduct } = useProductReviews();
 const strapiUrl = config.public.strapiUrl;
+
+// State
+const product = ref<Product | null>(null);
+const shopCoffeeData = ref<any>(null);
+const loading = ref(true);
+const error = ref<string | null>(null);
+const selectedImageIndex = ref(0);
+const activeAccordion = ref<string | null>('info');
+const isAddingToCart = ref(false);
+const isBuyingNow = ref(false);
+
+// Reviews
+const reviewStats = ref<ReviewStats>({
+  averageRating: 0,
+  totalReviews: 0,
+  ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+});
+
+// Computed
+const productUrl = computed(() => {
+  if (!product.value) return '';
+  return `${config.public.siteUrl || 'https://carafe.coffee'}/shop-coffee/${product.value.slug}`;
+});
+
+const selectedImage = computed(() => {
+  if (product.value && product.value.images[selectedImageIndex.value]) {
+    const img = product.value.images[selectedImageIndex.value];
+    return {
+      url: `${strapiUrl}${img.url}`,
+      alternativeText: img.alternativeText || product.value.name
+    };
+  }
+  return { url: '', alternativeText: '' };
+});
 
 // Utility functions
 function calculateDiscount(originalPrice: number, salePrice?: number): number {
@@ -129,38 +246,44 @@ function isOnSale(product: Product): boolean {
   return !!product.salePrice && product.salePrice < product.price;
 }
 
-function formatCurrency(amount: number, currency: string = 'AUD'): string {
-  return new Intl.NumberFormat('en-AU', {
+function formatCurrency(amount: number, currency: string = 'EUR'): string {
+  return new Intl.NumberFormat('en-EU', {
     style: 'currency',
     currency: currency,
   }).format(amount);
 }
 
-const product = ref<Product | null>(null);
-const shopCoffeeData = ref<any>(null);
-const loading = ref(true);
-const error = ref<string | null>(null);
-const selectedImageIndex = ref(0);
-const activeAccordion = ref<string | null>('info');
-
-const selectedImage = computed(() => {
-  if (product.value && product.value.images[selectedImageIndex.value]) {
-    const img = product.value.images[selectedImageIndex.value];
-    return {
-      url: `${strapiUrl}${img.url}`,
-      alternativeText: img.alternativeText || product.value.name
-    };
+function scrollToReviews() {
+  const reviewsSection = document.getElementById('reviews');
+  if (reviewsSection) {
+    reviewsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  return { url: '', alternativeText: '' };
-});
+}
 
+// Data loading
 async function loadProduct() {
   try {
     loading.value = true;
     error.value = null;
     const slug = route.params.slug as string;
     product.value = await fetchProductBySlug(slug);
-    
+
+    // Fetch reviews
+    if (product.value?.id) {
+      const reviewData = await fetchReviewsByProduct(product.value.id);
+      reviewStats.value = {
+        averageRating: reviewData.stats.averageRating,
+        totalReviews: reviewData.stats.totalReviews,
+        ratingDistribution: {
+          5: reviewData.stats.ratingDistribution['5'] || 0,
+          4: reviewData.stats.ratingDistribution['4'] || 0,
+          3: reviewData.stats.ratingDistribution['3'] || 0,
+          2: reviewData.stats.ratingDistribution['2'] || 0,
+          1: reviewData.stats.ratingDistribution['1'] || 0,
+        }
+      };
+    }
+
     // Try to fetch shop coffee data, but don't fail if it's not available
     try {
       shopCoffeeData.value = await fetchShopCoffeeData();
@@ -179,16 +302,29 @@ function toggleAccordion(section: string) {
   activeAccordion.value = activeAccordion.value === section ? null : section;
 }
 
-function handleAddToCart() {
-  if (product.value) {
-    cartStore.addItem(product.value, 1);
+async function handleAddToCart() {
+  if (product.value && !isAddingToCart.value) {
+    isAddingToCart.value = true;
+    try {
+      cartStore.addItem(product.value, 1);
+      // Optional: Add success toast/notification here
+    } finally {
+      setTimeout(() => {
+        isAddingToCart.value = false;
+      }, 500);
+    }
   }
 }
 
-function handleBuyNow() {
-  if (product.value) {
-    cartStore.addItem(product.value, 1);
-    router.push('/checkout');
+async function handleBuyNow() {
+  if (product.value && !isBuyingNow.value) {
+    isBuyingNow.value = true;
+    try {
+      cartStore.addItem(product.value, 1);
+      await router.push('/checkout');
+    } finally {
+      isBuyingNow.value = false;
+    }
   }
 }
 
@@ -246,12 +382,14 @@ useHead(() => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .container {
-    max-width: 1400px;
-    margin: 0 auto;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 // Breadcrumb
@@ -293,12 +431,12 @@ useHead(() => {
 
 .product-hero {
   padding: 3rem 0;
-  
+
   .product-hero-grid {
     display: grid;
     grid-template-columns: 0.5fr 1fr;
     gap: 2rem;
-    
+
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
@@ -311,18 +449,18 @@ useHead(() => {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 1rem;
-    
+
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
   }
-  
+
   .thumbnail-gallery {
     display: flex;
     gap: 1rem;
-    
+
     .thumbnail {
       width: 80px;
       height: 80px;
@@ -331,11 +469,11 @@ useHead(() => {
       overflow: hidden;
       cursor: pointer;
       background: #f8f8f8;
-      
+
       &.active {
         border-color: $color-primary;
       }
-      
+
       img {
         width: 100%;
         height: 100%;
@@ -346,122 +484,255 @@ useHead(() => {
 }
 
 .product-info {
-  .product-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-  
-  .product-subtitle {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #666;
-    margin-bottom: 1rem;
-  }
-  
-  .product-short-description {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #666;
-    margin-bottom: 2rem;
-  }
-  
-  .product-pricing {
+
+  // SECTION 1: REVIEW SUMMARY
+  .review-summary {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
-    
-    .original-price {
-      font-size: 1.25rem;
-      color: #999;
-      text-decoration: line-through;
-    }
-    
-    .current-price {
-      font-size: 2rem;
-      font-weight: 700;
-      color: $color-primary;
-    }
-    
-    .discount-badge {
-      padding: 0.25rem 0.75rem;
-      background: $color-primary;
-      color: white;
-      border-radius: 20px;
-      font-size: 0.875rem;
-      font-weight: 600;
+    margin-bottom: 1.5rem;
+
+    .review-link {
+      font-family: $font-heading;
+      font-size: $font-size-lg;
+      background: none;
+      border: none;
+      color: $color-text;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: color 0.2s;
+
+      &:hover {
+        color: darken($color-primary, 10%);
+      }
     }
   }
-  
+
+  // SECTION 2: PRODUCT CORE INFO
+  .product-title {
+    font-size: $font-size-4xl;
+    font-weight: bold;
+    color: $color-text;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .product-subtitle {
+    font-size: $font-size-lg;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: $color-text;
+    margin-bottom: 1rem;
+  }
+
+  .product-tasting-notes {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: $color-text;
+    margin-bottom: 2rem;
+
+    strong {
+      color: $color-text;
+    }
+  }
+
+  // Price Block
+  .product-pricing {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    .price-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .original-price {
+      font-size: $font-size-2xl;
+      color: $color-text;
+      font-weight: 100;
+      text-decoration: line-through;
+    }
+
+    .current-price {
+      font-size: $font-size-2xl;
+      font-weight: bold;
+      color: $color-text;
+    }
+
+    .discount-badge {
+      padding: 0.5rem 1rem;
+      background: $color-gray-300;
+      color: $color-text;
+      border-radius: 50px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+  }
+
+  // CTA Buttons
   .product-actions {
     display: flex;
     gap: 1rem;
-    
+    margin-bottom: 2rem;
+
     .btn {
       flex: 1;
-      padding: 1rem 2rem;
+      padding: 0.5rem 1rem;
       font-size: 1rem;
       font-weight: 600;
       text-transform: uppercase;
       border-radius: 50px;
+      max-width: 250px;
       cursor: pointer;
-      
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
     }
-    
+
     .btn-outline {
       background: white;
-      color: $color-primary;
-      border: 2px solid $color-primary;
-      
+      color: $color-text;
+      border: 1px solid $color-text;
+
       &:hover:not(:disabled) {
-        background: $color-primary;
+        background: #333;
         color: white;
       }
     }
-    
+
     .btn-primary {
       background: $color-primary;
       color: white;
       border: 2px solid $color-primary;
+
+      &:hover:not(:disabled) {
+        background: darken($color-primary, 10%);
+        border-color: darken($color-primary, 10%);
+      }
+    }
+  }
+
+  // SECTION 3: SOCIAL SHARE
+  .social-share {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+
+    .social-icon {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #f5f5f5;
+      color: #333;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1.25rem;
+
+      &:hover {
+        background: #333;
+        color: white;
+        transform: translateY(-2px);
+      }
     }
   }
 }
 
+// SECTION 4: PRODUCT INFO ACCORDION
 .product-accordion {
   padding: 3rem 0;
-  background: #f8f8f8;
-  
+  background: #fff;
+
+  .container {
+    max-width: 1200px;
+  }
+
   .accordion-item {
     background: white;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    
+    border-bottom: 1px solid $color-text;
+    margin-bottom: 0;
+    transition: all 0.3s ease;
+    color: $color-text;
+
     .accordion-header {
       width: 100%;
       display: flex;
       justify-content: space-between;
-      padding: 1.5rem 2rem;
-      background: white;
+      align-items: center;
+      padding: 1.5rem 2rem 1.5rem 0;
       border: none;
       cursor: pointer;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: background 0.3s ease;
+
+      .icon {
+        font-size: 1.5rem;
+        font-weight: 300;
+        transition: transform 0.3s ease;
+      }
     }
-    
+
     .accordion-content {
-      padding: 0 2rem 2rem;
-      
+      padding: 0 2rem 2rem 0;
+      line-height: 1.4;
+      font-family: $font-body;
+      font-weight: 500;
+      color: $color-text;
+      font-size: $font-size-base;
+
+      p {
+        margin-bottom: 1rem;
+      }
+
       .product-attributes {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+
+        .attribute {
+          padding: 1rem;
+          background: $color-gray-100;
+          border-radius: 8px;
+
+          strong {
+            color: $color-text;
+            display: block;
+            margin-bottom: 0.5rem;
+          }
+        }
       }
     }
   }
+}
+
+// Accordion animation
+.accordion-enter-active,
+.accordion-leave-active {
+  transition: all 0.3s ease;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.accordion-enter-from,
+.accordion-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 </style>

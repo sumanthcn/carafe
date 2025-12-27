@@ -6,7 +6,14 @@ import {
   faMapMarkerAlt,
   faUtensils,
   faCamera,
+  faStar,
+  faStarHalfAlt,
+  faChevronLeft,
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  faStar as farStar,
+} from "@fortawesome/free-regular-svg-icons";
 import {
   faFacebook,
   faFacebookF,
@@ -27,6 +34,11 @@ library.add(
   faMapMarkerAlt,
   faUtensils,
   faCamera,
+  faStar,
+  faStarHalfAlt,
+  faChevronLeft,
+  faChevronRight,
+  farStar,
   faFacebook,
   faFacebookF,
   faPinterest,

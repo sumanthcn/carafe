@@ -28,6 +28,7 @@ export default defineNuxtConfig({
     "@nuxtjs/sitemap",
     "@nuxtjs/robots",
     "@nuxt/ui",
+    "nuxt-rating",
   ],
 
   // Sitemap configuration
