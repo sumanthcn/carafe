@@ -16,7 +16,7 @@
       </div>
 
       <div v-if="showViewAll" class="featured-products__cta">
-        <NuxtLink to="/shop" class="btn btn--outline">
+        <NuxtLink to="/shop-coffee" class="btn btn--outline">
           View All Products
         </NuxtLink>
       </div>

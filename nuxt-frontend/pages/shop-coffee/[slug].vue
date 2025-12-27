@@ -22,6 +22,7 @@
             <li>
               <NuxtLink to="/shop-coffee">Shop Coffee</NuxtLink>
             </li>
+            <li class="breadcrumb__separator">/</li>
             <li class="breadcrumb__item breadcrumb__item--active" aria-current="page">
               {{ product.name }}
             </li>
@@ -177,6 +178,15 @@
       <!-- Related Products Section -->
       <RelatedProducts v-if="product.relatedProducts && product.relatedProducts.length > 0" :products="product.relatedProducts" />
 
+      <!-- Customer Reviews Section -->
+      <CustomerReviews 
+        v-if="product.id"
+        :product-id="product.id"
+        :initial-count="2"
+        :load-more-count="3"
+        :show-view-all="false"
+      />
+
       <VisitCafeSection v-if="shopCoffeeData?.visitCafeSection" :section="shopCoffeeData.visitCafeSection" />
       <EmailSubscribe />
     </div>
@@ -187,6 +197,7 @@
 import type { Product } from "~/types/strapi";
 import type { ReviewStats } from "~/composables/useProductReviews";
 import RelatedProducts from "~/components/shop/RelatedProducts.vue";
+import CustomerReviews from "~/components/reviews/CustomerReviews.vue";
 
 const route = useRoute();
 const router = useRouter();

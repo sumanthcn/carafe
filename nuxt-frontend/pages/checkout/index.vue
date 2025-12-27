@@ -2,7 +2,7 @@
   <div class="checkout-page">
     <div class="container">
       <div class="checkout-page__header">
-        <NuxtLink to="/shop" class="checkout-page__back">
+        <NuxtLink to="/shop-coffee" class="checkout-page__back">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
               d="M19 12H5M5 12L12 19M5 12L12 5"
@@ -19,7 +19,7 @@
 
       <div v-if="cartStore.isEmpty" class="checkout-page__empty">
         <p>Your cart is empty</p>
-        <NuxtLink to="/shop" class="btn btn--primary">
+        <NuxtLink to="/shop-coffee" class="btn btn--primary">
           Start Shopping
         </NuxtLink>
       </div>

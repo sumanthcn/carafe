@@ -107,7 +107,7 @@ onMounted(() => {
           </svg>
           <p>Your cart is empty</p>
           <NuxtLink
-            to="/shop"
+            to="/shop-coffee"
             class="btn btn--primary"
             @click="isOpenState = false"
           >

@@ -472,6 +472,10 @@ function isNavActive(item: NavItem): boolean {
     display: flex;
     align-items: center;
     gap: 1rem;
+
+    @include desktop {
+      display: none;
+    }
   }
 
   &__cart-btn {

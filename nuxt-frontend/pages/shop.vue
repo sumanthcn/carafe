@@ -33,7 +33,7 @@ useSeo({
 // Breadcrumb schema
 useBreadcrumbSchema([
   { name: "Home", url: "/" },
-  { name: "Shop Coffee", url: "/shop" },
+  { name: "Shop Coffee", url: "/shop-coffee" },
 ]);
 
 // WebPage schema
@@ -63,7 +63,7 @@ useWebPageSchema({
     <div class="shop-filters">
       <div class="shop-filters__categories">
         <NuxtLink
-          to="/shop"
+          to="/shop-coffee"
           class="shop-filters__btn"
           :class="{ 'shop-filters__btn--active': !category }"
         >
@@ -72,7 +72,7 @@ useWebPageSchema({
         <NuxtLink
           v-for="cat in categoriesData?.data"
           :key="cat.id"
-          :to="`/shop?category=${cat.slug}`"
+          :to="`/shop-coffee?category=${cat.slug}`"
           class="shop-filters__btn"
           :class="{ 'shop-filters__btn--active': category === cat.slug }"
         >
@@ -98,7 +98,7 @@ useWebPageSchema({
 
       <div v-else class="shop-empty">
         <p>No products found</p>
-        <NuxtLink to="/shop" class="btn btn--primary"
+        <NuxtLink to="/shop-coffee" class="btn btn--primary"
           >View All Products</NuxtLink
         >
       </div>

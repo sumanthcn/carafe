@@ -181,7 +181,7 @@ const handleCtaClick = (event: MouseEvent, cta: CtaButton) => {
 
 .visit-cafe-section {
   width: 100%;
-  margin: 2rem 0;
+  padding: 2rem 0;
   background-color: $color-background-alt;
 }
 

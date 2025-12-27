@@ -182,7 +182,7 @@ async function handleAddToCart() {
 }
 
 .product-info {
-  padding: 1.5rem 2.5rem 0.5rem 2.5rem;
+  padding: 1.5rem 2.5rem 2rem 2.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;

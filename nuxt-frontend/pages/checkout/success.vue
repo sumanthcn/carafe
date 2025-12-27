@@ -49,7 +49,7 @@
         </div>
 
         <div class="order-confirmation__actions">
-          <NuxtLink to="/shop" class="btn btn--primary">
+          <NuxtLink to="/shop-coffee" class="btn btn--primary">
             Continue Shopping
           </NuxtLink>
           <NuxtLink to="/account/orders" class="btn btn--outline">

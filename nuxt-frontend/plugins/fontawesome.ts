@@ -10,6 +10,11 @@ import {
   faStarHalfAlt,
   faChevronLeft,
   faChevronRight,
+  faUser,
+  faCheckCircle,
+  faThumbsUp,
+  faFlag,
+  faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faStar as farStar,
@@ -38,6 +43,11 @@ library.add(
   faStarHalfAlt,
   faChevronLeft,
   faChevronRight,
+  faUser,
+  faCheckCircle,
+  faThumbsUp,
+  faFlag,
+  faSearch,
   farStar,
   faFacebook,
   faFacebookF,

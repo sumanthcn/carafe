@@ -6,6 +6,10 @@ export interface ProductReview {
   reviewText?: string;
   isVerifiedPurchase: boolean;
   createdAt: string;
+  customerName?: string;
+  customerEmail?: string;
+  isHelpful?: number;
+  isReported?: boolean;
   user?: {
     id: number;
     username: string;

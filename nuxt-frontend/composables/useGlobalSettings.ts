@@ -4,7 +4,7 @@ import type { GlobalSettings, NavChild, NavItem } from "~/types/strapi";
 const DEFAULT_NAVIGATION: NavItem[] = [
   {
     label: "Shop Coffee",
-    url: "/shop",
+    url: "/shop-coffee",
     linkType: "internal",
     order: 1,
     isVisible: true,
