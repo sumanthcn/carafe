@@ -94,6 +94,12 @@
     "variety": {
       "type": "string"
     },
+    "returnPolicy": {
+      "type": "richtext"
+    },
+    "shippingInfo": {
+      "type": "richtext"
+    },
     "images": {
       "type": "media",
       "multiple": true,
@@ -110,6 +116,11 @@
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::product.product"
+    },
+    "reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product-review.product-review"
     },
     "seo": {
       "type": "component",

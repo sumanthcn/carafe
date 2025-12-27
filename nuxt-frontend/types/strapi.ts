@@ -206,6 +206,8 @@ export interface Product {
   origin?: string;
   tastingNotes?: string;
   variety?: string;
+  returnPolicy?: string;
+  shippingInfo?: string;
   images: StrapiMedia[];
   category?: ProductCategory | null;
   relatedProducts?: Product[];

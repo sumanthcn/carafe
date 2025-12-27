@@ -159,7 +159,7 @@ export default defineNuxtConfig({
 
     // Shop pages - ISR with revalidation
     "/shop/**": { isr: 3600 }, // 1 hour
-    "/products/**": { isr: 3600 },
+    "/shop-coffee/**": { isr: 3600 },
     "/subscriptions/**": { isr: 3600 },
 
     // Checkout - SSR only, no caching

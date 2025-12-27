@@ -6,7 +6,7 @@
     </div>
 
     <!-- Product Image -->
-    <NuxtLink :to="`/products/${product.slug}`" class="product-image-link">
+    <NuxtLink :to="`/shop-coffee/${product.slug}`" class="product-image-link">
       <div class="product-image">
         <img
           v-if="product.images && product.images.length > 0"
@@ -22,7 +22,7 @@
 
     <!-- Product Info -->
     <div class="product-info">
-      <NuxtLink :to="`/products/${product.slug}`" class="product-name">
+      <NuxtLink :to="`/shop-coffee/${product.slug}`" class="product-name">
         {{ product.name }}
       </NuxtLink>
 

@@ -24,7 +24,7 @@ export default defineSitemapEventHandler(async () => {
     if (productsResponse?.data) {
       productsResponse.data.forEach((product) => {
         urls.push({
-          loc: `/products/${product.slug}`,
+          loc: `/shop-coffee/${product.slug}`,
           lastmod: product.updatedAt,
           changefreq: "weekly",
           priority: 0.8,

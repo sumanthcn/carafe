@@ -174,7 +174,7 @@ function slideNext() {
 
 function shareUrl(product: Product) {
   const baseUrl = config.public.siteUrl || "https://carafe.coffee";
-  return encodeURIComponent(`${baseUrl}/products/${product.slug}`);
+  return encodeURIComponent(`${baseUrl}/shop-coffee/${product.slug}`);
 }
 
 async function handleAddToCart(product: Product) {

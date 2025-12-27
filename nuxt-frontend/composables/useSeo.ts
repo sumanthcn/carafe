@@ -231,7 +231,7 @@ export function useProductSchema(product: Product) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "@id": `${config.public.siteUrl}/products/${product.slug}`,
+    "@id": `${config.public.siteUrl}/shop-coffee/${product.slug}`,
     name: product.name,
     description: product.shortDescription || product.description,
     image: product.images?.map((img) => getStrapiMediaUrl(img)) || [],
@@ -244,7 +244,7 @@ export function useProductSchema(product: Product) {
     mpn: product.productSchema?.mpn,
     offers: {
       "@type": "Offer",
-      url: `${config.public.siteUrl}/products/${product.slug}`,
+      url: `${config.public.siteUrl}/shop-coffee/${product.slug}`,
       priceCurrency: product.currency,
       price: product.salePrice || product.price,
       availability: `https://schema.org/${

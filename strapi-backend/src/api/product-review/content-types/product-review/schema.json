@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_reviews",
+  "info": {
+    "singularName": "product-review",
+    "pluralName": "product-reviews",
+    "displayName": "Product Reviews",
+    "description": "Customer reviews for products"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "inversedBy": "reviews"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "customerEmail": {
+      "type": "email",
+      "required": true
+    },
+    "customerName": {
+      "type": "string",
+      "required": true
+    },
+    "rating": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "max": 5
+    },
+    "reviewTitle": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "reviewText": {
+      "type": "text",
+      "required": true,
+      "maxLength": 2000
+    },
+    "isVerifiedPurchase": {
+      "type": "boolean",
+      "default": false
+    },
+    "isHelpful": {
+      "type": "integer",
+      "default": 0
+    },
+    "isReported": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
