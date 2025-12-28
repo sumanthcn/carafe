@@ -7,8 +7,15 @@ export default defineNuxtConfig({
     // Private keys (server-side only)
     strapiApiToken: process.env.STRAPI_API_TOKEN,
     worldpayMerchantCode: process.env.WORLDPAY_MERCHANT_CODE,
+    worldpayInstallationId: process.env.WORLDPAY_INSTALLATION_ID,
+    worldpayXmlUsername: process.env.WORLDPAY_XML_USERNAME,
     worldpayXmlPassword: process.env.WORLDPAY_XML_PASSWORD,
     worldpayMacSecret: process.env.WORLDPAY_MAC_SECRET,
+    worldpayTestMode: process.env.WORLDPAY_TEST_MODE || 'true',
+    worldpaySuccessUrl: process.env.WORLDPAY_SUCCESS_URL,
+    worldpayCancelUrl: process.env.WORLDPAY_CANCEL_URL,
+    worldpayPendingUrl: process.env.WORLDPAY_PENDING_URL,
+    worldpayFailureUrl: process.env.WORLDPAY_FAILURE_URL,
 
     // Public keys (exposed to client)
     public: {
@@ -95,6 +102,7 @@ export default defineNuxtConfig({
 
   // App configuration
   app: {
+    baseURL: '/',
     head: {
       htmlAttrs: {
         lang: "en-GB",

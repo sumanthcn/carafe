@@ -15,6 +15,7 @@ import {
   faThumbsUp,
   faFlag,
   faSearch,
+  faCircleUser,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faStar as farStar,
@@ -27,6 +28,11 @@ import {
   faWhatsapp,
   faXTwitter,
   faTwitter,
+  faCcVisa,
+  faCcMastercard,
+  faCcPaypal,
+  faCcAmex,
+  faApplePay,
 } from "@fortawesome/free-brands-svg-icons";
 
 // This is important, we are going to let Nuxt worry about the CSS
@@ -55,7 +61,13 @@ library.add(
   faPinterestP,
   faWhatsapp,
   faXTwitter,
-  faTwitter
+  faTwitter,
+  faCircleUser,
+  faCcVisa,
+  faCcMastercard,
+  faCcPaypal,
+  faCcAmex,
+  faApplePay,
 );
 
 export default defineNuxtPlugin((nuxtApp) => {

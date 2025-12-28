@@ -1,15 +1,23 @@
 import crypto from "crypto";
 
 interface WorldpayPaymentRequest {
-  orderCode: string;
+  orderId: number;
+  orderNumber: string;
   amount: number;
   currency: string;
-  customerEmail: string;
-  customerName: string;
-  description: string;
-  successUrl: string;
-  failureUrl: string;
-  cancelUrl: string;
+  customer: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    address: {
+      line1: string;
+      line2?: string;
+      city: string;
+      postcode: string;
+      country: string;
+    };
+  };
 }
 
 interface WorldpayResponse {
@@ -22,19 +30,21 @@ interface WorldpayResponse {
  * Worldpay Payment Initiation Server Route
  *
  * Architecture:
- * 1. Frontend submits order to this server route
- * 2. Server creates payment request with Worldpay
- * 3. Server returns redirect URL to hosted payment page
- * 4. Customer completes payment on Worldpay
- * 5. Worldpay redirects to success/failure URL
- * 6. Webhook confirms payment status
+ * 1. Frontend creates order in Strapi first
+ * 2. Frontend submits payment request to this route with orderId
+ * 3. Server creates payment request with Worldpay
+ * 4. Server updates order with Worldpay order code
+ * 5. Server returns redirect URL to hosted payment page
+ * 6. Customer completes payment on Worldpay
+ * 7. Worldpay redirects to success/failure URL
+ * 8. Webhook confirms payment status
  */
 export default defineEventHandler(async (event): Promise<WorldpayResponse> => {
   const config = useRuntimeConfig();
   const body = await readBody<WorldpayPaymentRequest>(event);
 
   // Validate required fields
-  if (!body.orderCode || !body.amount || !body.customerEmail) {
+  if (!body.orderId || !body.orderNumber || !body.amount || !body.customer?.email) {
     throw createError({
       statusCode: 400,
       message: "Missing required payment fields",
@@ -51,26 +61,30 @@ export default defineEventHandler(async (event): Promise<WorldpayResponse> => {
     ? "https://secure.worldpay.com/jsp/merchant/xml/paymentService.jsp"
     : "https://secure-test.worldpay.com/jsp/merchant/xml/paymentService.jsp";
 
-  // Generate unique order code if not provided
-  const orderCode =
-    body.orderCode ||
-    `CARAFE-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  // Generate unique Worldpay order code
+  const worldpayOrderCode = `${body.orderNumber}-${Date.now()}`;
 
   // Convert amount to minor units (cents/pence)
   const amountInMinorUnits = Math.round(body.amount * 100);
 
+  // Build success/failure URLs
+  const siteUrl = config.public.siteUrl || 'http://localhost:3000';
+  const successUrl = `${siteUrl}/checkout/success?orderId=${body.orderId}`;
+  const failureUrl = `${siteUrl}/checkout?error=payment_failed`;
+  const cancelUrl = `${siteUrl}/checkout?error=payment_cancelled`;
+
   // Build Worldpay XML request
   const xmlRequest = buildWorldpayXml({
     merchantCode,
-    orderCode,
+    orderCode: worldpayOrderCode,
     amount: amountInMinorUnits,
     currency: body.currency || "EUR",
-    customerEmail: body.customerEmail,
-    customerName: body.customerName,
-    description: body.description || "Carafe Coffee Order",
-    successUrl: body.successUrl,
-    failureUrl: body.failureUrl,
-    cancelUrl: body.cancelUrl,
+    customerEmail: body.customer.email,
+    customerName: `${body.customer.firstName} ${body.customer.lastName}`,
+    description: `Order ${body.orderNumber}`,
+    successUrl,
+    failureUrl,
+    cancelUrl,
   });
 
   try {
@@ -94,18 +108,15 @@ export default defineEventHandler(async (event): Promise<WorldpayResponse> => {
       throw new Error("Failed to get redirect URL from Worldpay");
     }
 
-    // Store order in Strapi with pending status
-    await createPendingOrder(event, {
-      orderCode,
-      amount: body.amount,
-      currency: body.currency,
-      customerEmail: body.customerEmail,
-      customerName: body.customerName,
+    // Update order in Strapi with Worldpay order code
+    await updateOrderWithWorldpayCode(event, {
+      orderId: body.orderId,
+      worldpayOrderCode,
     });
 
     return {
       redirectUrl,
-      orderCode,
+      orderCode: worldpayOrderCode,
     };
   } catch (error) {
     console.error("Worldpay payment error:", error);
@@ -178,16 +189,13 @@ function escapeXml(str: string): string {
 }
 
 /**
- * Create pending order in Strapi
+ * Update order in Strapi with Worldpay order code
  */
-async function createPendingOrder(
+async function updateOrderWithWorldpayCode(
   event: any,
-  orderData: {
-    orderCode: string;
-    amount: number;
-    currency: string;
-    customerEmail: string;
-    customerName: string;
+  data: {
+    orderId: number;
+    worldpayOrderCode: string;
   }
 ) {
   const config = useRuntimeConfig();
@@ -195,27 +203,21 @@ async function createPendingOrder(
   const strapiToken = config.strapiApiToken;
 
   try {
-    await $fetch(`${strapiUrl}/api/orders`, {
-      method: "POST",
+    await $fetch(`${strapiUrl}/api/orders/${data.orderId}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${strapiToken}`,
       },
       body: {
         data: {
-          orderNumber: orderData.orderCode,
-          status: "pending",
-          customerEmail: orderData.customerEmail,
-          customerName: orderData.customerName,
-          total: orderData.amount,
-          currency: orderData.currency,
+          worldpayOrderCode: data.worldpayOrderCode,
           paymentStatus: "pending",
-          worldpayOrderCode: orderData.orderCode,
         },
       },
     });
   } catch (error) {
-    console.error("Failed to create pending order:", error);
+    console.error("Failed to update order with Worldpay code:", error);
     // Don't throw - payment can still proceed
   }
 }

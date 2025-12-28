@@ -77,13 +77,29 @@ useHead({
 
 const route = useRoute();
 const cartStore = useCartStore();
+const { fetchOrder } = useOrders();
 
-const orderNumber = computed(() => route.query.orderCode as string);
-const orderDate = computed(() => new Date());
+const orderNumber = ref<string>('');
+const orderDate = ref<Date | null>(null);
 
-// Clear cart after successful order
-onMounted(() => {
-  if (route.query.orderCode) {
+// Fetch order details
+onMounted(async () => {
+  const orderId = route.query.orderId as string;
+  
+  if (orderId) {
+    const result = await fetchOrder(orderId);
+    
+    if (result.success && result.order) {
+      orderNumber.value = result.order.orderNumber;
+      orderDate.value = new Date(result.order.createdAt);
+    }
+    
+    // Clear cart after successful order
+    cartStore.clearCart();
+  } else {
+    // Fallback to query params if no orderId
+    orderNumber.value = route.query.orderCode as string || '';
+    orderDate.value = new Date();
     cartStore.clearCart();
   }
 });

@@ -230,13 +230,6 @@ onMounted(() => {
             >
               Checkout
             </NuxtLink>
-            <NuxtLink
-              to="/cart"
-              class="btn btn--outline btn--full"
-              @click="isOpenState = false"
-            >
-              View Cart
-            </NuxtLink>
           </div>
         </div>
       </aside>

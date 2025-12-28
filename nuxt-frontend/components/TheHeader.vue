@@ -10,12 +10,14 @@ const emit = defineEmits<{
 const { getStrapiMediaUrl } = useStrapi();
 const { fetchSettings, headerNavigation, logo, siteName, isLoading } =
   useGlobalSettings();
+const { user, isAuthenticated, logout } = useAuth();
 const route = useRoute();
 const cartStore = useCartStore();
 
 // Mobile menu state
 const isMobileMenuOpen = ref(false);
 const isScrolled = ref(false);
+const isUserMenuOpen = ref(false);
 
 // Fetch global settings on mount (if not already cached)
 await fetchSettings();
@@ -26,9 +28,19 @@ onMounted(() => {
     isScrolled.value = window.scrollY > 50;
   };
 
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.header__user-menu')) {
+      isUserMenuOpen.value = false;
+    }
+  };
+
   window.addEventListener("scroll", handleScroll, { passive: true });
+  document.addEventListener("click", handleClickOutside);
+  
   onUnmounted(() => {
     window.removeEventListener("scroll", handleScroll);
+    document.removeEventListener("click", handleClickOutside);
   });
 });
 
@@ -213,6 +225,56 @@ function isNavActive(item: NavItem): boolean {
                 {{ cartStore.itemCount }}
               </span>
             </button>
+            <div v-if="isAuthenticated" class="header__user-menu">
+              <button
+                class="header__user-btn"
+                aria-label="User menu"
+                @click.stop="isUserMenuOpen = !isUserMenuOpen"
+              >
+                <FontAwesomeIcon icon="user" />
+                <!-- <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                </svg> -->
+              </button>
+
+              <div v-if="isUserMenuOpen" class="header__user-dropdown">
+                <div class="header__user-info">
+                  <p class="header__user-name">{{ user?.username }}</p>
+                  <p class="header__user-email">{{ user?.email }}</p>
+                </div>
+                <ul class="header__user-links">
+                  <li>
+                    <NuxtLink to="/account/profile" @click="isUserMenuOpen = false">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                      </svg>
+                      View Profile
+                    </NuxtLink>
+                  </li>
+                  <li>
+                    <NuxtLink to="/account/orders" @click="isUserMenuOpen = false">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M9 12h6M9 16h6"/>
+                      </svg>
+                      My Orders
+                    </NuxtLink>
+                  </li>
+                  <li>
+                    <button @click="logout(); isUserMenuOpen = false">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                      </svg>
+                      Logout
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </li>
         </ul>
       </nav>
@@ -466,6 +528,9 @@ function isNavActive(item: NavItem): boolean {
 
   &__nav-item--cart {
     margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   &__actions {
@@ -678,6 +743,121 @@ function isNavActive(item: NavItem): boolean {
       transparent
     );
     animation: loading 1.5s infinite;
+  }
+
+  // User menu styles
+  &__user-menu {
+    position: relative;
+  }
+
+  &__user-btn {
+    position: relative;
+    background: #ccd0d1;
+    border: none;
+    cursor: pointer;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: $color-primary;
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &__user-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 220px;
+    z-index: 1000;
+    animation: fadeInDown 0.2s ease;
+  }
+
+  &__user-info {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  &__user-name {
+    font-weight: 600;
+    color: $color-text;
+    margin: 0 0 0.25rem 0;
+    font-size: 0.875rem;
+  }
+
+  &__user-email {
+    font-size: 0.75rem;
+    color: $color-text-light;
+    margin: 0;
+  }
+
+  &__user-links {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+
+    li {
+      margin: 0;
+    }
+
+    a,
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: $color-text;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+
+      svg {
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        background-color: #f5f5f5;
+        color: $color-primary;
+      }
+    }
+
+    button {
+      color: #dc2626;
+
+      &:hover {
+        background-color: #fee2e2;
+      }
+    }
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

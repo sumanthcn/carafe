@@ -61,10 +61,10 @@ export default defineEventHandler(async (event) => {
     await updateOrderStatus(orderCode, {
       status:
         newStatus === "paid"
-          ? "paid"
+          ? "order_received" // Start order fulfillment lifecycle
           : newStatus === "failed"
           ? "cancelled"
-          : "pending",
+          : "order_received",
       paymentStatus: newStatus,
     });
 
@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
       await sendOrderConfirmation(orderCode);
     }
 
-    console.log(`Order ${orderCode} updated to status: ${newStatus}`);
+    console.log(`Order ${orderCode} updated to payment status: ${newStatus}`);
 
     return { success: true, orderCode, status: newStatus };
   } catch (error) {

@@ -164,10 +164,10 @@
             </p>
 
             <div class="payment-icons">
-              <img src="/images/visa.svg" alt="Visa" />
-              <img src="/images/mastercard.svg" alt="Mastercard" />
-              <img src="/images/amex.svg" alt="American Express" />
-              <img src="/images/apple-pay.svg" alt="Apple Pay" />
+              <FontAwesomeIcon :icon="['fab', 'cc-visa']" />
+              <FontAwesomeIcon :icon="['fab', 'cc-mastercard']" />
+              <FontAwesomeIcon :icon="['fab', 'cc-paypal']" />
+              <FontAwesomeIcon :icon="['fab', 'apple-pay']" />
             </div>
           </section>
 
@@ -192,14 +192,14 @@
             <ul class="order-summary__items">
               <li
                 v-for="item in cartStore.items"
-                :key="item.id"
+                :key="item.product.id"
                 class="order-summary__item"
               >
                 <div class="order-summary__item-image">
                   <NuxtImg
-                    v-if="item.image"
-                    :src="item.image"
-                    :alt="item.name"
+                    v-if="item.product.images && item.product.images.length > 0"
+                    :src="`${strapiUrl}${item.product.images[0].url}`"
+                    :alt="item.product.name"
                     width="64"
                     height="64"
                     loading="lazy"
@@ -209,15 +209,15 @@
                   }}</span>
                 </div>
                 <div class="order-summary__item-details">
-                  <span class="order-summary__item-name">{{ item.name }}</span>
+                  <span class="order-summary__item-name">{{ item.product.name }}</span>
                   <span
-                    v-if="item.variant"
+                    v-if="item.product.weight"
                     class="order-summary__item-variant"
-                    >{{ item.variant }}</span
+                    >{{ item.product.weight }}</span
                   >
                 </div>
                 <span class="order-summary__item-price">
-                  £{{ (item.price * item.quantity).toFixed(2) }}
+                  £{{ ((item.product.salePrice || item.product.price) * item.quantity).toFixed(2) }}
                 </span>
               </li>
             </ul>
@@ -280,13 +280,24 @@
 <script setup lang="ts">
 import { useCartStore } from "~/stores/cart";
 
+const config = useRuntimeConfig();
+const strapiUrl = config.public.strapiUrl;
+
+
+// Protect checkout page with auth
+definePageMeta({
+  middleware: ['auth'],
+});
+
 // SEO
 useHead({
   title: "Checkout | Carafe Coffee",
   meta: [{ name: "robots", content: "noindex, nofollow" }],
 });
 
+const { user } = useAuth();
 const cartStore = useCartStore();
+const { createOrder } = useOrders();
 
 const form = reactive({
   email: "",
@@ -300,6 +311,13 @@ const form = reactive({
   country: "GB",
   shippingMethod: "standard",
   notes: "",
+});
+
+// Auto-populate email from logged-in user
+onMounted(() => {
+  if (user.value?.email) {
+    form.email = user.value.email;
+  }
 });
 
 const shippingOptions = [
@@ -353,9 +371,49 @@ const processPayment = async () => {
   error.value = "";
 
   try {
-    const { data } = await $fetch("/api/payment/initiate", {
+    // Step 1: Create order in Strapi
+    const orderItems = cartStore.items.map((item) => ({
+      productId: item.product.id,
+      productName: item.product.name,
+      productSlug: item.product.slug,
+      quantity: item.quantity,
+      unitPrice: item.product.salePrice || item.product.price,
+      totalPrice: (item.product.salePrice || item.product.price) * item.quantity,
+      weight: String(item.product.weight || ''),
+    }));
+
+    const orderResult = await createOrder({
+      items: orderItems,
+      subtotal: cartStore.subtotal,
+      shippingCost: selectedShipping.value?.price || 0,
+      tax: cartStore.tax,
+      total: orderTotal.value,
+      currency: cartStore.currency || 'EUR',
+      customerEmail: form.email,
+      customerName: `${form.firstName} ${form.lastName}`,
+      customerPhone: form.phone,
+      shippingAddress: {
+        street: form.address1 + (form.address2 ? ', ' + form.address2 : ''),
+        city: form.city,
+        postcode: form.postcode,
+        country: form.country,
+      },
+      shippingMethod: form.shippingMethod,
+      notes: form.notes,
+    });
+
+    if (!orderResult.success || !orderResult.order) {
+      throw new Error(orderResult.error || 'Failed to create order');
+    }
+
+    // Step 2: Initiate Worldpay payment
+    const paymentResponse = await $fetch("/api/payment/initiate", {
       method: "POST",
       body: {
+        orderId: orderResult.order.id,
+        orderNumber: orderResult.order.orderNumber,
+        amount: orderTotal.value,
+        currency: cartStore.currency || 'EUR',
         customer: {
           email: form.email,
           phone: form.phone,
@@ -369,22 +427,21 @@ const processPayment = async () => {
             country: form.country,
           },
         },
-        items: cartStore.items,
-        shipping: {
-          method: form.shippingMethod,
-          cost: selectedShipping.value?.price || 0,
-        },
-        notes: form.notes,
       },
     });
 
-    // Redirect to Worldpay payment page
-    if (data?.redirectUrl) {
-      window.location.href = data.redirectUrl;
+    // Step 3: Redirect to Worldpay payment page
+    if (paymentResponse?.redirectUrl) {
+      // Clear cart before redirecting
+      cartStore.clearCart();
+      window.location.href = paymentResponse.redirectUrl;
+    } else {
+      throw new Error('No payment redirect URL received');
     }
   } catch (err: any) {
+    console.error('Checkout error:', err);
     error.value =
-      err.data?.message || "Payment initiation failed. Please try again.";
+      err.data?.message || err.message || "Payment initiation failed. Please try again.";
   } finally {
     isProcessing.value = false;
   }
@@ -396,7 +453,8 @@ const processPayment = async () => {
 @import "~/assets/scss/mixins";
 
 .checkout-page {
-  padding: $spacing-8 0 $spacing-16;
+  padding-top: 80px;
+  // padding: $spacing-8 0 $spacing-16;
   min-height: 100vh;
   background: $color-gray-50;
 
@@ -588,11 +646,19 @@ const processPayment = async () => {
 
 .payment-icons {
   display: flex;
-  gap: $spacing-3;
+  gap: $spacing-4;
+  align-items: center;
 
-  img {
-    height: 32px;
+  svg {
+    height: 40px;
     width: auto;
+    font-size: 2.5rem;
+    color: $color-text;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $color-primary;
+    }
   }
 }
 
@@ -631,7 +697,6 @@ const processPayment = async () => {
     width: 64px;
     height: 64px;
     border-radius: $border-radius-md;
-    overflow: hidden;
     background: $color-gray-100;
     flex-shrink: 0;
 
