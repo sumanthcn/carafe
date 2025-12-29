@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_image_gallery",
   "info": {
     "displayName": "Image Gallery",
@@ -13,11 +14,17 @@
     "images": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "columns": {
       "type": "enumeration",
-      "enum": ["2", "3", "4"],
+      "enum": [
+        "2",
+        "3",
+        "4"
+      ],
       "default": "3"
     }
   }

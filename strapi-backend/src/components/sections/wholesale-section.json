@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_wholesale_section",
   "info": {
     "displayName": "Wholesale Section",
@@ -16,7 +17,9 @@
     "image": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "cta": {
       "type": "component",

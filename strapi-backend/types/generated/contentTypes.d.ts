@@ -644,17 +644,17 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     shippingCost: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     status: Schema.Attribute.Enumeration<
       [
-        'pending',
-        'paid',
-        'processing',
+        'order_received',
+        'packed',
         'shipped',
+        'in_transit',
         'delivered',
         'cancelled',
         'refunded',
       ]
     > &
       Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'pending'>;
+      Schema.Attribute.DefaultTo<'order_received'>;
     subtotal: Schema.Attribute.Decimal & Schema.Attribute.Required;
     tax: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     total: Schema.Attribute.Decimal & Schema.Attribute.Required;

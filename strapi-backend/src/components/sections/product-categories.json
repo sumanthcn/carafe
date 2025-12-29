@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_product_categories",
   "info": {
     "displayName": "Product Categories Section",

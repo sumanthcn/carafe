@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_text_content",
   "info": {
     "displayName": "Text Content",

@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_brand_story",
   "info": {
     "displayName": "Brand Story Section",
@@ -16,11 +17,16 @@
     "image": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "imagePosition": {
       "type": "enumeration",
-      "enum": ["left", "right"],
+      "enum": [
+        "left",
+        "right"
+      ],
       "default": "right"
     },
     "cta": {

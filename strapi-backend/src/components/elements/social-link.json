@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_elements_social_link",
   "info": {
     "displayName": "Social Link",
@@ -9,7 +10,12 @@
   "attributes": {
     "platform": {
       "type": "enumeration",
-      "enum": ["instagram", "facebook", "google", "tripadvisor"],
+      "enum": [
+        "instagram",
+        "facebook",
+        "google",
+        "tripadvisor"
+      ],
       "required": true
     },
     "url": {

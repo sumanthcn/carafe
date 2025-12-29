@@ -20,15 +20,15 @@
     "status": {
       "type": "enumeration",
       "enum": [
-        "pending",
-        "paid",
-        "processing",
+        "order_received",
+        "packed",
         "shipped",
+        "in_transit",
         "delivered",
         "cancelled",
         "refunded"
       ],
-      "default": "pending",
+      "default": "order_received",
       "required": true
     },
     "customerEmail": {

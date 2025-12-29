@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_team_section",
   "info": {
     "displayName": "Team Section",

@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_elements_team_member",
   "info": {
     "displayName": "Team Member",
@@ -20,7 +21,9 @@
     "photo": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }

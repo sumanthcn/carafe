@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_hero_slides",
   "info": {
     "displayName": "Hero Slide",

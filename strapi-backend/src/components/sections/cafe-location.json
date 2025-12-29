@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_cafe_location",
   "info": {
     "displayName": "Café Location Section",

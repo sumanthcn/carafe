@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_elements_feature_item",
   "info": {
     "displayName": "Feature Item",
@@ -17,7 +18,9 @@
     "icon": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }

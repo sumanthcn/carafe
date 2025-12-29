@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_shared_buttons",
   "info": {
     "displayName": "Button",
@@ -20,17 +21,26 @@
     },
     "variant": {
       "type": "enumeration",
-      "enum": ["primary", "secondary", "outline"],
+      "enum": [
+        "primary",
+        "secondary",
+        "outline"
+      ],
       "default": "primary"
     },
     "icon": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "iconPosition": {
       "type": "enumeration",
-      "enum": ["left", "right"],
+      "enum": [
+        "left",
+        "right"
+      ],
       "default": "left"
     }
   }

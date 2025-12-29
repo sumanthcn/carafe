@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_sections_contact_section",
   "info": {
     "displayName": "Contact Section",

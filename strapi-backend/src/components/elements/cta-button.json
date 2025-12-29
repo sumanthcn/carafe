@@ -1,4 +1,5 @@
 {
+  "kind": "component",
   "collectionName": "components_elements_cta_button",
   "info": {
     "displayName": "CTA Button",
