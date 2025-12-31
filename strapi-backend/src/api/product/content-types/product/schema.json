@@ -31,40 +31,14 @@
       "type": "text",
       "maxLength": 300
     },
-    "price": {
-      "type": "decimal",
-      "required": true,
-      "min": 0
-    },
-    "salePrice": {
-      "type": "decimal",
-      "min": 0
-    },
     "currency": {
       "type": "enumeration",
-      "default": "EUR",
-      "enum": ["EUR", "GBP", "USD"]
-    },
-    "sku": {
-      "type": "string",
-      "unique": true
-    },
-    "weight": {
-      "type": "integer"
-    },
-    "weightUnit": {
-      "type": "enumeration",
-      "default": "g",
-      "enum": ["g", "kg"]
-    },
-    "stockQuantity": {
-      "type": "integer",
-      "default": 0,
-      "min": 0
-    },
-    "inStock": {
-      "type": "boolean",
-      "default": true
+      "default": "GBP",
+      "enum": [
+        "EUR",
+        "GBP",
+        "USD"
+      ]
     },
     "isTopSeller": {
       "type": "boolean",
@@ -82,29 +56,26 @@
       "type": "integer",
       "default": 0
     },
-    "roastDate": {
-      "type": "date"
-    },
-    "origin": {
-      "type": "string"
-    },
-    "tastingNotes": {
-      "type": "text"
-    },
     "variety": {
       "type": "string"
-    },
-    "returnPolicy": {
-      "type": "richtext"
-    },
-    "shippingInfo": {
-      "type": "richtext"
     },
     "images": {
       "type": "media",
       "multiple": true,
       "required": true,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "variants": {
+      "type": "component",
+      "component": "product.variant",
+      "repeatable": true
+    },
+    "attributes": {
+      "type": "component",
+      "component": "product.attributes",
+      "repeatable": false
     },
     "category": {
       "type": "relation",

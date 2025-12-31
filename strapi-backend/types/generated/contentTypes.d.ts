@@ -821,6 +821,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    attributes: Schema.Attribute.Component<'product.attributes', false>;
     category: Schema.Attribute.Relation<
       'manyToOne',
       'api::product-category.product-category'
@@ -829,11 +830,10 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     currency: Schema.Attribute.Enumeration<['EUR', 'GBP', 'USD']> &
-      Schema.Attribute.DefaultTo<'EUR'>;
+      Schema.Attribute.DefaultTo<'GBP'>;
     description: Schema.Attribute.RichText;
     displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     images: Schema.Attribute.Media<'images', true> & Schema.Attribute.Required;
-    inStock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     isLimitedEdition: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
     isTopSeller: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -845,58 +845,27 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    origin: Schema.Attribute.String;
-    price: Schema.Attribute.Decimal &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      >;
     publishedAt: Schema.Attribute.DateTime;
     relatedProducts: Schema.Attribute.Relation<
       'manyToMany',
       'api::product.product'
     >;
-    returnPolicy: Schema.Attribute.RichText;
     reviews: Schema.Attribute.Relation<
       'oneToMany',
       'api::product-review.product-review'
     >;
-    roastDate: Schema.Attribute.Date;
-    salePrice: Schema.Attribute.Decimal &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      >;
     seo: Schema.Attribute.Component<'shared.seo', false>;
-    shippingInfo: Schema.Attribute.RichText;
     shortDescription: Schema.Attribute.Text &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 300;
       }>;
-    sku: Schema.Attribute.String & Schema.Attribute.Unique;
     slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
-    stockQuantity: Schema.Attribute.Integer &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      > &
-      Schema.Attribute.DefaultTo<0>;
     subtitle: Schema.Attribute.String;
-    tastingNotes: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    variants: Schema.Attribute.Component<'product.variant', true>;
     variety: Schema.Attribute.String;
-    weight: Schema.Attribute.Integer;
-    weightUnit: Schema.Attribute.Enumeration<['g', 'kg']> &
-      Schema.Attribute.DefaultTo<'g'>;
   };
 }
 
@@ -930,6 +899,54 @@ export interface ApiShopCoffeeShopCoffee extends Struct.SingleTypeSchema {
       'sections.visit-cafe-section',
       false
     >;
+  };
+}
+
+export interface ApiShopSettingShopSetting extends Struct.SingleTypeSchema {
+  collectionName: 'shop_settings';
+  info: {
+    description: 'Global settings for the shop (return policy, shipping info, etc.)';
+    displayName: 'Shop Settings';
+    pluralName: 'shop-settings';
+    singularName: 'shop-setting';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    currency: Schema.Attribute.Enumeration<['EUR', 'GBP', 'USD']> &
+      Schema.Attribute.DefaultTo<'EUR'>;
+    freeShippingThreshold: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<50>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::shop-setting.shop-setting'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    returnPolicy: Schema.Attribute.RichText & Schema.Attribute.Required;
+    shippingInfo: Schema.Attribute.RichText & Schema.Attribute.Required;
+    standardShippingCost: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<5>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -1508,6 +1525,7 @@ declare module '@strapi/strapi' {
       'api::product-review.product-review': ApiProductReviewProductReview;
       'api::product.product': ApiProductProduct;
       'api::shop-coffee.shop-coffee': ApiShopCoffeeShopCoffee;
+      'api::shop-setting.shop-setting': ApiShopSettingShopSetting;
       'api::subscription.subscription': ApiSubscriptionSubscription;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;

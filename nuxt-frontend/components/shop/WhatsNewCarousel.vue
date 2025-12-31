@@ -66,13 +66,13 @@
 
                 <div class="product-showcase__footer">
                   <div class="product-showcase__price">
-                    € {{ product.price.toFixed(2) }}
+                    {{ getProductPrice(product) }}
                   </div>
                   <button
                     @click="handleAddToCart(product)"
                     class="btn-add"
                     :disabled="
-                      !product.inStock || addingProductId === product.id
+                      !hasStock(product) || addingProductId === product.id
                     "
                   >
                     {{
@@ -177,8 +177,38 @@ function shareUrl(product: Product) {
   return encodeURIComponent(`${baseUrl}/shop-coffee/${product.slug}`);
 }
 
+// Check if product has any variant in stock
+function hasStock(product: Product): boolean {
+  if (!product.variants || product.variants.length === 0) {
+    return false;
+  }
+  return product.variants.some(v => v.inStock && v.stockQuantity > 0);
+}
+
+// Get price display for product
+function getProductPrice(product: Product): string {
+  const variants = product.variants || [];
+  
+  if (variants.length === 0) {
+    return '€0.00';
+  }
+
+  const prices = variants.map(v => v.salePrice || v.price);
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  const currency = product.currency || 'EUR';
+  const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+
+  if (minPrice === maxPrice) {
+    return `${symbol}${minPrice.toFixed(2)}`;
+  }
+
+  return `From ${symbol}${minPrice.toFixed(2)}`;
+}
+
 async function handleAddToCart(product: Product) {
-  if (!product.inStock) {
+  if (!hasStock(product)) {
     toast.add({
       title: "Out of Stock",
       description: "This product is currently unavailable",
@@ -188,29 +218,8 @@ async function handleAddToCart(product: Product) {
     return;
   }
 
-  addingProductId.value = product.id;
-
-  try {
-    cartStore.addItem(product, 1);
-
-    toast.add({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart`,
-      color: "green",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    toast.add({
-      title: "Error",
-      description: "Failed to add product to cart",
-      color: "red",
-      icon: "i-heroicons-exclamation-circle",
-    });
-  } finally {
-    setTimeout(() => {
-      addingProductId.value = null;
-    }, 300);
-  }
+  // Navigate to product page for variant selection
+  navigateTo(`/shop-coffee/${product.slug}`);
 }
 </script>
 

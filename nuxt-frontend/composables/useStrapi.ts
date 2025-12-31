@@ -3,6 +3,9 @@ import type {
   StrapiSeo,
   GlobalSettings,
   Product,
+  ProductCategory,
+  Subscription,
+  Page,
 } from "~/types/strapi";
 
 /**
@@ -208,6 +211,8 @@ export function useStrapi() {
       populate: {
         images: true,
         category: true,
+        variants: true,
+        attributes: true,
         seo: {
           populate: ["ogImage"],
         },
@@ -229,13 +234,14 @@ export function useStrapi() {
       populate: {
         images: true,
         category: true,
+        variants: true,
+        attributes: true,
         relatedProducts: {
-          populate: ["images", "category"],
+          populate: ["images", "category", "variants"],
         },
         seo: {
           populate: ["ogImage"],
         },
-        productSchema: true,
       },
       filters: {
         "[slug][$eq]": slug,

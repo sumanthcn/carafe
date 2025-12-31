@@ -65,24 +65,28 @@
               </p>
 
               <!-- Price Block -->
-              <div class="product-pricing">
+              <div v-if="!product.variants || product.variants.length === 0" class="product-pricing">
                 <div class="price-group">
-                  <span v-if="isOnSale(product)" class="original-price">{{
-                    formatCurrency(product.price, product.currency) }}</span>
-                  <span class="current-price">{{ formatCurrency(getDisplayPrice(product),
-                    product.currency) }}</span>
+                  <span class="current-price">€0.00</span>
                 </div>
-                <span v-if="isOnSale(product)" class="discount-badge">-{{
-                  calculateDiscount(product.price, product.salePrice) }}% OFF</span>
+                <p class="no-variants-message">Please add product variants in admin</p>
               </div>
+
+              <!-- Product Variant Selector -->
+              <VariantSelector
+                v-if="product.variants && product.variants.length > 0"
+                :variants="product.variants"
+                :currency="product.currency"
+                @variant-selected="handleVariantSelected"
+              />
 
               <!-- CTA Buttons -->
               <div class="product-actions">
-                <button class="btn btn-outline" @click="handleAddToCart" :disabled="!product.inStock || isAddingToCart">
-                  {{ isAddingToCart ? 'ADDING...' : (product.inStock ? 'ADD TO CART' : 'OUT OF STOCK')
+                <button class="btn btn-outline" @click="handleAddToCart" :disabled="!canAddToCart || isAddingToCart">
+                  {{ isAddingToCart ? 'ADDING...' : (canAddToCart ? 'ADD TO CART' : 'OUT OF STOCK')
                   }}
                 </button>
-                <button class="btn btn-primary" @click="handleBuyNow" :disabled="!product.inStock || isBuyingNow">
+                <button class="btn btn-primary" @click="handleBuyNow" :disabled="!canAddToCart || isBuyingNow">
                   {{ isBuyingNow ? 'PROCESSING...' : 'BUY NOW' }}
                 </button>
               </div>
@@ -143,7 +147,7 @@
                   </button>
                   <transition name="accordion">
                     <div v-show="activeAccordion === 'return'" class="accordion-content">
-                      <div v-if="product.returnPolicy" v-html="product.returnPolicy"></div>
+                      <div v-if="shopSettings?.returnPolicy" v-html="shopSettings.returnPolicy"></div>
                       <div v-else>
                         <p>We offer a 30-day return policy for unopened products. Please
                           contact our customer service team for return authorization.</p>
@@ -161,7 +165,7 @@
                   </button>
                   <transition name="accordion">
                     <div v-show="activeAccordion === 'shipping'" class="accordion-content">
-                      <div v-if="product.shippingInfo" v-html="product.shippingInfo"></div>
+                      <div v-if="shopSettings?.shippingInfo" v-html="shopSettings.shippingInfo"></div>
                       <div v-else>
                         <p>Free shipping on orders over €50. Standard delivery takes 3-5
                           business days. Express shipping available at checkout.</p>
@@ -177,6 +181,11 @@
 
       <!-- Related Products Section -->
       <RelatedProducts v-if="product.relatedProducts && product.relatedProducts.length > 0" :products="product.relatedProducts" />
+
+      <!-- Product Attributes Section -->
+      <div class="container">
+        <ProductAttributes :attributes="product.attributes" />
+      </div>
 
       <!-- Customer Reviews Section -->
       <CustomerReviews 
@@ -194,10 +203,12 @@
 </template>
 
 <script setup lang="ts">
-import type { Product } from "~/types/strapi";
+import type { Product, ProductVariant } from "~/types/strapi";
 import type { ReviewStats } from "~/composables/useProductReviews";
 import RelatedProducts from "~/components/shop/RelatedProducts.vue";
 import CustomerReviews from "~/components/reviews/CustomerReviews.vue";
+import VariantSelector from "~/components/product/VariantSelector.vue";
+import ProductAttributes from "~/components/product/ProductAttributes.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -207,6 +218,7 @@ const config = useRuntimeConfig();
 const { fetchProductBySlug } = useProducts();
 const { fetchShopCoffeeData } = useShopCoffee();
 const { fetchReviewsByProduct } = useProductReviews();
+const { settings: shopSettings, fetchShopSettings } = useShopSettings();
 const strapiUrl = config.public.strapiUrl;
 
 // State
@@ -218,6 +230,7 @@ const selectedImageIndex = ref(0);
 const activeAccordion = ref<string | null>('info');
 const isAddingToCart = ref(false);
 const isBuyingNow = ref(false);
+const selectedVariant = ref<ProductVariant | null>(null);
 
 // Reviews
 const reviewStats = ref<ReviewStats>({
@@ -243,18 +256,19 @@ const selectedImage = computed(() => {
   return { url: '', alternativeText: '' };
 });
 
+const canAddToCart = computed(() => {
+  // If product has variants, check if a variant is selected and in stock
+  if (product.value?.variants && product.value.variants.length > 0) {
+    return selectedVariant.value?.inStock && (selectedVariant.value?.stockQuantity ?? 0) > 0;
+  }
+  // For products without variants, not available (admin should add variants)
+  return false;
+});
+
 // Utility functions
 function calculateDiscount(originalPrice: number, salePrice?: number): number {
   if (!salePrice) return 0;
   return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
-}
-
-function getDisplayPrice(product: Product): number {
-  return product.salePrice || product.price;
-}
-
-function isOnSale(product: Product): boolean {
-  return !!product.salePrice && product.salePrice < product.price;
 }
 
 function formatCurrency(amount: number, currency: string = 'EUR'): string {
@@ -295,6 +309,9 @@ async function loadProduct() {
       };
     }
 
+    // Fetch shop settings for return/shipping policies
+    await fetchShopSettings();
+
     // Try to fetch shop coffee data, but don't fail if it's not available
     try {
       shopCoffeeData.value = await fetchShopCoffeeData();
@@ -313,11 +330,24 @@ function toggleAccordion(section: string) {
   activeAccordion.value = activeAccordion.value === section ? null : section;
 }
 
+function handleVariantSelected(variant: ProductVariant | null) {
+  selectedVariant.value = variant;
+}
+
 async function handleAddToCart() {
-  if (product.value && !isAddingToCart.value) {
+  if (product.value && !isAddingToCart.value && canAddToCart.value) {
     isAddingToCart.value = true;
     try {
-      cartStore.addItem(product.value, 1);
+      // If product has variants, require a variant selection
+      if (product.value.variants && product.value.variants.length > 0) {
+        if (!selectedVariant.value) {
+          alert('Please select product options');
+          return;
+        }
+        cartStore.addItem(product.value, 1, selectedVariant.value);
+      } else {
+        cartStore.addItem(product.value, 1);
+      }
       // Optional: Add success toast/notification here
     } finally {
       setTimeout(() => {
@@ -328,10 +358,19 @@ async function handleAddToCart() {
 }
 
 async function handleBuyNow() {
-  if (product.value && !isBuyingNow.value) {
+  if (product.value && !isBuyingNow.value && canAddToCart.value) {
     isBuyingNow.value = true;
     try {
-      cartStore.addItem(product.value, 1);
+      // If product has variants, require a variant selection
+      if (product.value.variants && product.value.variants.length > 0) {
+        if (!selectedVariant.value) {
+          alert('Please select product options');
+          return;
+        }
+        cartStore.addItem(product.value, 1, selectedVariant.value);
+      } else {
+        cartStore.addItem(product.value, 1);
+      }
       await router.push('/checkout');
     } finally {
       isBuyingNow.value = false;

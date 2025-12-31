@@ -27,28 +27,23 @@
       </NuxtLink>
 
       <div class="product-footer">
-        <div class="product-price">
-          <span v-if="product.salePrice" class="price-sale">
-            € {{ product.salePrice }}
-          </span>
-          <span
-            :class="[
-              'price-regular',
-              { 'price-strikethrough': product.salePrice },
-            ]"
-          >
-            € {{ product.price || "0.00" }}
-          </span>
+        <div class="product-price-and-rating">
+          <span class="product-price">{{ baseVariantPrice }}</span>
+          
+          <!-- Review Stars -->
+          <div class="product-rating">
+            <NuxtRating 
+              :rating-value="4.5" 
+              :read-only="true" 
+              :rating-size="16" 
+              :rating-count="5"
+              active-color="#007ba7" 
+              inactive-color="#ddd"
+              :border-width="0"
+              :rating-spacing="2"
+            />
+          </div>
         </div>
-
-        <button
-          @click="handleAddToCart"
-          class="btn-add-to-cart"
-          :disabled="isAdding || !product.inStock"
-          aria-label="Add to cart"
-        >
-          {{ isAdding ? "ADDING..." : "ADD TO CART" }}
-        </button>
       </div>
     </div>
   </article>
@@ -65,46 +60,32 @@ const props = defineProps<ProductCardProps>();
 
 const config = useRuntimeConfig();
 const strapiUrl = config.public.strapiUrl;
-const cartStore = useCartStore();
-const toast = useToast();
 
-const isAdding = ref(false);
-
-async function handleAddToCart() {
-  if (!props.product.inStock) {
-    toast.add({
-      title: "Out of Stock",
-      description: "This product is currently unavailable",
-      color: "red",
-      icon: "i-heroicons-exclamation-circle",
-    });
-    return;
+// Get base variant (250g) price
+const baseVariantPrice = computed(() => {
+  const variants = props.product.variants || [];
+  
+  if (variants.length === 0) {
+    return '€0.00';
   }
 
-  isAdding.value = true;
-
-  try {
-    cartStore.addItem(props.product, 1);
-
-    toast.add({
-      title: "Added to Cart",
-      description: `${props.product.name} has been added to your cart`,
-      color: "green",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    toast.add({
-      title: "Error",
-      description: "Failed to add product to cart",
-      color: "red",
-      icon: "i-heroicons-exclamation-circle",
-    });
-  } finally {
-    setTimeout(() => {
-      isAdding.value = false;
-    }, 300);
+  // Find 250g variant
+  const baseVariant = variants.find(v => v.weight === '250g');
+  
+  if (baseVariant) {
+    const price = baseVariant.salePrice || baseVariant.price;
+    const currency = props.product.currency || 'EUR';
+    const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+    return `${symbol}${price.toFixed(2)}`;
   }
-}
+
+  // If no 250g variant, show first variant price
+  const firstVariant = variants[0];
+  const price = firstVariant.salePrice || firstVariant.price;
+  const currency = props.product.currency || 'EUR';
+  const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  return `${symbol}${price.toFixed(2)}`;
+});
 </script>
 
 <style lang="scss" scoped>
@@ -222,61 +203,32 @@ async function handleAddToCart() {
 }
 
 .product-footer {
+  display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 0 1rem 1.5rem;
+}
+
+.product-price-and-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .product-price {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  font-size: 1.25rem;
   font-weight: 700;
-}
-
-.price-sale {
-  font-size: $font-size-xl;
-  font-weight: bold;
   color: $color-text;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.price-regular {
-  font-size: 1.125rem;
-  color: #000;
-
-  &.price-strikethrough {
-    font-size: 0.875rem;
-    color: #999;
-    text-decoration: line-through;
-  }
-}
-
-.btn-add-to-cart {
-  background: transparent;
-  border: 2px solid $color-text;
-  color: $color-text;
-  font-size: $font-size-xl;
-  font-weight: bold;
-  padding: 0.5rem 1.25rem;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  text-transform: uppercase;
-  margin-top: 1rem;
-  width: 100%;
-
-  &:hover:not(:disabled) {
-    background: $color-text;
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.product-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 // Responsive

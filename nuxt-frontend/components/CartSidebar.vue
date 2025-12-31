@@ -119,8 +119,8 @@ onMounted(() => {
         <div v-else class="cart-sidebar__content">
           <ul class="cart-sidebar__items">
             <li
-              v-for="item in cartStore.items"
-              :key="item.product.id"
+              v-for="(item, index) in cartStore.items"
+              :key="`${item.product.id}-${item.selectedVariant?.id || 'default'}-${index}`"
               class="cart-item"
             >
               <div class="cart-item__image">
@@ -136,10 +136,24 @@ onMounted(() => {
               </div>
               <div class="cart-item__details">
                 <h3 class="cart-item__name">{{ item.product.name }}</h3>
+                
+                <!-- Variant Info -->
+                <div v-if="item.selectedVariant" class="cart-item__variant">
+                  <span class="variant-tag">{{ item.selectedVariant.weight }}</span>
+                  <span v-if="item.selectedVariant.roastLevel" class="variant-tag">
+                    {{ item.selectedVariant.roastLevel }}
+                  </span>
+                  <span v-if="item.selectedVariant.grindSize" class="variant-tag">
+                    {{ item.selectedVariant.grindSize }}
+                  </span>
+                </div>
+
                 <p class="cart-item__price">
                   {{
                     cartStore.formatPrice(
-                      item.product.salePrice || item.product.price
+                      item.selectedVariant
+                        ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+                        : (item.product.salePrice || item.product.price)
                     )
                   }}
                 </p>
@@ -379,6 +393,22 @@ onMounted(() => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  &__variant {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+
+    .variant-tag {
+      font-size: 0.6875rem;
+      padding: 0.125rem 0.5rem;
+      background: #e5e7eb;
+      color: #374151;
+      border-radius: 4px;
+      font-weight: 500;
+    }
   }
 
   &__price {

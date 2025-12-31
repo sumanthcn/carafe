@@ -31,18 +31,14 @@ export function useProducts() {
       // Build query params for Strapi v5
       const params: any = {
         "filters[publishedAt][$notNull]": "true",
-        "filters[inStock][$eq]": "true",
-        // "populate[images][fields][0]": "url",
-        // "populate[images][fields][1]": "alternativeText",
-        // "populate[images][fields][2]": "width",
-        // "populate[images][fields][3]": "height",
-        "populate[category]": "true",
         "populate[images]": "true",
-        // "populate[category][fields][1]": "slug",
+        "populate[category]": "true",
+        "populate[variants]": "true",
+        "populate[attributes]": "true",
         "pagination[page]": page,
         "pagination[pageSize]": pageSize,
-        // "sort[0]": "displayOrder:asc",
-        // "sort[1]": "createdAt:desc",
+        "sort[0]": "displayOrder:asc",
+        "sort[1]": "createdAt:desc",
       };
 
       if (category) {
@@ -87,6 +83,8 @@ export function useProducts() {
                 ...img,
               })) || [],
             category: item.category || null,
+            variants: item.variants || [],
+            attributes: item.attributes || null,
           } as Product)
       );
 
@@ -109,13 +107,11 @@ export function useProducts() {
         "filters[slug][$eq]": slug,
         "filters[publishedAt][$notNull]": "true",
         "populate[images]": "true",
-        // "populate[images][fields][0]": "url",
-        // "populate[images][fields][1]": "alternativeText",
-        // "populate[images][fields][2]": "width",
-        // "populate[images][fields][3]": "height",
         "populate[category]": "true",
-        // "populate[category][fields][1]": "slug",
+        "populate[variants]": "true",
+        "populate[attributes]": "true",
         "populate[relatedProducts][populate][images]": "true",
+        "populate[relatedProducts][populate][variants]": "true",
         "populate[seo]": "true",
       };
 
@@ -123,7 +119,7 @@ export function useProducts() {
         data: Array<{
           id: number;
           documentId: string;
-          attributes: any;
+          [key: string]: any;
         }>;
       }>(`${strapiUrl}/api/products`, {
         params,
@@ -141,6 +137,8 @@ export function useProducts() {
             ...img,
           })) || [],
         category: item.category || null,
+        variants: item.variants || [],
+        attributes: item.attributes || null,
         relatedProducts:
           (item.relatedProducts as any[])?.map((rel: any) => ({
             ...rel,
@@ -148,6 +146,7 @@ export function useProducts() {
               (rel.images as any[])?.map((img: any) => ({
                 ...img,
               })) || [],
+            variants: rel.variants || [],
           })) || [],
       } as Product;
 

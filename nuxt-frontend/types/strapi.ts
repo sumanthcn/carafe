@@ -181,6 +181,42 @@ export interface ProductCategory {
   seo?: StrapiSeo;
 }
 
+// Shop Settings (Global)
+export interface ShopSettings {
+  id: number;
+  documentId: string;
+  returnPolicy: string;
+  shippingInfo: string;
+  freeShippingThreshold: number;
+  standardShippingCost: number;
+  currency: "GBP" | "EUR" | "USD";
+}
+
+// Product Variant
+export interface ProductVariant {
+  id: number;
+  weight: "250g" | "500g" | "1kg" | "2kg";
+  grindSize?: "Espresso" | "Filter" | "Whole Bean" | "Moka Pot" | "Aeropress" | "V60" | "Chemex" | "Cafetiere";
+  roastLevel?: "Light" | "Medium-Light" | "Medium";
+  price: number;
+  salePrice?: number;
+  sku: string;
+  stockQuantity: number;
+  inStock: boolean;
+}
+
+// Product Attributes
+export interface ProductAttributes {
+  id: number;
+  taste?: string;
+  origin?: string;
+  region?: string;
+  varietal?: string;
+  process?: string;
+  altitude?: string;
+  bestServed?: string;
+}
+
 // Product
 export interface Product {
   id: number;
@@ -190,14 +226,7 @@ export interface Product {
   subtitle?: string;
   description?: string;
   shortDescription?: string;
-  price: number;
-  salePrice?: number;
   currency: "EUR" | "GBP" | "USD";
-  sku?: string;
-  weight?: number;
-  weightUnit?: "g" | "kg";
-  stockQuantity?: number;
-  inStock?: boolean;
   isTopSeller?: boolean;
   isLimitedEdition?: boolean;
   isWhatsNew?: boolean;
@@ -206,9 +235,9 @@ export interface Product {
   origin?: string;
   tastingNotes?: string;
   variety?: string;
-  returnPolicy?: string;
-  shippingInfo?: string;
   images: StrapiMedia[];
+  variants?: ProductVariant[];
+  attributes?: ProductAttributes;
   category?: ProductCategory | null;
   relatedProducts?: Product[];
   seo?: StrapiSeo;
@@ -347,6 +376,7 @@ export interface Order {
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedVariant?: ProductVariant;
 }
 
 export interface Cart {

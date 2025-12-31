@@ -1,0 +1,39 @@
+{
+  "kind": "singleType",
+  "collectionName": "shop_settings",
+  "info": {
+    "singularName": "shop-setting",
+    "pluralName": "shop-settings",
+    "displayName": "Shop Settings",
+    "description": "Global settings for the shop (return policy, shipping info, etc.)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "returnPolicy": {
+      "type": "richtext",
+      "required": true
+    },
+    "shippingInfo": {
+      "type": "richtext",
+      "required": true
+    },
+    "freeShippingThreshold": {
+      "type": "decimal",
+      "default": 50,
+      "min": 0
+    },
+    "standardShippingCost": {
+      "type": "decimal",
+      "default": 5,
+      "min": 0
+    },
+    "currency": {
+      "type": "enumeration",
+      "default": "EUR",
+      "enum": ["EUR", "GBP", "USD"]
+    }
+  }
+}

@@ -238,6 +238,77 @@ export interface ElementsVisitCafeCard extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductAttributes extends Struct.ComponentSchema {
+  collectionName: 'components_product_attributes';
+  info: {
+    description: 'Coffee product characteristics';
+    displayName: 'Product Attributes';
+    icon: 'list';
+  };
+  attributes: {
+    altitude: Schema.Attribute.String;
+    bestServed: Schema.Attribute.Text;
+    origin: Schema.Attribute.String;
+    process: Schema.Attribute.String;
+    region: Schema.Attribute.String;
+    tastingNotes: Schema.Attribute.Text;
+    varietal: Schema.Attribute.String;
+  };
+}
+
+export interface ProductVariant extends Struct.ComponentSchema {
+  collectionName: 'components_product_variants';
+  info: {
+    description: 'Product variants for weight and grind options';
+    displayName: 'Product Variant';
+    icon: 'layer-group';
+  };
+  attributes: {
+    grindSize: Schema.Attribute.Enumeration<
+      [
+        'Espresso',
+        'Filter',
+        'Whole Bean',
+        'Moka Pot',
+        'Aeropress',
+        'V60',
+        'Chemex',
+        'Cafetiere',
+      ]
+    >;
+    inStock: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    price: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    roastLevel: Schema.Attribute.Enumeration<
+      ['Light', 'Medium-Light', 'Medium']
+    >;
+    salePrice: Schema.Attribute.Decimal &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    sku: Schema.Attribute.String & Schema.Attribute.Required;
+    stockQuantity: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
+    weight: Schema.Attribute.Enumeration<['250g', '500g', '1kg', '2kg']> &
+      Schema.Attribute.Required;
+  };
+}
+
 export interface SectionsBrandStory extends Struct.ComponentSchema {
   collectionName: 'components_sections_brand_story';
   info: {
@@ -593,6 +664,8 @@ declare module '@strapi/strapi' {
       'elements.social-link': ElementsSocialLink;
       'elements.team-member': ElementsTeamMember;
       'elements.visit-cafe-card': ElementsVisitCafeCard;
+      'product.attributes': ProductAttributes;
+      'product.variant': ProductVariant;
       'sections.brand-story': SectionsBrandStory;
       'sections.cafe-location': SectionsCafeLocation;
       'sections.contact-section': SectionsContactSection;

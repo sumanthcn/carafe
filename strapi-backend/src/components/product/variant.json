@@ -1,0 +1,56 @@
+{
+  "collectionName": "components_product_variants",
+  "info": {
+    "displayName": "Product Variant",
+    "icon": "layer-group",
+    "description": "Product variants for weight and grind options"
+  },
+  "options": {},
+  "attributes": {
+    "weight": {
+      "type": "enumeration",
+      "enum": ["250g", "500g", "1kg", "2kg"],
+      "required": true
+    },
+    "grindSize": {
+      "type": "enumeration",
+      "enum": [
+        "Espresso",
+        "Filter",
+        "Whole Bean",
+        "Moka Pot",
+        "Aeropress",
+        "V60",
+        "Chemex",
+        "Cafetiere"
+      ]
+    },
+    "roastLevel": {
+      "type": "enumeration",
+      "enum": ["Light", "Medium-Light", "Medium"]
+    },
+    "price": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "salePrice": {
+      "type": "decimal",
+      "min": 0
+    },
+    "sku": {
+      "type": "string",
+      "required": true
+    },
+    "stockQuantity": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "inStock": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "kind": "component"
+}

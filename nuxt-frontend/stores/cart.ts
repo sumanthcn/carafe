@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { CartItem, Product } from "~/types/strapi";
+import type { CartItem, Product, ProductVariant } from "~/types/strapi";
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
@@ -22,7 +22,9 @@ export const useCartStore = defineStore("cart", {
      */
     subtotal: (state): number => {
       return state.items.reduce((total, item) => {
-        const price = item.product.salePrice || item.product.price;
+        const price = item.selectedVariant 
+          ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+          : (item.product.salePrice || item.product.price);
         return total + price * item.quantity;
       }, 0);
     },
@@ -74,15 +76,27 @@ export const useCartStore = defineStore("cart", {
     /**
      * Add item to cart
      */
-    addItem(product: Product, quantity: number = 1) {
-      const existingItem = this.items.find(
-        (item) => item.product.id === product.id
-      );
+    addItem(product: Product, quantity: number = 1, variant?: ProductVariant) {
+      // Generate unique cart item key based on product and variant
+      const cartItemKey = variant 
+        ? `${product.id}-${variant.id}`
+        : `${product.id}`;
+      
+      const existingItem = this.items.find((item) => {
+        if (variant && item.selectedVariant) {
+          return item.product.id === product.id && item.selectedVariant.id === variant.id;
+        }
+        return item.product.id === product.id && !item.selectedVariant;
+      });
 
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
-        this.items.push({ product, quantity });
+        this.items.push({ 
+          product, 
+          quantity,
+          selectedVariant: variant
+        });
       }
 
       // Update shipping cost based on cart

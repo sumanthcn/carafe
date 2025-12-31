@@ -1,0 +1,33 @@
+{
+  "kind": "component",
+  "collectionName": "components_product_attributes",
+  "info": {
+    "displayName": "Product Attributes",
+    "icon": "list",
+    "description": "Coffee product characteristics"
+  },
+  "options": {},
+  "attributes": {
+    "tastingNotes": {
+      "type": "text"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "varietal": {
+      "type": "string"
+    },
+    "process": {
+      "type": "string"
+    },
+    "altitude": {
+      "type": "string"
+    },
+    "bestServed": {
+      "type": "text"
+    }
+  }
+}
