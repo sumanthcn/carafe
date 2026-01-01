@@ -2,5 +2,7 @@
 # HEROKU PROCFILE - STRAPI BACKEND
 # =============================================================================
 # For deploying Strapi as a separate Heroku app
+# Create uploads folder before starting
 
+release: mkdir -p public/uploads
 web: yarn start
