@@ -8,10 +8,9 @@ export interface VisitCafeBanner {
 }
 
 export interface BrandStory {
-  heading: string;
-  title: string;
-  description: string;
-  images: any[];
+  headline: string;
+  content: string;
+  image: any;
 }
 
 export interface OpeningHoursWithImage {
@@ -66,16 +65,13 @@ export const useVisitCafe = () => {
       params.append("populate[bannerSection][populate][backgroundImage]", "true");
       
       // Brand story section with images
-      params.append("populate[brandStorySection][populate][images]", "true");
+      params.append("populate[brandStorySection][populate][image]", "true");
       
       // Opening hours section with background image
-      params.append("populate[openingHoursSection][populate][backgroundImage]", "true");
       
       // Getting here section with items and their icons
-      params.append("populate[gettingHereSection][populate][items][populate][icon]", "true");
       
       // SEO with meta image
-      params.append("populate[seo][populate][metaImage]", "true");
 
       const response = await $fetch<StrapiResponse<VisitCafe>>(
         `${strapiUrl}/api/visit-cafe?${params.toString()}`

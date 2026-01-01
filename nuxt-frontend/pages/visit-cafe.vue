@@ -33,19 +33,12 @@
       <section v-if="visitCafeData.brandStorySection" class="brand-story-section">
         <div class="container">
           <div class="brand-story-grid">
-            <div class="story-content">
-              <span class="heading">{{ visitCafeData.brandStorySection.heading }}</span>
-              <h2 class="title">{{ visitCafeData.brandStorySection.title }}</h2>
-              <div class="description" v-html="visitCafeData.brandStorySection.description"></div>
+            <div class="brand-story__content">
+              <h2>{{ visitCafeData.brandStorySection.headline }}</h2>
+              <div class="brand-story__text" v-html="parsedBrandStoryContent"></div>
             </div>
-            <div class="story-images">
-              <img
-                v-for="(image, index) in visitCafeData.brandStorySection.images"
-                :key="index"
-                :src="getStrapiMediaUrl(image)"
-                :alt="`Brand story image ${index + 1}`"
-                class="story-image"
-              />
+            <div v-if="visitCafeData.brandStorySection.image" class="brand-story__image">
+              <img :src="getStrapiMediaUrl(visitCafeData.brandStorySection.image)" :alt="visitCafeData.brandStorySection.headline" />
             </div>
           </div>
         </div>
@@ -113,6 +106,7 @@ definePageMeta({
 
 const { fetchVisitCafeData } = useVisitCafe();
 const { getStrapiMediaUrl } = useStrapi();
+const { parseMarkdown } = useMarkdown();
 const config = useRuntimeConfig();
 
 const loading = ref(true);
@@ -123,6 +117,12 @@ onMounted(async () => {
   loading.value = true;
   visitCafeData.value = await fetchVisitCafeData();
   loading.value = false;
+});
+
+// Computed property to parse markdown content
+const parsedBrandStoryContent = computed(() => {
+  if (!visitCafeData.value?.brandStorySection?.content) return '';
+  return parseMarkdown(visitCafeData.value.brandStorySection.content);
 });
 
 // Computed styles
@@ -319,103 +319,78 @@ useHead(() => {
 
 // Brand Story Section
 .brand-story-section {
-  padding: 80px 60px;
-  background: #f5f5f0;
-
-  @media (max-width: 991px) {
-    padding: 60px 40px;
-  }
-
-  @media (max-width: 767px) {
-    padding: 40px 20px;
-  }
+  padding: 0rem 2rem;
+  background: $color-background;
 
   .container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 2rem;
   }
 
   .brand-story-grid {
     display: grid;
-    gap: 60px;
+    gap: 3rem;
     align-items: center;
 
-    @media (min-width: 992px) {
+    @media (min-width: 1024px) {
       grid-template-columns: 1fr 1fr;
-      gap: 80px;
     }
   }
 
-  .story-content {
-    .heading {
-      display: block;
-      color: #8b6f47;
-      font-size: 0.8125rem;
-      font-weight: 600;
+  .brand-story__content {
+    @media (min-width: 1024px) {
+      margin-top: -$spacing-14;
+    }
+
+    h2 {
+      font-family: $font-heading;
+      font-size: $font-size-4xl;
+      color: $color-text;
+      margin-bottom: 1.5rem;
       text-transform: uppercase;
-      letter-spacing: 2.5px;
-      margin-bottom: 16px;
+      font-weight: bold;
     }
 
-    .title {
-      font-size: 2.5rem;
-      font-weight: 600;
-      color: #2c2c2c;
-      margin-bottom: 24px;
-      line-height: 1.2;
-      letter-spacing: -0.5px;
-
-      @media (max-width: 991px) {
-        font-size: 2rem;
+    .brand-story__text {
+      :deep(p) {
+        color: $color-text;
+        line-height: 1.8;
+        margin-bottom: 1rem;
       }
 
-      @media (max-width: 767px) {
-        font-size: 1.75rem;
-      }
-    }
-
-    .description {
-      color: #4a4a4a;
-      line-height: 1.8;
-      font-size: 1.0625rem;
-      font-weight: 400;
-
-      @media (max-width: 767px) {
-        font-size: 1rem;
+      :deep(strong) {
+        font-weight: 700;
+        color: $color-text;
       }
 
-      p {
-        margin: 0 0 16px 0;
+      :deep(em) {
+        font-style: italic;
+      }
 
-        &:last-child {
-          margin-bottom: 0;
+      :deep(a) {
+        color: $color-primary;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+
+        &:hover {
+          color: darken($color-primary, 10%);
+          text-decoration: underline;
         }
       }
+
+      :deep(br) {
+        line-height: 1.8;
+      }
     }
   }
 
-  .story-images {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: repeat(2, 1fr);
-
-    @media (max-width: 767px) {
-      gap: 12px;
-    }
-
-    .story-image {
+  .brand-story__image {
+    img {
       width: 100%;
-      height: 280px;
-      object-fit: cover;
-      border-radius: 4px;
-
-      @media (max-width: 991px) {
-        height: 240px;
-      }
-
-      @media (max-width: 767px) {
-        height: 180px;
-      }
+      height: auto;
+      border-radius: 12px;
     }
   }
 }
