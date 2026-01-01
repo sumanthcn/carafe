@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_sections_opening_hours_with_images",
+  "info": {
+    "displayName": "Opening Hours with Image",
+    "description": "Opening hours section with background image"
+  },
+  "options": {},
+  "attributes": {
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"]
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "default": "OPENING HOURS"
+    },
+    "mondayToSaturday": {
+      "type": "string",
+      "required": true,
+      "default": "7:00am – 6:00pm"
+    },
+    "sunday": {
+      "type": "string",
+      "required": true,
+      "default": "8:00am – 4:00pm"
+    }
+  }
+}

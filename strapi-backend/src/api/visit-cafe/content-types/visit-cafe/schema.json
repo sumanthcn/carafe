@@ -1,0 +1,41 @@
+{
+  "kind": "singleType",
+  "collectionName": "visit_cafe",
+  "info": {
+    "singularName": "visit-cafe",
+    "pluralName": "visit-cafes",
+    "displayName": "Visit Cafe",
+    "description": "Visit Cafe page content and sections"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "bannerSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.visit-cafe-banner"
+    },
+    "brandStorySection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.brand-story"
+    },
+    "openingHoursSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.opening-hours-with-image"
+    },
+    "gettingHereSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.getting-here"
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    }
+  }
+}

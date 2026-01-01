@@ -1001,6 +1001,51 @@ export interface ApiSubscriptionSubscription
   };
 }
 
+export interface ApiVisitCafeVisitCafe extends Struct.SingleTypeSchema {
+  collectionName: 'visit_cafe';
+  info: {
+    description: 'Visit Cafe page content and sections';
+    displayName: 'Visit Cafe';
+    pluralName: 'visit-cafes';
+    singularName: 'visit-cafe';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    bannerSection: Schema.Attribute.Component<
+      'sections.visit-cafe-banner',
+      false
+    >;
+    brandStorySection: Schema.Attribute.Component<
+      'sections.brand-story',
+      false
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    gettingHereSection: Schema.Attribute.Component<
+      'sections.getting-here',
+      false
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::visit-cafe.visit-cafe'
+    > &
+      Schema.Attribute.Private;
+    openingHoursSection: Schema.Attribute.Component<
+      'sections.opening-hours-with-image',
+      false
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1523,6 +1568,7 @@ declare module '@strapi/strapi' {
       'api::shop-coffee.shop-coffee': ApiShopCoffeeShopCoffee;
       'api::shop-setting.shop-setting': ApiShopSettingShopSetting;
       'api::subscription.subscription': ApiSubscriptionSubscription;
+      'api::visit-cafe.visit-cafe': ApiVisitCafeVisitCafe;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

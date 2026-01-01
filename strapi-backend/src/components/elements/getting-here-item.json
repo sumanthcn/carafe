@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_elements_getting_here_items",
+  "info": {
+    "displayName": "Getting Here Item",
+    "description": "Individual transportation option with icon, name and description"
+  },
+  "options": {},
+  "attributes": {
+    "icon": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}

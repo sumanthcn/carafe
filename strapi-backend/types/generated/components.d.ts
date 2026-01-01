@@ -103,6 +103,19 @@ export interface ElementsFooterLink extends Struct.ComponentSchema {
   };
 }
 
+export interface ElementsGettingHereItem extends Struct.ComponentSchema {
+  collectionName: 'components_elements_getting_here_items';
+  info: {
+    description: 'Individual transportation option with icon, name and description';
+    displayName: 'Getting Here Item';
+  };
+  attributes: {
+    description: Schema.Attribute.RichText & Schema.Attribute.Required;
+    icon: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ElementsNavChild extends Struct.ComponentSchema {
   collectionName: 'components_elements_nav_child';
   info: {
@@ -423,6 +436,20 @@ export interface SectionsFooterSection extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsGettingHere extends Struct.ComponentSchema {
+  collectionName: 'components_sections_getting_heres';
+  info: {
+    description: 'Getting here section with different transportation options';
+    displayName: 'Getting Here';
+  };
+  attributes: {
+    items: Schema.Attribute.Component<'elements.getting-here-item', true>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'GETTING HERE'>;
+  };
+}
+
 export interface SectionsHeroSection extends Struct.ComponentSchema {
   collectionName: 'components_sections_hero_section';
   info: {
@@ -475,6 +502,26 @@ export interface SectionsImageGallery extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsOpeningHoursWithImage extends Struct.ComponentSchema {
+  collectionName: 'components_sections_opening_hours_with_images';
+  info: {
+    description: 'Opening hours section with background image';
+    displayName: 'Opening Hours with Image';
+  };
+  attributes: {
+    backgroundImage: Schema.Attribute.Media<'images'>;
+    mondayToSaturday: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
+    sunday: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'8:00am \u2013 4:00pm'>;
+    title: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'OPENING HOURS'>;
+  };
+}
+
 export interface SectionsProductCategories extends Struct.ComponentSchema {
   collectionName: 'components_sections_product_categories';
   info: {
@@ -511,6 +558,21 @@ export interface SectionsTextContent extends Struct.ComponentSchema {
   };
   attributes: {
     content: Schema.Attribute.RichText;
+  };
+}
+
+export interface SectionsVisitCafeBanner extends Struct.ComponentSchema {
+  collectionName: 'components_sections_visit_cafe_banners';
+  info: {
+    description: 'Banner section for visit cafe page with background image, title, subtitle and description';
+    displayName: 'Visit Cafe Banner';
+  };
+  attributes: {
+    backgroundImage: Schema.Attribute.Media<'images'> &
+      Schema.Attribute.Required;
+    description: Schema.Attribute.RichText;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -682,6 +744,7 @@ declare module '@strapi/strapi' {
       'elements.feature-item': ElementsFeatureItem;
       'elements.footer-column': ElementsFooterColumn;
       'elements.footer-link': ElementsFooterLink;
+      'elements.getting-here-item': ElementsGettingHereItem;
       'elements.nav-child': ElementsNavChild;
       'elements.nav-item': ElementsNavItem;
       'elements.opening-hours': ElementsOpeningHours;
@@ -698,12 +761,15 @@ declare module '@strapi/strapi' {
       'sections.cta-section': SectionsCtaSection;
       'sections.faq-section': SectionsFaqSection;
       'sections.footer-section': SectionsFooterSection;
+      'sections.getting-here': SectionsGettingHere;
       'sections.hero-section': SectionsHeroSection;
       'sections.hero-slide': SectionsHeroSlide;
       'sections.image-gallery': SectionsImageGallery;
+      'sections.opening-hours-with-image': SectionsOpeningHoursWithImage;
       'sections.product-categories': SectionsProductCategories;
       'sections.team-section': SectionsTeamSection;
       'sections.text-content': SectionsTextContent;
+      'sections.visit-cafe-banner': SectionsVisitCafeBanner;
       'sections.visit-cafe-section': SectionsVisitCafeSection;
       'sections.wholesale-section': SectionsWholesaleSection;
       'shared.button': SharedButton;

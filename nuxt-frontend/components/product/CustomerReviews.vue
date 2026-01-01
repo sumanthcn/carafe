@@ -278,8 +278,18 @@ const markAsHelpful = async (review: CustomerReview) => {
     if (success) {
         helpfulReviews.value.add(review.id);
         review.helpfulCount++;
-        // Store in localStorage to persist across sessions
-        localStorage.setItem(`helpful-review-${review.id}`, "true");
+        
+        // Store in cookie to persist across sessions and prevent multiple votes
+        // Cookie expires in 365 days
+        const helpfulCookie = useCookie<number[]>('helpful-reviews', {
+            maxAge: 60 * 60 * 24 * 365, // 1 year
+            sameSite: 'lax'
+        });
+        
+        const currentHelpful = helpfulCookie.value || [];
+        if (!currentHelpful.includes(review.id)) {
+            helpfulCookie.value = [...currentHelpful, review.id];
+        }
     }
 };
 
@@ -308,16 +318,23 @@ watch(filteredReviews, () => {
     updateDisplayedReviews();
 });
 
-// Load helpful reviews from localStorage
+// Load helpful reviews from cookie
+const loadHelpfulReviews = () => {
+    const helpfulCookie = useCookie<number[]>('helpful-reviews', {
+        maxAge: 60 * 60 * 24 * 365,
+        sameSite: 'lax'
+    });
+    
+    const helpfulIds = helpfulCookie.value || [];
+    helpfulIds.forEach(id => {
+        helpfulReviews.value.add(id);
+    });
+};
+
+// Load reviews and helpful state
 onMounted(() => {
     loadReviews();
-
-    // Load previously marked helpful reviews
-    reviews.value.forEach((review) => {
-        if (localStorage.getItem(`helpful-review-${review.id}`)) {
-            helpfulReviews.value.add(review.id);
-        }
-    });
+    loadHelpfulReviews();
 });
 </script>
 
