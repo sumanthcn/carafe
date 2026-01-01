@@ -157,14 +157,14 @@ export default defineNuxtConfig({
 
   // Route rules for SSG/ISR/SSR
   routeRules: {
-    // Homepage - prerender at build time
-    "/": { prerender: true },
+    // Homepage - only prerender if ENABLE_PRERENDER is set (not during Heroku build)
+    "/": process.env.ENABLE_PRERENDER === "true" ? { prerender: true } : { isr: 3600 },
 
-    // Static pages - prerender
-    "/about": { prerender: true },
-    "/visit-cafe": { prerender: true },
-    "/art-culture": { prerender: true },
-    "/wholesale": { prerender: true },
+    // Static pages - only prerender if enabled
+    "/about": process.env.ENABLE_PRERENDER === "true" ? { prerender: true } : { isr: 3600 },
+    "/visit-cafe": process.env.ENABLE_PRERENDER === "true" ? { prerender: true } : { isr: 3600 },
+    "/art-culture": process.env.ENABLE_PRERENDER === "true" ? { prerender: true } : { isr: 3600 },
+    "/wholesale": process.env.ENABLE_PRERENDER === "true" ? { prerender: true } : { isr: 3600 },
 
     // Shop pages - ISR with revalidation
     "/shop/**": { isr: 3600 }, // 1 hour
@@ -182,6 +182,15 @@ export default defineNuxtConfig({
   // Nitro server configuration
   nitro: {
     compressPublicAssets: true,
+    // Prerender configuration - make it fail gracefully
+    prerender: {
+      // Don't fail build if prerendering fails (useful for Heroku builds)
+      failOnError: false,
+      // Ignore errors from these routes
+      ignore: ['/checkout', '/cart', '/api'],
+      // Crawler settings
+      crawlLinks: false, // Disable auto-crawling to prevent hitting Strapi during build
+    },
     routeRules: {
       "/api/**": {
         cors: true,
@@ -199,9 +208,6 @@ export default defineNuxtConfig({
       },
     },
   },
-
-  // CSS
-  css: ["~/assets/scss/main.scss"],
 
   // Vite configuration
   vite: {
