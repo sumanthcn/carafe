@@ -6,4 +6,4 @@
 # frontend and backend, each with their own Procfile
 
 # Default: Run the startup script that manages both services
-web: npm start
+web: yarn start

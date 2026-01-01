@@ -162,7 +162,7 @@ heroku ps:scale web=2 --app carafe-frontend
 
 # Run commands
 heroku run bash --app carafe-strapi
-heroku run npm run strapi -- migration:run --app carafe-strapi
+heroku run yarn strapi migration:run --app carafe-strapi
 
 # Database
 heroku pg:info --app carafe-strapi

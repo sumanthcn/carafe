@@ -4,7 +4,7 @@
   "repository": "https://github.com/sumanthcn/carafe",
   "keywords": ["nuxt", "vue", "ecommerce", "ssr"],
   "website": "https://carafe.coffee",
-  "stack": "container",
+  "stack": "heroku-22",
   "env": {
     "NODE_ENV": {
       "description": "Node environment",
@@ -57,5 +57,9 @@
     }
   },
   "addons": [],
-  "buildpacks": []
+  "buildpacks": [],
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": ">=1.22.0"
+  }
 }

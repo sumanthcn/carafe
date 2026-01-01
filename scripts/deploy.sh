@@ -26,14 +26,14 @@ git pull origin $BRANCH
 # Deploy Strapi
 echo "🔧 Building Strapi..."
 cd $DEPLOY_DIR/strapi-backend
-npm ci --production=false
-npm run build
+yarn install --frozen-lockfile
+yarn build
 
 # Deploy Nuxt
 echo "🔧 Building Nuxt..."
 cd $DEPLOY_DIR/nuxt-frontend
-npm ci --production=false
-npm run build
+yarn install --frozen-lockfile
+yarn build
 
 # Restart services with PM2
 echo "♻️ Restarting services..."
@@ -46,7 +46,7 @@ pm2 reload carafe-nuxt
 
 # Run database migrations if needed
 # cd $DEPLOY_DIR/strapi-backend
-# npm run strapi migration:run
+# yarn strapi migration:run
 
 echo "✅ Deployment complete!"
 echo ""

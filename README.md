@@ -67,7 +67,7 @@ carafe-coffee/
 
 - Node.js 20.x
 - PostgreSQL 15+
-- npm or yarn
+- yarn
 
 ### Backend (Strapi)
 
@@ -75,8 +75,8 @@ carafe-coffee/
 cd strapi-backend
 cp .env.example .env
 # Edit .env with your database credentials
-npm install
-npm run develop
+yarn install
+yarn develop
 ```
 
 Strapi admin: http://localhost:1337/admin
@@ -87,8 +87,8 @@ Strapi admin: http://localhost:1337/admin
 cd nuxt-frontend
 cp .env.example .env
 # Edit .env with your Strapi URL and API token
-npm install
-npm run dev
+yarn install
+yarn dev
 ```
 
 Frontend: http://localhost:3000
@@ -204,12 +204,12 @@ See `.env.production.example` for all required variables:
 ```bash
 # Frontend
 cd nuxt-frontend
-npm run test
-npm run test:e2e
+yarn test
+yarn test:e2e
 
 # Backend
 cd strapi-backend
-npm run test
+yarn test
 ```
 
 ## 📊 Monitoring

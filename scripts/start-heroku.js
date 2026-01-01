@@ -23,7 +23,7 @@ const SERVICE = process.env.HEROKU_SERVICE || 'frontend';
 if (SERVICE === 'backend') {
   // Start Strapi only
   console.log('\n📦 Starting Strapi Backend...');
-  const strapi = spawn('npm', ['start'], {
+  const strapi = spawn('yarn', ['start'], {
     cwd: path.join(__dirname, '..', 'strapi-backend'),
     env: { ...process.env, PORT: PORT, HOST: '0.0.0.0' },
     stdio: 'inherit'

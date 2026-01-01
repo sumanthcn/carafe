@@ -187,7 +187,7 @@ main() {
   echo -e "${BLUE}📝 Next steps:${NC}"
   echo "1. Set all required environment variables (see output above)"
   echo "2. Run database migrations if needed:"
-  echo "   heroku run npm run strapi -- migration:run --app $STRAPI_APP_NAME"
+  echo "   heroku run yarn strapi migration:run --app $STRAPI_APP_NAME"
   echo "3. Visit your apps:"
   echo "   - Backend:  https://$STRAPI_APP_NAME.herokuapp.com"
   echo "   - Frontend: https://$NUXT_APP_NAME.herokuapp.com"

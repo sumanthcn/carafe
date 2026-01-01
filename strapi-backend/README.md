@@ -4,7 +4,7 @@
 
 - Node.js 18.x or 20.x (LTS recommended)
 - PostgreSQL 14+ (for production)
-- npm or yarn
+- yarn
 
 ## Quick Start
 
@@ -12,7 +12,7 @@
 
 ```bash
 cd strapi-backend
-npm install
+yarn install
 ```
 
 ### 2. Configure Environment
@@ -58,7 +58,7 @@ GRANT ALL PRIVILEGES ON DATABASE carafe_strapi TO strapi;
 ### 4. Run Development Server
 
 ```bash
-npm run develop
+yarn develop
 ```
 
 Access the admin panel at: http://localhost:1337/admin
@@ -83,8 +83,8 @@ On first run, create your admin account at the admin panel.
 ## Production Build
 
 ```bash
-npm run build
-npm run start
+yarn build
+yarn start
 ```
 
 ## API Tokens
@@ -101,7 +101,7 @@ For frontend access, create an API token in the admin:
 For production, configure S3 or similar:
 
 ```bash
-npm install @strapi/provider-upload-aws-s3
+yarn add @strapi/provider-upload-aws-s3
 ```
 
 Update `config/plugins.ts` with S3 configuration.

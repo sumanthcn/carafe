@@ -19,7 +19,7 @@
   },
   "engines": {
     "node": "23.x",
-    "npm": ">=10.9.0"
+    "yarn": ">=1.22.0"
   },
   "keywords": [
     "coffee",

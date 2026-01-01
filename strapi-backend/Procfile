@@ -3,4 +3,4 @@
 # =============================================================================
 # For deploying Strapi as a separate Heroku app
 
-web: npm start
+web: yarn start

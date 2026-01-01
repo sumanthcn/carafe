@@ -222,7 +222,7 @@ Update `strapi-backend/config/middlewares.ts`:
 ### 4. Run Migrations (if any)
 
 ```bash
-heroku run npm run strapi -- migration:run --app carafe-strapi
+heroku run yarn strapi migration:run --app carafe-strapi
 ```
 
 ## Monitoring & Maintenance

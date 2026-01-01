@@ -18,9 +18,15 @@ echo "📦 Installing Node.js..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
+# Install Yarn
+echo "📦 Installing Yarn..."
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt update && sudo apt install -y yarn
+
 # Install PM2
 echo "📦 Installing PM2..."
-sudo npm install -g pm2
+sudo yarn global add pm2
 
 # Install Nginx
 echo "📦 Installing Nginx..."
