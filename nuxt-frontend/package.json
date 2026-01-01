@@ -22,6 +22,7 @@
     "@nuxt/image": "^1.8.1",
     "@nuxt/ui": "^2.18.7",
     "@nuxtjs/sitemap": "^7.5.0",
+    "@nuxtjs/robots": "^4.1.9",
     "@pinia/nuxt": "^0.5.5",
     "@vueuse/core": "^11.3.0",
     "@vueuse/nuxt": "^11.3.0",
@@ -35,7 +36,6 @@
   "devDependencies": {
     "@nuxt/devtools": "^1.7.0",
     "@nuxt/eslint": "^0.7.3",
-    "@nuxtjs/robots": "^4.1.9",
     "@types/node": "^22.10.2",
     "eslint": "^9.17.0",
     "sass": "^1.83.0",
