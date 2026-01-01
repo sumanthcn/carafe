@@ -1,3 +1,15 @@
+import { mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+// Ensure uploads directory exists (for Heroku and other environments)
+const uploadsDir = join(process.cwd(), 'public', 'uploads');
+if (!existsSync(uploadsDir)) {
+  mkdir(uploadsDir, { recursive: true }).catch((err) => {
+    console.error('Failed to create uploads directory:', err);
+  });
+}
+
 export default ({ env }) => ({
   // Users & Permissions plugin
   "users-permissions": {
