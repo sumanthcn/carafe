@@ -157,6 +157,20 @@ export default defineNuxtConfig({
 
   // Route rules for SSG/ISR/SSR
   routeRules: {
+    // Redirect /admin to Strapi backend
+    "/admin": { 
+      redirect: {
+        to: (process.env.NUXT_PUBLIC_STRAPI_URL || "http://localhost:1337") + "/admin",
+        statusCode: 302
+      }
+    },
+    "/admin/**": { 
+      redirect: {
+        to: (process.env.NUXT_PUBLIC_STRAPI_URL || "http://localhost:1337") + "/admin",
+        statusCode: 302
+      }
+    },
+
     // Homepage - only prerender if ENABLE_PRERENDER is set (not during Heroku build)
     "/": process.env.ENABLE_PRERENDER === "true" ? { prerender: true } : { isr: 3600 },
 
