@@ -1,44 +1,13 @@
 import type { StrapiResponse } from "~/types/strapi";
 
-export interface VisitCafeBanner {
-  backgroundImage: any;
-  title: string;
-  subtitle?: string;
-  description?: string;
-}
-
-export interface BrandStory {
-  headline: string;
-  content: string;
-  image: any;
-}
-
-export interface OpeningHoursWithImage {
-  backgroundImage?: any;
-  title: string;
-  mondayToSaturday: string;
-  sunday: string;
-}
-
-export interface GettingHereItem {
-  id: number;
-  icon: any;
-  name: string;
-  description: string;
-}
-
-export interface GettingHere {
-  title: string;
-  items: GettingHereItem[];
-}
 
 export interface VisitCafe {
   id: number;
   documentId: string;
-  bannerSection?: VisitCafeBanner;
-  brandStorySection?: BrandStory;
-  openingHoursSection?: OpeningHoursWithImage;
-  gettingHereSection?: GettingHere;
+  bannerSection?: any;
+  brandStorySection?: any;
+  openingHoursSection?: any;
+  gettingHereSection?: any;
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -66,13 +35,16 @@ export const useVisitCafe = () => {
       
       // Brand story section with images
       params.append("populate[brandStorySection][populate][image]", "true");
+      params.append("populate[brandStorySection][populate][cta][populate][icon]", "true");
       
       // Opening hours section with background image
+      params.append("populate[openingHoursSection][populate][backgroundImage]", "true");
       
       // Getting here section with items and their icons
+      params.append("populate[gettingHereSection][populate][items][populate][icon]", "true");
       
       // SEO with meta image
-
+      // params.append("populate[seo][populate][metaImage]", "true");
       const response = await $fetch<StrapiResponse<VisitCafe>>(
         `${strapiUrl}/api/visit-cafe?${params.toString()}`
       );

@@ -26,8 +26,9 @@
       <div
         v-if="visitCafeData?.bannerSection?.description"
         class="banner-description"
-        v-html="visitCafeData.bannerSection.description"
-      ></div>
+      >
+      <div class="text" v-html="parsedBannerDescription" />
+    </div>
       
       <!-- Brand Story Section -->
       <section v-if="visitCafeData.brandStorySection" class="brand-story-section">
@@ -35,7 +36,27 @@
           <div class="brand-story-grid">
             <div class="brand-story__content">
               <h2>{{ visitCafeData.brandStorySection.headline }}</h2>
-              <div class="brand-story__text" v-html="parsedBrandStoryContent"></div>
+              <div class="brand-story__text" v-html="parsedBrandStoryContent" />
+              <NuxtLink
+                v-if="visitCafeData.brandStorySection.cta"
+                :to="visitCafeData.brandStorySection.cta.url || '/'"
+                :target="visitCafeData.brandStorySection.cta.openInNewTab ? '_blank' : undefined"
+                :class="['btn', `btn--${visitCafeData.brandStorySection.cta.style || 'primary'}`]"
+              >
+                <img
+                  v-if="visitCafeData.brandStorySection.cta.icon && visitCafeData.brandStorySection.cta.iconPosition === 'left'"
+                  :src="getStrapiMediaUrl(visitCafeData.brandStorySection.cta.icon)"
+                  alt=""
+                  class="btn__icon btn__icon--left"
+                />
+                <span>{{ visitCafeData.brandStorySection.cta.text }}</span>
+                <img
+                  v-if="visitCafeData.brandStorySection.cta.icon && visitCafeData.brandStorySection.cta.iconPosition === 'right'"
+                  :src="getStrapiMediaUrl(visitCafeData.brandStorySection.cta.icon)"
+                  alt=""
+                  class="btn__icon btn__icon--right"
+                />
+              </NuxtLink>
             </div>
             <div v-if="visitCafeData.brandStorySection.image" class="brand-story__image">
               <img :src="getStrapiMediaUrl(visitCafeData.brandStorySection.image)" :alt="visitCafeData.brandStorySection.headline" />
@@ -50,7 +71,6 @@
         class="opening-hours-section"
         :style="openingHoursBackgroundStyle"
       >
-        <div class="hours-overlay"></div>
         <div class="container">
           <h2 class="hours-title">{{ visitCafeData.openingHoursSection.title }}</h2>
           <div class="hours-grid">
@@ -119,10 +139,15 @@ onMounted(async () => {
   loading.value = false;
 });
 
-// Computed property to parse markdown content
+// Computed properties to parse markdown content
 const parsedBrandStoryContent = computed(() => {
   if (!visitCafeData.value?.brandStorySection?.content) return '';
   return parseMarkdown(visitCafeData.value.brandStorySection.content);
+});
+
+const parsedBannerDescription = computed(() => {
+  if (!visitCafeData.value?.bannerSection?.description) return '';
+  return parseMarkdown(visitCafeData.value.bannerSection.description);
 });
 
 // Computed styles
@@ -311,10 +336,16 @@ useHead(() => {
 .banner-description {
   background: $color-background-alt;
   padding: 2rem 60px;
-  max-width: 1400px;
   font-family: $font-body;
   font-size: $font-size-base;
   text-align: center;
+
+  .text {
+    max-width: 900px;
+    margin: 0 auto;
+    color: $color-text;
+    line-height: 1.2;
+  }
 }
 
 // Brand Story Section
@@ -395,6 +426,23 @@ useHead(() => {
   }
 }
 
+// Brand story specific button overrides
+  .btn {
+    margin-top: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &.btn--primary {
+      .btn__icon {
+        filter: brightness(0) invert(1);
+      }
+
+      &:hover {
+        transform: translateY(-2px);
+      }
+    }
+  }
+
 // Opening Hours Section
 .opening-hours-section {
   position: relative;
@@ -416,16 +464,6 @@ useHead(() => {
   @media (max-width: 767px) {
     padding: 40px 20px;
     min-height: 350px;
-  }
-
-  .hours-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1;
   }
 
   .container {
@@ -509,7 +547,7 @@ useHead(() => {
 
 // Getting Here Section
 .getting-here-section {
-  padding: 80px 60px;
+  padding: 80px 80px 0 60px;
   background: white;
 
   @media (max-width: 991px) {
@@ -523,24 +561,25 @@ useHead(() => {
   .container {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 0;
   }
 
   .section-title {
     text-align: center;
-    font-size: 2.5rem;
-    font-weight: 700;
+    font-family: $font-heading;
+    font-size: $font-size-4xl;
+    color: $color-text;
+    font-weight: bold;
     margin-bottom: 60px;
-    color: #2c2c2c;
     text-transform: uppercase;
-    letter-spacing: 4px;
 
     @media (max-width: 991px) {
-      font-size: 2rem;
+      font-size: $font-size-3xl;
       margin-bottom: 50px;
     }
 
     @media (max-width: 767px) {
-      font-size: 1.75rem;
+      font-size: $font-size-2xl;
       letter-spacing: 2px;
       margin-bottom: 40px;
     }
@@ -556,25 +595,14 @@ useHead(() => {
     }
 
     @media (min-width: 992px) {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 28px;
     }
   }
 
   .getting-here-item {
-    text-align: center;
+    text-align: left;
     padding: 36px 24px;
-    background: #fafaf8;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-
-    &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      border-color: rgba(139, 111, 71, 0.2);
-    }
 
     @media (max-width: 767px) {
       padding: 28px 20px;
@@ -582,7 +610,6 @@ useHead(() => {
 
     .item-icon {
       margin-bottom: 20px;
-      display: flex;
       align-items: center;
       justify-content: center;
       min-height: 80px;
@@ -592,8 +619,8 @@ useHead(() => {
       }
 
       img {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
         object-fit: contain;
 
         @media (max-width: 991px) {
@@ -609,11 +636,12 @@ useHead(() => {
     }
 
     .item-name {
-      font-size: 1.125rem;
+      font-size: $font-size-xl;
       font-weight: 700;
-      color: #8b6f47;
+      color: $color-text;
+      font-weight: bold;
+      font-family: $font-heading;
       margin-bottom: 12px;
-      text-transform: uppercase;
       letter-spacing: 0.5px;
 
       @media (max-width: 767px) {
@@ -622,10 +650,12 @@ useHead(() => {
     }
 
     .item-description {
-      color: #5a5a5a;
-      line-height: 1.7;
-      font-size: 0.9375rem;
-      font-weight: 400;
+      color: $color-text;
+      line-height: 1.5;
+      font-size: $font-size-base;
+      font-weight: 500;
+      max-width: 80%;
+      margin-top: 1.25rem;
 
       @media (max-width: 767px) {
         font-size: 0.875rem;
