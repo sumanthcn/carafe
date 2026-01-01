@@ -1,0 +1,61 @@
+{
+  "name": "Carafe Coffee",
+  "description": "Specialty coffee e-commerce platform with Strapi CMS and Nuxt 3",
+  "repository": "https://github.com/sumanthcn/carafe",
+  "keywords": ["coffee", "ecommerce", "strapi", "nuxt", "vue"],
+  "website": "https://carafe.coffee",
+  "logo": "https://carafe.coffee/logo.png",
+  "success_url": "/",
+  "stack": "container",
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production",
+      "required": true
+    },
+    "NUXT_PUBLIC_SITE_URL": {
+      "description": "Public URL of the Nuxt frontend",
+      "value": "https://carafe.coffee",
+      "required": true
+    },
+    "NUXT_PUBLIC_STRAPI_URL": {
+      "description": "Public URL of the Strapi backend",
+      "value": "https://carafe-strapi.herokuapp.com",
+      "required": true
+    },
+    "STRAPI_API_TOKEN": {
+      "description": "API token for Strapi authentication",
+      "required": true
+    },
+    "WORLDPAY_MERCHANT_CODE": {
+      "description": "Worldpay merchant code",
+      "required": false
+    },
+    "WORLDPAY_XML_PASSWORD": {
+      "description": "Worldpay XML password",
+      "required": false
+    },
+    "WORLDPAY_MAC_SECRET": {
+      "description": "Worldpay MAC secret",
+      "required": false
+    },
+    "WORLDPAY_ENV": {
+      "description": "Worldpay environment (test or live)",
+      "value": "live",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  },
+  "addons": [],
+  "buildpacks": [],
+  "environments": {
+    "test": {},
+    "review": {},
+    "production": {}
+  }
+}

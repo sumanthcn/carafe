@@ -1,0 +1,6 @@
+# =============================================================================
+# HEROKU PROCFILE - NUXT FRONTEND
+# =============================================================================
+# For deploying Nuxt as a separate Heroku app
+
+web: node .output/server/index.mjs

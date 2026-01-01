@@ -1,0 +1,102 @@
+{
+  "name": "Carafe Coffee - Strapi Backend",
+  "description": "Strapi CMS backend for Carafe Coffee e-commerce platform",
+  "repository": "https://github.com/sumanthcn/carafe",
+  "keywords": ["strapi", "cms", "headless", "api"],
+  "stack": "container",
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production",
+      "required": true
+    },
+    "HOST": {
+      "description": "Server host",
+      "value": "0.0.0.0",
+      "required": true
+    },
+    "PORT": {
+      "description": "Server port",
+      "value": "1337",
+      "required": true
+    },
+    "APP_KEYS": {
+      "description": "App keys for Strapi (comma-separated)",
+      "generator": "secret",
+      "required": true
+    },
+    "API_TOKEN_SALT": {
+      "description": "API token salt",
+      "generator": "secret",
+      "required": true
+    },
+    "ADMIN_JWT_SECRET": {
+      "description": "Admin JWT secret",
+      "generator": "secret",
+      "required": true
+    },
+    "TRANSFER_TOKEN_SALT": {
+      "description": "Transfer token salt",
+      "generator": "secret",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "JWT secret",
+      "generator": "secret",
+      "required": true
+    },
+    "DATABASE_CLIENT": {
+      "description": "Database client",
+      "value": "postgres",
+      "required": true
+    },
+    "DATABASE_HOST": {
+      "description": "Database host from Heroku Postgres addon",
+      "required": true
+    },
+    "DATABASE_PORT": {
+      "description": "Database port",
+      "value": "5432",
+      "required": true
+    },
+    "DATABASE_NAME": {
+      "description": "Database name",
+      "required": true
+    },
+    "DATABASE_USERNAME": {
+      "description": "Database username",
+      "required": true
+    },
+    "DATABASE_PASSWORD": {
+      "description": "Database password",
+      "required": true
+    },
+    "DATABASE_SSL": {
+      "description": "Enable SSL for database connection",
+      "value": "true",
+      "required": true
+    },
+    "FRONTEND_URL": {
+      "description": "Frontend URL for CORS",
+      "value": "https://carafe.coffee",
+      "required": true
+    },
+    "PUBLIC_URL": {
+      "description": "Public URL of this Strapi instance",
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini",
+      "as": "DATABASE"
+    }
+  ],
+  "buildpacks": []
+}

@@ -1,0 +1,31 @@
+{
+  "name": "carafe-coffee-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Carafe Coffee House & Roasters - Full Stack Application",
+  "scripts": {
+    "postinstall": "npm run install:backend && npm run install:frontend",
+    "install:backend": "cd strapi-backend && npm ci",
+    "install:frontend": "cd nuxt-frontend && npm ci",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd strapi-backend && npm run build",
+    "build:frontend": "cd nuxt-frontend && npm run build",
+    "start": "node scripts/start-heroku.js",
+    "start:backend": "cd strapi-backend && npm start",
+    "start:frontend": "cd nuxt-frontend && node .output/server/index.mjs",
+    "dev:backend": "cd strapi-backend && npm run develop",
+    "dev:frontend": "cd nuxt-frontend && npm run dev",
+    "heroku-postbuild": "npm run build"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "coffee",
+    "ecommerce",
+    "strapi",
+    "nuxt"
+  ],
+  "license": "MIT"
+}

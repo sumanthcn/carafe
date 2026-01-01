@@ -1,0 +1,43 @@
+# =============================================================================
+# HEROKU SLUGIGNORE - CARAFE COFFEE
+# =============================================================================
+# Files to exclude from Heroku slug to reduce build size
+
+# Documentation
+*.md
+docs/
+README
+
+# Development files
+.git/
+.gitignore
+.env.example
+.env.production.example
+.DS_Store
+
+# Docker files (not needed for buildpack deployment)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Development tools
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Scripts not needed in production
+scripts/server-setup.sh
+
+# Nginx configs (not needed on Heroku)
+nginx/

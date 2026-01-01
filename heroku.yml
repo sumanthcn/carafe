@@ -1,0 +1,22 @@
+# =============================================================================
+# HEROKU CONTAINER DEPLOYMENT - CARAFE COFFEE
+# =============================================================================
+# This file configures container-based deployment on Heroku
+# Use this with: heroku stack:set container
+
+# Build phase - defines Docker images to build
+build:
+  docker:
+    web: nuxt-frontend/Dockerfile
+    # Note: Strapi should be deployed as a separate app
+    # Create a separate heroku.yml in strapi-backend/ directory
+
+# Run phase - defines commands to execute after deployment
+release:
+  image: web
+  command:
+    - echo "Deployment successful"
+
+# Default config
+config:
+  NODE_ENV: production

@@ -1,0 +1,25 @@
+# =============================================================================
+# HEROKU SLUGIGNORE - NUXT FRONTEND
+# =============================================================================
+
+# Documentation
+*.md
+docs/
+
+# Development
+.env.example
+.DS_Store
+.nuxt/
+
+# Tests
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Development tools
+.vscode/
+.idea/
+*.log

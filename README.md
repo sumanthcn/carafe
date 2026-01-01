@@ -95,7 +95,35 @@ Frontend: http://localhost:3000
 
 ## 🚀 Production Deployment
 
-### Using Docker Compose
+### Option 1: Heroku (Recommended for Quick Setup)
+
+The easiest way to deploy Carafe Coffee:
+
+```bash
+# Install Heroku CLI
+brew install heroku/brew/heroku
+
+# Login to Heroku
+heroku login
+
+# Generate secrets
+./scripts/generate-secrets.sh
+
+# Deploy both apps (automated)
+./scripts/heroku-deploy.sh both
+
+# Or deploy individually
+./scripts/heroku-deploy.sh backend
+./scripts/heroku-deploy.sh frontend
+```
+
+**Heroku Apps:**
+- Backend: `carafe-strapi` (with Postgres addon)
+- Frontend: `carafe-frontend`
+
+📖 **Full guide:** See [HEROKU_DEPLOYMENT.md](./HEROKU_DEPLOYMENT.md)
+
+### Option 2: Docker Compose (Self-hosted)
 
 ```bash
 # Copy and configure environment variables
@@ -108,7 +136,7 @@ docker-compose up -d --build
 docker-compose logs -f
 ```
 
-### Manual Deployment with PM2
+### Option 3: Manual Deployment with PM2 (VPS)
 
 ```bash
 # Setup server (Ubuntu 22.04)

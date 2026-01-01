@@ -1,0 +1,10 @@
+# =============================================================================
+# HEROKU CONTAINER DEPLOYMENT - NUXT FRONTEND
+# =============================================================================
+
+build:
+  docker:
+    web: Dockerfile
+
+run:
+  web: node .output/server/index.mjs
