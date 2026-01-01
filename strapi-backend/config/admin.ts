@@ -14,4 +14,8 @@ export default ({ env }) => ({
     nps: env.bool('FLAG_NPS', true),
     promoteEE: env.bool('FLAG_PROMOTE_EE', true),
   },
+  // Admin panel configuration for production
+  url: env('PUBLIC_URL', '/admin'),
+  autoOpen: false,
+  serveAdminPanel: env.bool('SERVE_ADMIN_PANEL', true),
 });
