@@ -77,6 +77,11 @@
       "component": "product.attributes",
       "repeatable": false
     },
+    "subscriptionOptions": {
+      "type": "component",
+      "component": "product.subscription-option",
+      "repeatable": true
+    },
     "category": {
       "type": "relation",
       "relation": "manyToOne",
@@ -91,7 +96,8 @@
     "reviews": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::product-review.product-review"
+      "target": "api::customer-review.customer-review",
+      "mappedBy": "product"
     },
     "seo": {
       "type": "component",

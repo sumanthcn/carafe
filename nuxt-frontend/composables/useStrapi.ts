@@ -213,6 +213,7 @@ export function useStrapi() {
         category: true,
         variants: true,
         attributes: true,
+        subscriptionOptions: true,
         seo: {
           populate: ["ogImage"],
         },
@@ -236,6 +237,7 @@ export function useStrapi() {
         category: true,
         variants: true,
         attributes: true,
+        subscriptionOptions: true,
         relatedProducts: {
           populate: ["images", "category", "variants"],
         },

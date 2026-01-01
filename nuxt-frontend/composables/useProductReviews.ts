@@ -34,31 +34,59 @@ export function useProductReviews() {
   const strapiUrl = config.public.strapiUrl;
 
   /**
-   * Fetch reviews for a specific product
+   * Fetch reviews for a specific product by documentId
    */
   async function fetchReviewsByProduct(productId: number | string) {
     try {
-      const response = await $fetch<{
-        data: ProductReview[];
-        meta: {
-          averageRating: number;
-          totalReviews: number;
-          ratingDistribution: Record<string, number>;
-        };
-      }>(`${strapiUrl}/api/product-reviews/product/${productId}`);
+      // Fetch product to get documentId if numeric ID is provided
+      let documentId = productId;
+      if (typeof productId === 'number') {
+        const productResponse = await $fetch<{ data: any }>(`${strapiUrl}/api/products/${productId}`);
+        documentId = productResponse.data?.documentId || productId;
+      }
+
+      // Fetch customer reviews by product documentId
+      const response = await $fetch<{ data: any[] }>(`${strapiUrl}/api/customer-reviews`, {
+        params: {
+          'filters[product][documentId][$eq]': documentId,
+          'filters[status][$eq]': 'approved',
+          'pagination[pageSize]': 100,
+        }
+      });
+
+      const reviews = response.data || [];
+      
+      // Calculate stats
+      const totalReviews = reviews.length;
+      const averageRating = totalReviews > 0
+        ? reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / totalReviews
+        : 0;
+      
+      const ratingDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      reviews.forEach((r: any) => {
+        const rating = r.rating as keyof typeof ratingDistribution;
+        if (rating >= 1 && rating <= 5) {
+          ratingDistribution[rating]++;
+        }
+      });
 
       return {
-        reviews: response.data || [],
+        reviews: reviews.map((r: any) => ({
+          id: r.id,
+          documentId: r.documentId || String(r.id),
+          rating: r.rating || 5,
+          reviewTitle: r.reviewTitle || '',
+          reviewText: r.reviewDescription || '',
+          isVerifiedPurchase: r.isVerifiedPurchase || false,
+          createdAt: r.createdAt || new Date().toISOString(),
+          customerName: r.name || 'Anonymous',
+          customerEmail: r.email || '',
+          isHelpful: r.helpfulCount || 0,
+        })),
         stats: {
-          averageRating: response.meta?.averageRating || 0,
-          totalReviews: response.meta?.totalReviews || 0,
-          ratingDistribution: response.meta?.ratingDistribution || {
-            5: 0,
-            4: 0,
-            3: 0,
-            2: 0,
-            1: 0,
-          },
+          averageRating: Number(averageRating.toFixed(1)),
+          totalReviews,
+          ratingDistribution,
         },
       };
     } catch (error) {

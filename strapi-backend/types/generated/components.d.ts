@@ -256,6 +256,31 @@ export interface ProductAttributes extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductSubscriptionOption extends Struct.ComponentSchema {
+  collectionName: 'components_product_subscription_options';
+  info: {
+    description: 'Subscription pricing and delivery frequency options';
+    displayName: 'Subscription Option';
+    icon: 'calendar-check';
+  };
+  attributes: {
+    deliveryInterval: Schema.Attribute.Enumeration<
+      ['1_week', '2_weeks', '3_weeks', '1_month', '2_months']
+    > &
+      Schema.Attribute.Required;
+    discountPercentage: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<10>;
+  };
+}
+
 export interface ProductVariant extends Struct.ComponentSchema {
   collectionName: 'components_product_variants';
   info: {
@@ -665,6 +690,7 @@ declare module '@strapi/strapi' {
       'elements.team-member': ElementsTeamMember;
       'elements.visit-cafe-card': ElementsVisitCafeCard;
       'product.attributes': ProductAttributes;
+      'product.subscription-option': ProductSubscriptionOption;
       'product.variant': ProductVariant;
       'sections.brand-story': SectionsBrandStory;
       'sections.cafe-location': SectionsCafeLocation;

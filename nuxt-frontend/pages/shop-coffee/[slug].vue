@@ -126,14 +126,12 @@
                       <div v-else-if="product.shortDescription">
                         <p>{{ product.shortDescription }}</p>
                       </div>
-                      <div class="product-attributes" v-if="product.origin || product.variety">
-                        <div v-if="product.origin" class="attribute">
-                          <strong>Origin:</strong> {{ product.origin }}
-                        </div>
-                        <div v-if="product.variety" class="attribute">
-                          <strong>Variety:</strong> {{ product.variety }}
-                        </div>
+                      
+                      <!-- Coffee Details/Attributes -->
+                      <div v-if="product.attributes" class="coffee-details">
+                        <ProductAttributes :attributes="product.attributes" />
                       </div>
+                      
                     </div>
                   </transition>
                 </div>
@@ -182,19 +180,17 @@
       <!-- Related Products Section -->
       <RelatedProducts v-if="product.relatedProducts && product.relatedProducts.length > 0" :products="product.relatedProducts" />
 
-      <!-- Product Attributes Section -->
-      <div class="container">
-        <ProductAttributes :attributes="product.attributes" />
-      </div>
 
       <!-- Customer Reviews Section -->
-      <CustomerReviews 
-        v-if="product.id"
-        :product-id="product.id"
-        :initial-count="2"
-        :load-more-count="3"
-        :show-view-all="false"
-      />
+      <section id="reviews">
+        <CustomerReviews 
+          v-if="product.documentId"
+          :product-id="product.documentId"
+          :initial-count="2"
+          :load-more-count="3"
+          :show-view-all="false"
+        />
+      </section>
 
       <VisitCafeSection v-if="shopCoffeeData?.visitCafeSection" :section="shopCoffeeData.visitCafeSection" />
       <EmailSubscribe />
@@ -206,7 +202,7 @@
 import type { Product, ProductVariant } from "~/types/strapi";
 import type { ReviewStats } from "~/composables/useProductReviews";
 import RelatedProducts from "~/components/shop/RelatedProducts.vue";
-import CustomerReviews from "~/components/reviews/CustomerReviews.vue";
+import CustomerReviews from "~/components/product/CustomerReviews.vue";
 import VariantSelector from "~/components/product/VariantSelector.vue";
 import ProductAttributes from "~/components/product/ProductAttributes.vue";
 
@@ -293,9 +289,9 @@ async function loadProduct() {
     const slug = route.params.slug as string;
     product.value = await fetchProductBySlug(slug);
 
-    // Fetch reviews
-    if (product.value?.id) {
-      const reviewData = await fetchReviewsByProduct(product.value.id);
+    // Fetch reviews using documentId
+    if (product.value?.documentId) {
+      const reviewData = await fetchReviewsByProduct(product.value.documentId);
       reviewStats.value = {
         averageRating: reviewData.stats.averageRating,
         totalReviews: reviewData.stats.totalReviews,
@@ -486,6 +482,7 @@ useHead(() => {
     display: grid;
     grid-template-columns: 0.5fr 1fr;
     gap: 2rem;
+    align-items: start;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -494,6 +491,10 @@ useHead(() => {
 }
 
 .product-images {
+  position: sticky;
+  top: 2rem;
+  align-self: start;
+  
   .main-image {
     width: 100%;
     border-radius: 12px;
@@ -741,6 +742,21 @@ useHead(() => {
     .accordion-content {
       padding: 0 2rem 2rem 0;
       line-height: 1.4;
+
+      .coffee-details {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+
+        .details-title {
+          font-size: 1rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 1.5rem;
+          color: $color-text;
+        }
+      }
       font-family: $font-body;
       font-weight: 500;
       color: $color-text;
@@ -750,26 +766,14 @@ useHead(() => {
         margin-bottom: 1rem;
       }
 
-      .product-attributes {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1.5rem;
-
-        .attribute {
-          padding: 1rem;
-          background: $color-gray-100;
-          border-radius: 8px;
-
-          strong {
-            color: $color-text;
-            display: block;
-            margin-bottom: 0.5rem;
-          }
-        }
-      }
     }
   }
+}
+
+// Reviews Section
+.reviews-section {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
 }
 
 // Accordion animation

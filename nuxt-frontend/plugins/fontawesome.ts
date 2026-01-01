@@ -10,12 +10,15 @@ import {
   faStarHalfAlt,
   faChevronLeft,
   faChevronRight,
+  faChevronDown,
   faUser,
   faCheckCircle,
   faThumbsUp,
   faFlag,
   faSearch,
   faCircleUser,
+  faTimes,
+  faPen,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faStar as farStar,
@@ -49,6 +52,7 @@ library.add(
   faStarHalfAlt,
   faChevronLeft,
   faChevronRight,
+  faChevronDown,
   faUser,
   faCheckCircle,
   faThumbsUp,
@@ -68,6 +72,8 @@ library.add(
   faCcPaypal,
   faCcAmex,
   faApplePay,
+  faTimes,
+  faPen
 );
 
 export default defineNuxtPlugin((nuxtApp) => {

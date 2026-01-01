@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <div v-if="attributes.bestServed" class="attribute-item attribute-item--full">
+      <div v-if="attributes.bestServed" class="attribute-item">
         <div class="attribute-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/>
@@ -113,23 +113,22 @@ defineProps<Props>();
 @import "~/assets/scss/variables";
 
 .product-attributes {
-  padding: 3rem 0;
+  padding: 0;
   background: white;
 }
 
 .attributes-title {
   font-family: $font-family-heading;
-  font-size: 2rem;
+  font-size: 1.2rem;
   font-weight: bold;
   text-transform: uppercase;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1rem 0;
   color: $color-text;
-  text-align: center;
 }
 
 .attributes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 
   @media (max-width: 768px) {
@@ -140,7 +139,7 @@ defineProps<Props>();
 .attribute-item {
   display: flex;
   gap: 1rem;
-  padding: 1.5rem;
+  padding: 0.875rem;
   background: #f9fafb;
   border-radius: 12px;
   border: 1px solid #e5e7eb;

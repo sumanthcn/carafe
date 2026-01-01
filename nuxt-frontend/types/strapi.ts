@@ -217,6 +217,32 @@ export interface ProductAttributes {
   bestServed?: string;
 }
 
+// Subscription Option
+export interface SubscriptionOption {
+  id: number;
+  deliveryInterval: "1_week" | "2_weeks" | "3_weeks" | "1_month" | "2_months";
+  discountPercentage: number;
+}
+
+// Customer Review
+export interface CustomerReview {
+  id: number;
+  documentId: string;
+  name: string;
+  email: string;
+  rating: number;
+  reviewTitle: string;
+  reviewDescription: string;
+  images?: StrapiMedia[];
+  video?: StrapiMedia;
+  product?: Product;
+  status: "approved" | "rejected";
+  isVerifiedPurchase: boolean;
+  helpfulCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Product
 export interface Product {
   id: number;
@@ -238,8 +264,10 @@ export interface Product {
   images: StrapiMedia[];
   variants?: ProductVariant[];
   attributes?: ProductAttributes;
+  subscriptionOptions?: SubscriptionOption[];
   category?: ProductCategory | null;
   relatedProducts?: Product[];
+  reviews?: CustomerReview[];
   seo?: StrapiSeo;
   createdAt?: string;
   updatedAt?: string;

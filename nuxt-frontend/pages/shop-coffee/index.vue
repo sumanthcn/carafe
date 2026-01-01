@@ -318,6 +318,13 @@ async function loadShopCoffeeData() {
   padding: 4rem 2rem;
   color: #666;
   font-size: 1.125rem;
+
+  svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    color: #ccc;
+  }
 }
 
 // Load More

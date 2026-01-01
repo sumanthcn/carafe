@@ -430,6 +430,57 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCustomerReviewCustomerReview
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'customer_reviews';
+  info: {
+    description: 'Customer product reviews with images and video';
+    displayName: 'Customer Review';
+    pluralName: 'customer-reviews';
+    singularName: 'customer-review';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    helpfulCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    images: Schema.Attribute.Media<'images', true>;
+    isVerifiedPurchase: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::customer-review.customer-review'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    rating: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 1;
+        },
+        number
+      >;
+    reviewDescription: Schema.Attribute.Text & Schema.Attribute.Required;
+    reviewTitle: Schema.Attribute.String & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['approved', 'rejected']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'approved'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    video: Schema.Attribute.Media<'videos'>;
+  };
+}
+
 export interface ApiCustomerTestimonialCustomerTestimonial
   extends Struct.CollectionTypeSchema {
   collectionName: 'customer_testimonials';
@@ -750,65 +801,6 @@ export interface ApiProductCategoryProductCategory
   };
 }
 
-export interface ApiProductReviewProductReview
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'product_reviews';
-  info: {
-    description: 'Customer reviews for products';
-    displayName: 'Product Reviews';
-    pluralName: 'product-reviews';
-    singularName: 'product-review';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    customerEmail: Schema.Attribute.Email & Schema.Attribute.Required;
-    customerName: Schema.Attribute.String & Schema.Attribute.Required;
-    isHelpful: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    isReported: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
-    isVerifiedPurchase: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::product-review.product-review'
-    > &
-      Schema.Attribute.Private;
-    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
-    publishedAt: Schema.Attribute.DateTime;
-    rating: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          max: 5;
-          min: 1;
-        },
-        number
-      >;
-    reviewText: Schema.Attribute.Text &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 2000;
-      }>;
-    reviewTitle: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 200;
-      }>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    user: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-  };
-}
-
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -852,7 +844,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     >;
     reviews: Schema.Attribute.Relation<
       'oneToMany',
-      'api::product-review.product-review'
+      'api::customer-review.customer-review'
     >;
     seo: Schema.Attribute.Component<'shared.seo', false>;
     shortDescription: Schema.Attribute.Text &
@@ -860,6 +852,10 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         maxLength: 300;
       }>;
     slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    subscriptionOptions: Schema.Attribute.Component<
+      'product.subscription-option',
+      true
+    >;
     subtitle: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1515,6 +1511,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::customer-review.customer-review': ApiCustomerReviewCustomerReview;
       'api::customer-testimonial.customer-testimonial': ApiCustomerTestimonialCustomerTestimonial;
       'api::email-subscriber.email-subscriber': ApiEmailSubscriberEmailSubscriber;
       'api::global-setting.global-setting': ApiGlobalSettingGlobalSetting;
@@ -1522,7 +1519,6 @@ declare module '@strapi/strapi' {
       'api::order.order': ApiOrderOrder;
       'api::page.page': ApiPagePage;
       'api::product-category.product-category': ApiProductCategoryProductCategory;
-      'api::product-review.product-review': ApiProductReviewProductReview;
       'api::product.product': ApiProductProduct;
       'api::shop-coffee.shop-coffee': ApiShopCoffeeShopCoffee;
       'api::shop-setting.shop-setting': ApiShopSettingShopSetting;

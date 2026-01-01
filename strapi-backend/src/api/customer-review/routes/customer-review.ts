@@ -2,8 +2,8 @@ export default {
   routes: [
     {
       method: 'GET',
-      path: '/product-reviews',
-      handler: 'product-review.find',
+      path: '/customer-reviews/check-verified-purchase',
+      handler: 'customer-review.checkVerifiedPurchase',
       config: {
         policies: [],
         middlewares: [],
@@ -11,8 +11,8 @@ export default {
     },
     {
       method: 'GET',
-      path: '/product-reviews/:id',
-      handler: 'product-review.findOne',
+      path: '/customer-reviews',
+      handler: 'customer-review.find',
       config: {
         policies: [],
         middlewares: [],
@@ -20,8 +20,8 @@ export default {
     },
     {
       method: 'GET',
-      path: '/product-reviews/product/:productId',
-      handler: 'product-review.findByProduct',
+      path: '/customer-reviews/:id',
+      handler: 'customer-review.findOne',
       config: {
         policies: [],
         middlewares: [],
@@ -29,8 +29,8 @@ export default {
     },
     {
       method: 'POST',
-      path: '/product-reviews',
-      handler: 'product-review.create',
+      path: '/customer-reviews',
+      handler: 'customer-review.create',
       config: {
         policies: [],
         middlewares: [],
@@ -38,8 +38,8 @@ export default {
     },
     {
       method: 'PUT',
-      path: '/product-reviews/:id',
-      handler: 'product-review.update',
+      path: '/customer-reviews/:id',
+      handler: 'customer-review.update',
       config: {
         policies: [],
         middlewares: [],
@@ -47,8 +47,8 @@ export default {
     },
     {
       method: 'DELETE',
-      path: '/product-reviews/:id',
-      handler: 'product-review.delete',
+      path: '/customer-reviews/:id',
+      handler: 'customer-review.delete',
       config: {
         policies: [],
         middlewares: [],

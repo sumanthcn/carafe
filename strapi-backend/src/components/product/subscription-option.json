@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_product_subscription_options",
+  "info": {
+    "displayName": "Subscription Option",
+    "icon": "calendar-check",
+    "description": "Subscription pricing and delivery frequency options"
+  },
+  "options": {},
+  "attributes": {
+    "deliveryInterval": {
+      "type": "enumeration",
+      "enum": ["1_week", "2_weeks", "3_weeks", "1_month", "2_months"],
+      "required": true
+    },
+    "discountPercentage": {
+      "type": "decimal",
+      "required": true,
+      "min": 0,
+      "max": 100,
+      "default": 10
+    }
+  }
+}

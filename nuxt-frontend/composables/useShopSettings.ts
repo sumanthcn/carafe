@@ -9,20 +9,32 @@ export const useShopSettings = () => {
   const fetchShopSettings = async () => {
     if (settings.value) return; // Already fetched
 
-    try {
-      loading.value = true;
-      error.value = null;
+    loading.value = true;
+    error.value = null;
 
-      const response = await $fetch<{ data: ShopSettings }>(`${config.public.strapiUrl}/api/shop-setting`);
+    try {
+      const response = await $fetch<{ data: ShopSettings }>(`${config.public.strapiUrl}/api/shop-setting`, {
+        // Prevent fetch from throwing on 404
+        onResponseError({ response }) {
+          if (response.status === 404) {
+            // Silently ignore 404 - shop settings are optional
+            return;
+          }
+        }
+      });
       
       if (response && response.data) {
         settings.value = response.data;
       }
     } catch (e: any) {
-      console.error('Error fetching shop settings:', e);
-      error.value = e.message || 'Failed to fetch shop settings';
+      // Only log non-404 errors
+      if (e.statusCode !== 404) {
+        console.error('Error fetching shop settings:', e);
+      }
+      settings.value = null;
     } finally {
       loading.value = false;
+      error.value = null;
     }
   };
 

@@ -1,0 +1,70 @@
+{
+  "kind": "collectionType",
+  "collectionName": "customer_reviews",
+  "info": {
+    "singularName": "customer-review",
+    "pluralName": "customer-reviews",
+    "displayName": "Customer Review",
+    "description": "Customer product reviews with images and video"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "rating": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "max": 5
+    },
+    "reviewTitle": {
+      "type": "string",
+      "required": true
+    },
+    "reviewDescription": {
+      "type": "text",
+      "required": true
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"],
+      "required": false
+    },
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["videos"],
+      "required": false
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "inversedBy": "reviews"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["approved", "rejected"],
+      "default": "approved",
+      "required": true
+    },
+    "isVerifiedPurchase": {
+      "type": "boolean",
+      "default": false
+    },
+    "helpfulCount": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
