@@ -27,7 +27,6 @@
         "sections.hero-section",
         "sections.text-content",
         "sections.image-gallery",
-        "sections.cta-section",
         "sections.team-section",
         "sections.faq-section",
         "sections.contact-section"
@@ -36,7 +35,9 @@
     "featuredImage": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "showInNavigation": {
       "type": "boolean",

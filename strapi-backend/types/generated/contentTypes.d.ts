@@ -430,6 +430,45 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiArtAndCultureArtAndCulture extends Struct.SingleTypeSchema {
+  collectionName: 'art_and_cultures';
+  info: {
+    displayName: 'Art and Culture';
+    pluralName: 'art-and-cultures';
+    singularName: 'art-and-culture';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    artExibits: Schema.Attribute.Component<'sections.text-images', false>;
+    bannerSection: Schema.Attribute.Component<
+      'sections.visit-cafe-banner',
+      false
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    cultureNights: Schema.Attribute.Component<'sections.cafe-location', false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::art-and-culture.art-and-culture'
+    > &
+      Schema.Attribute.Private;
+    meetups: Schema.Attribute.Component<'sections.brand-story', false>;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', true>;
+    upcomingEvents: Schema.Attribute.Component<
+      'sections.wholesale-section',
+      false
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCustomerReviewCustomerReview
   extends Struct.CollectionTypeSchema {
   collectionName: 'customer_reviews';
@@ -578,8 +617,6 @@ export interface ApiGlobalSettingGlobalSetting extends Struct.SingleTypeSchema {
   };
   attributes: {
     address: Schema.Attribute.Component<'elements.address', false>;
-    contactEmail: Schema.Attribute.Email;
-    contactPhone: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -587,7 +624,6 @@ export interface ApiGlobalSettingGlobalSetting extends Struct.SingleTypeSchema {
     defaultSeo: Schema.Attribute.Component<'shared.seo', false>;
     favicon: Schema.Attribute.Media<'images'>;
     footer: Schema.Attribute.Component<'sections.footer-section', false>;
-    footerLinks: Schema.Attribute.Component<'elements.footer-link', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -737,7 +773,6 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
         'sections.hero-section',
         'sections.text-content',
         'sections.image-gallery',
-        'sections.cta-section',
         'sections.team-section',
         'sections.faq-section',
         'sections.contact-section',
@@ -1556,6 +1591,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::art-and-culture.art-and-culture': ApiArtAndCultureArtAndCulture;
       'api::customer-review.customer-review': ApiCustomerReviewCustomerReview;
       'api::customer-testimonial.customer-testimonial': ApiCustomerTestimonialCustomerTestimonial;
       'api::email-subscriber.email-subscriber': ApiEmailSubscriberEmailSubscriber;

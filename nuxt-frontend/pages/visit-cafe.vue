@@ -9,26 +9,7 @@
     <!-- Content -->
     <div v-else-if="visitCafeData">
       <!-- Banner Section -->
-      <section
-        v-if="visitCafeData.bannerSection"
-        class="banner-section"
-        :style="bannerBackgroundStyle"
-      >
-        <div class="banner-container">
-          <div class="banner-content">
-            <h1 class="banner-title">{{ visitCafeData.bannerSection.title }}</h1>
-            <p v-if="visitCafeData.bannerSection.subtitle" class="banner-subtitle">
-              {{ visitCafeData.bannerSection.subtitle }}
-            </p>
-          </div>
-        </div>
-      </section>
-      <div
-        v-if="visitCafeData?.bannerSection?.description"
-        class="banner-description"
-      >
-      <div class="text" v-html="parsedBannerDescription" />
-    </div>
+      <PageBanner :data="visitCafeData.bannerSection" />
       
       <!-- Brand Story Section -->
       <section v-if="visitCafeData.brandStorySection" class="brand-story-section">
@@ -139,27 +120,13 @@ onMounted(async () => {
   loading.value = false;
 });
 
-// Computed properties to parse markdown content
+// Computed property to parse markdown content
 const parsedBrandStoryContent = computed(() => {
   if (!visitCafeData.value?.brandStorySection?.content) return '';
   return parseMarkdown(visitCafeData.value.brandStorySection.content);
 });
 
-const parsedBannerDescription = computed(() => {
-  if (!visitCafeData.value?.bannerSection?.description) return '';
-  return parseMarkdown(visitCafeData.value.bannerSection.description);
-});
-
 // Computed styles
-const bannerBackgroundStyle = computed(() => {
-  if (visitCafeData.value?.bannerSection?.backgroundImage) {
-    return {
-      backgroundImage: `url(${getStrapiMediaUrl(visitCafeData.value.bannerSection.backgroundImage)})`,
-    };
-  }
-  return {};
-});
-
 const openingHoursBackgroundStyle = computed(() => {
   if (visitCafeData.value?.openingHoursSection?.backgroundImage) {
     return {
@@ -244,107 +211,6 @@ useHead(() => {
   p {
     color: $color-danger;
     font-size: 1.125rem;
-  }
-}
-
-// Banner Section
-.banner-section {
-  position: relative;
-  height: 350px;
-  display: flex;
-  align-items: center;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  overflow: hidden;
-
-  @media (max-width: 991px) {
-    height: 350px;
-  }
-
-  @media (max-width: 767px) {
-    height: 350px;
-  }
-
-  .banner-container {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 60px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    z-index: 2;
-
-    @media (max-width: 991px) {
-      padding: 0 40px;
-    }
-
-    @media (max-width: 767px) {
-      padding: 0 20px;
-      justify-content: center;
-    }
-  }
-
-  .banner-content {
-    max-width: 600px;
-    color: white;
-
-    @media (max-width: 767px) {
-      text-align: center;
-      max-width: 100%;
-    }
-
-    .banner-title {
-      font-family: $font-myriad;
-      font-size: clamp(2rem, 5vw, 4rem);
-      font-weight: bold;
-      margin: 0 0 20px 0;
-      line-height: 1;
-    max-width: 800px;
-      text-transform: uppercase;
-      // letter-spacing: 8px;
-      color: white;
-
-      @media (max-width: 991px) {
-        font-size: $font-size-4xl;
-      }
-
-      @media (max-width: 767px) {
-        font-size: $font-size-3xl;
-        margin-bottom: 15px;
-      }
-    }
-
-    .banner-subtitle {
-      font-size: clamp(1rem, 2vw, 1.5rem);
-      color: rgba(255, 255, 255, 0.9);
-      margin-bottom: 1rem;
-      max-width: 400px;
-
-      @media (max-width: 991px) {
-        font-size: 1rem;
-      }
-
-      @media (max-width: 767px) {
-        font-size: 0.9375rem;
-      }
-    }
-  }
-}
-
-.banner-description {
-  background: $color-background-alt;
-  padding: 2rem 60px;
-  font-family: $font-body;
-  font-size: $font-size-base;
-  text-align: center;
-
-  .text {
-    max-width: 900px;
-    margin: 0 auto;
-    color: $color-text;
-    line-height: 1.2;
   }
 }
 

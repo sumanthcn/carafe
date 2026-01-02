@@ -2,7 +2,7 @@
   "kind": "component",
   "collectionName": "components_sections_cafe_location",
   "info": {
-    "displayName": "Café Location Section",
+    "displayName": "Text with BG Image",
     "icon": "pinMap",
     "description": "Café location and visit CTA"
   },

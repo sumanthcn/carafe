@@ -1,0 +1,45 @@
+{
+  "kind": "singleType",
+  "collectionName": "art_and_cultures",
+  "info": {
+    "singularName": "art-and-culture",
+    "pluralName": "art-and-cultures",
+    "displayName": "Art and Culture"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "bannerSection": {
+      "type": "component",
+      "component": "sections.visit-cafe-banner",
+      "repeatable": false
+    },
+    "artExibits": {
+      "type": "component",
+      "component": "sections.text-images",
+      "repeatable": false
+    },
+    "cultureNights": {
+      "type": "component",
+      "component": "sections.cafe-location",
+      "repeatable": false
+    },
+    "meetups": {
+      "type": "component",
+      "component": "sections.brand-story",
+      "repeatable": false
+    },
+    "upcomingEvents": {
+      "type": "component",
+      "component": "sections.wholesale-section",
+      "repeatable": false
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "repeatable": true
+    }
+  }
+}

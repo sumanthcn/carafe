@@ -1,175 +1,147 @@
+<template>
+  <div class="page-art-culture">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Content -->
+    <div v-else-if="artAndCultureData">
+      <!-- Banner Section -->
+      <PageBanner :data="artAndCultureData.bannerSection" />
+
+      <!-- Art Exhibits Section (with Carousel) -->
+      <HomepageBrandStoryCarousel
+        v-if="artAndCultureData.artExibits"
+        :data="artAndCultureData.artExibits"
+        background-color="default"
+      />
+
+      <!-- Culture Nights Section -->
+      <HomepageCafe
+        v-if="artAndCultureData.cultureNights"
+        :data="artAndCultureData.cultureNights"
+      />
+
+      <!-- Meetups Section -->
+      <HomepageBrandStory
+        v-if="artAndCultureData.meetups"
+        :data="artAndCultureData.meetups"
+        background-color="alt"
+      />
+
+      <!-- Upcoming Events Section -->
+      <HomepageWholesale
+        v-if="artAndCultureData.upcomingEvents"
+        :data="artAndCultureData.upcomingEvents"
+      />
+
+      <!-- Email Subscribe -->
+      <EmailSubscribe />
+    </div>
+
+    <!-- Error State -->
+    <div v-else class="error-container">
+      <p>Unable to load page content. Please try again later.</p>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
+import type { ArtAndCulture } from "~/composables/useArtAndCulture";
+
 definePageMeta({
   layout: "default",
 });
 
-useSeoMeta({
-  title: "Art & Culture - Carafe Coffee House",
-  description:
-    "Discover our commitment to supporting local artists and cultural events at Carafe Coffee House.",
+const { fetchArtAndCultureData } = useArtAndCulture();
+
+const loading = ref(true);
+const artAndCultureData = ref<ArtAndCulture | null>(null);
+
+// Fetch data
+onMounted(async () => {
+  loading.value = true;
+  artAndCultureData.value = await fetchArtAndCultureData();
+  loading.value = false;
+});
+
+// SEO
+useHead(() => {
+  const seo = artAndCultureData.value?.seo;
+  return {
+    title: seo?.metaTitle || "Art & Culture - Carafe Coffee House",
+    meta: [
+      {
+        name: "description",
+        content:
+          seo?.metaDescription ||
+          "Discover our commitment to supporting local artists and cultural events at Carafe Coffee House.",
+      },
+      {
+        property: "og:title",
+        content: seo?.metaTitle || "Art & Culture - Carafe Coffee House",
+      },
+      {
+        property: "og:description",
+        content:
+          seo?.metaDescription ||
+          "Discover our commitment to supporting local artists and cultural events at Carafe Coffee House.",
+      },
+    ],
+  };
 });
 </script>
 
-<template>
-  <div class="page-art-culture">
-    <section class="hero-section">
-      <div class="container">
-        <h1>Art & Culture</h1>
-        <p class="lead">Where coffee meets creativity</p>
-      </div>
-    </section>
-
-    <section class="content-section">
-      <div class="container">
-        <div class="intro">
-          <p class="intro-text">
-            At Carafe, we believe that great coffee and great art go hand in
-            hand. Our spaces serve as a gallery for local artists and a venue
-            for cultural events that bring our community together.
-          </p>
-        </div>
-
-        <div class="content-grid">
-          <div class="content-block">
-            <h2>Featured Artists</h2>
-            <p>
-              Each month, we showcase works from talented local artists. Our
-              walls are adorned with rotating exhibitions ranging from paintings
-              and photography to mixed media installations.
-            </p>
-            <p>
-              All artwork is available for purchase, with proceeds supporting
-              the artists directly.
-            </p>
-          </div>
-
-          <div class="content-block">
-            <h2>Live Events</h2>
-            <p>Join us for regular cultural events including:</p>
-            <ul>
-              <li>Live acoustic music performances</li>
-              <li>Poetry readings and open mic nights</li>
-              <li>Art workshops and creative sessions</li>
-              <li>Book club meetups</li>
-              <li>Coffee tasting and brewing workshops</li>
-            </ul>
-          </div>
-
-          <div class="content-block">
-            <h2>Community Space</h2>
-            <p>
-              Our café is designed to be more than just a place for coffee. It's
-              a gathering space for creatives, thinkers, and community members
-              to connect and collaborate.
-            </p>
-          </div>
-
-          <div class="content-block">
-            <h2>Get Involved</h2>
-            <p>
-              Are you an artist looking to showcase your work? Or do you have an
-              idea for a community event? We'd love to hear from you!
-            </p>
-            <p>
-              <strong>Contact us:</strong> events@carafecoffee.com
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-</template>
-
 <style lang="scss" scoped>
 .page-art-culture {
-  min-height: 100vh;
+  padding-top: 80px;
 }
 
-.hero-section {
-  background: linear-gradient(135deg, $color-primary 0%, $color-secondary 100%);
-  color: white;
-  padding: 8rem 2rem 4rem;
-  text-align: center;
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
 
-  h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
-  }
-
-  .lead {
-    font-size: 1.25rem;
-    opacity: 0.9;
-  }
-}
-
-.content-section {
-  padding: 4rem 2rem;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.intro {
-  text-align: center;
-  margin-bottom: 4rem;
-}
-
-.intro-text {
-  font-size: 1.25rem;
-  line-height: 1.8;
-  color: $color-text;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.content-grid {
-  display: grid;
-  gap: 3rem;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.content-block {
-  h2 {
-    color: $color-primary;
-    margin-bottom: 1rem;
-    font-size: 1.75rem;
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba($color-primary, 0.1);
+    border-left-color: $color-primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
   }
 
   p {
-    line-height: 1.8;
+    margin-top: 1rem;
     color: $color-text;
-    margin-bottom: 1rem;
+    font-size: 1.125rem;
   }
+}
 
-  ul {
-    list-style: none;
-    padding: 0;
-
-    li {
-      padding: 0.5rem 0;
-      padding-left: 1.5rem;
-      position: relative;
-
-      &::before {
-        content: "•";
-        position: absolute;
-        left: 0;
-        color: $color-primary;
-        font-weight: bold;
-        font-size: 1.5rem;
-        line-height: 1;
-      }
-    }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
 
-  strong {
-    color: $color-secondary;
+// Error State
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  text-align: center;
+
+  p {
+    color: $color-danger;
+    font-size: 1.125rem;
   }
 }
 </style>

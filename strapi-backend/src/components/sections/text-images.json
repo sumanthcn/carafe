@@ -1,10 +1,7 @@
 {
-  "kind": "component",
-  "collectionName": "components_sections_brand_story",
+  "collectionName": "components_sections_text_images",
   "info": {
-    "displayName": "Text with Image",
-    "icon": "book",
-    "description": "Brand story/about section"
+    "displayName": "Text Images"
   },
   "options": {},
   "attributes": {
@@ -14,11 +11,13 @@
     "content": {
       "type": "richtext"
     },
-    "image": {
+    "images": {
       "type": "media",
-      "multiple": false,
+      "multiple": true,
+      "required": true,
       "allowedTypes": [
-        "images"
+        "images",
+        "files"
       ]
     },
     "imagePosition": {
@@ -34,5 +33,6 @@
       "component": "elements.cta-button",
       "repeatable": false
     }
-  }
+  },
+  "config": {}
 }

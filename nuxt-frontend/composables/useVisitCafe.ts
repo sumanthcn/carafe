@@ -44,7 +44,7 @@ export const useVisitCafe = () => {
       params.append("populate[gettingHereSection][populate][items][populate][icon]", "true");
       
       // SEO with meta image
-      // params.append("populate[seo][populate][metaImage]", "true");
+      params.append("populate[seo]", "true");
       const response = await $fetch<StrapiResponse<VisitCafe>>(
         `${strapiUrl}/api/visit-cafe?${params.toString()}`
       );

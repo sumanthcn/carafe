@@ -1,7 +1,7 @@
 {
   "collectionName": "components_sections_visit_cafe_banners",
   "info": {
-    "displayName": "Visit Cafe Banner",
+    "displayName": "Page Banner Section",
     "description": "Banner section for visit cafe page with background image, title, subtitle and description"
   },
   "options": {},
@@ -10,7 +10,9 @@
       "type": "media",
       "multiple": false,
       "required": true,
-      "allowedTypes": ["images"]
+      "allowedTypes": [
+        "images"
+      ]
     },
     "title": {
       "type": "string",
@@ -19,6 +21,9 @@
     "subtitle": {
       "type": "string",
       "required": false
+    },
+    "descriptionTitle": {
+      "type": "string"
     },
     "description": {
       "type": "richtext",

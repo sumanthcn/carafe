@@ -351,7 +351,7 @@ export interface SectionsBrandStory extends Struct.ComponentSchema {
   collectionName: 'components_sections_brand_story';
   info: {
     description: 'Brand story/about section';
-    displayName: 'Brand Story Section';
+    displayName: 'Text with Image';
     icon: 'book';
   };
   attributes: {
@@ -368,7 +368,7 @@ export interface SectionsCafeLocation extends Struct.ComponentSchema {
   collectionName: 'components_sections_cafe_location';
   info: {
     description: 'Caf\u00E9 location and visit CTA';
-    displayName: 'Caf\u00E9 Location Section';
+    displayName: 'Text with BG Image';
     icon: 'pinMap';
   };
   attributes: {
@@ -392,21 +392,6 @@ export interface SectionsContactSection extends Struct.ComponentSchema {
     mapEmbed: Schema.Attribute.Text;
     showContactForm: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<true>;
-  };
-}
-
-export interface SectionsCtaSection extends Struct.ComponentSchema {
-  collectionName: 'components_sections_cta_section';
-  info: {
-    description: 'Call to action section';
-    displayName: 'CTA Section';
-    icon: 'cursor';
-  };
-  attributes: {
-    backgroundImage: Schema.Attribute.Media<'images'>;
-    cta: Schema.Attribute.Component<'elements.cta-button', false>;
-    description: Schema.Attribute.Text;
-    headline: Schema.Attribute.String;
   };
 }
 
@@ -561,16 +546,33 @@ export interface SectionsTextContent extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsTextImages extends Struct.ComponentSchema {
+  collectionName: 'components_sections_text_images';
+  info: {
+    displayName: 'Text Images';
+  };
+  attributes: {
+    content: Schema.Attribute.RichText;
+    cta: Schema.Attribute.Component<'elements.cta-button', false>;
+    headline: Schema.Attribute.String;
+    imagePosition: Schema.Attribute.Enumeration<['left', 'right']> &
+      Schema.Attribute.DefaultTo<'right'>;
+    images: Schema.Attribute.Media<'images' | 'files', true> &
+      Schema.Attribute.Required;
+  };
+}
+
 export interface SectionsVisitCafeBanner extends Struct.ComponentSchema {
   collectionName: 'components_sections_visit_cafe_banners';
   info: {
     description: 'Banner section for visit cafe page with background image, title, subtitle and description';
-    displayName: 'Visit Cafe Banner';
+    displayName: 'Page Banner Section';
   };
   attributes: {
     backgroundImage: Schema.Attribute.Media<'images'> &
       Schema.Attribute.Required;
     description: Schema.Attribute.RichText;
+    descriptionTitle: Schema.Attribute.String;
     subtitle: Schema.Attribute.String;
     title: Schema.Attribute.String & Schema.Attribute.Required;
   };
@@ -595,7 +597,7 @@ export interface SectionsWholesaleSection extends Struct.ComponentSchema {
   collectionName: 'components_sections_wholesale_section';
   info: {
     description: 'B2B wholesale CTA section';
-    displayName: 'Wholesale Section';
+    displayName: 'Text with Image (Absolute Right)';
     icon: 'briefcase';
   };
   attributes: {
@@ -758,7 +760,6 @@ declare module '@strapi/strapi' {
       'sections.brand-story': SectionsBrandStory;
       'sections.cafe-location': SectionsCafeLocation;
       'sections.contact-section': SectionsContactSection;
-      'sections.cta-section': SectionsCtaSection;
       'sections.faq-section': SectionsFaqSection;
       'sections.footer-section': SectionsFooterSection;
       'sections.getting-here': SectionsGettingHere;
@@ -769,6 +770,7 @@ declare module '@strapi/strapi' {
       'sections.product-categories': SectionsProductCategories;
       'sections.team-section': SectionsTeamSection;
       'sections.text-content': SectionsTextContent;
+      'sections.text-images': SectionsTextImages;
       'sections.visit-cafe-banner': SectionsVisitCafeBanner;
       'sections.visit-cafe-section': SectionsVisitCafeSection;
       'sections.wholesale-section': SectionsWholesaleSection;

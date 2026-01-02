@@ -2,7 +2,7 @@
   "kind": "component",
   "collectionName": "components_sections_wholesale_section",
   "info": {
-    "displayName": "Wholesale Section",
+    "displayName": "Text with Image (Absolute Right)",
     "icon": "briefcase",
     "description": "B2B wholesale CTA section"
   },
@@ -23,13 +23,13 @@
     },
     "cta": {
       "type": "component",
-      "repeatable": false,
-      "component": "elements.cta-button"
+      "component": "elements.cta-button",
+      "repeatable": false
     },
     "benefits": {
       "type": "component",
-      "repeatable": true,
-      "component": "elements.feature-item"
+      "component": "elements.feature-item",
+      "repeatable": true
     }
   }
 }
