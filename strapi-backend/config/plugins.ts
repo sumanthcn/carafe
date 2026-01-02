@@ -1,15 +1,3 @@
-import { mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-
-// Ensure uploads directory exists (for Heroku and other environments)
-const uploadsDir = join(process.cwd(), 'public', 'uploads');
-if (!existsSync(uploadsDir)) {
-  mkdir(uploadsDir, { recursive: true }).catch((err) => {
-    console.error('Failed to create uploads directory:', err);
-  });
-}
-
 export default ({ env }) => ({
   // Users & Permissions plugin
   "users-permissions": {
@@ -26,11 +14,18 @@ export default ({ env }) => ({
   // Upload plugin configuration
   upload: {
     config: {
-      providerOptions: {
-        localServer: {
-          maxage: 300000,
-        },
-      },
+      provider: env('UPLOAD_PROVIDER', 'local'),
+      providerOptions: env('UPLOAD_PROVIDER') === 'cloudinary'
+        ? {
+            cloud_name: env('CLOUDINARY_NAME'),
+            api_key: env('CLOUDINARY_KEY'),
+            api_secret: env('CLOUDINARY_SECRET'),
+          }
+        : {
+            localServer: {
+              maxage: 300000,
+            },
+          },
       breakpoints: {
         xlarge: 1920,
         large: 1200,

@@ -29,12 +29,18 @@ export default ({ env }) => [
   {
     name: "strapi::cors",
     config: {
+      enabled: true,
       headers: "*",
       origin: [
         env("FRONTEND_URL", "http://localhost:3000"),
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:1337",
+        "https://www.carafecoffee.co.uk",
+        "https://carafecoffee.co.uk",
+        "https://carafe-82d2cfeaa846.herokuapp.com",
+        "https://admin.carafecoffee.co.uk",
+        "https://carafe-strapi-6a5c003b33c5.herokuapp.com",
       ],
     },
   },
