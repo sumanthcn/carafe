@@ -198,7 +198,7 @@
                 <div class="order-summary__item-image">
                   <NuxtImg
                     v-if="item.product.images && item.product.images.length > 0"
-                    :src="`${strapiUrl}${item.product.images[0].url}`"
+                    :src="getStrapiMediaUrl(item.product.images[0])"
                     :alt="item.product.name"
                     width="64"
                     height="64"
@@ -282,6 +282,7 @@ import { useCartStore } from "~/stores/cart";
 
 const config = useRuntimeConfig();
 const strapiUrl = config.public.strapiUrl;
+const { getStrapiMediaUrl } = useStrapi();
 
 
 // Protect checkout page with auth

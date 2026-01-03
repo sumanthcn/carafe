@@ -185,11 +185,7 @@ export interface ProductCategory {
 export interface ShopSettings {
   id: number;
   documentId: string;
-  returnPolicy: string;
   shippingInfo: string;
-  freeShippingThreshold: number;
-  standardShippingCost: number;
-  currency: "GBP" | "EUR" | "USD";
 }
 
 // Product Variant

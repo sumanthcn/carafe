@@ -56,9 +56,6 @@
       "type": "integer",
       "default": 0
     },
-    "variety": {
-      "type": "string"
-    },
     "images": {
       "type": "media",
       "multiple": true,

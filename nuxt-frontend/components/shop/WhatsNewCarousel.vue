@@ -46,7 +46,7 @@
               <div class="product-showcase__image">
                 <img
                   v-if="product.images && product.images.length > 0"
-                  :src="`${strapiUrl}${product.images[0].url}`"
+                  :src="getImageUrl(product.images[0])"
                   :alt="product.images[0].alternativeText || product.name"
                   loading="lazy"
                 />
@@ -134,7 +134,7 @@
 <script setup lang="ts">
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation as SwiperNavigation } from "swiper/modules";
-import type { Product } from "~/types/strapi";
+import type { Product, StrapiMedia } from "~/types/strapi";
 import "swiper/css";
 
 interface WhatsNewCarouselProps {
@@ -145,8 +145,14 @@ const props = defineProps<WhatsNewCarouselProps>();
 
 const config = useRuntimeConfig();
 const strapiUrl = config.public.strapiUrl;
+const { getStrapiMediaUrl } = useStrapi();
 const cartStore = useCartStore();
 const toast = useToast();
+
+// Helper to get image URL (handles both local and Cloudinary URLs)
+const getImageUrl = (image: StrapiMedia) => {
+  return getStrapiMediaUrl(image);
+};
 
 const swiperInstance = ref<any>(null);
 const isBeginning = ref(true);

@@ -2,7 +2,7 @@ import type { ShopSettings } from '~/types/strapi';
 
 export const useShopSettings = () => {
   const config = useRuntimeConfig();
-  const settings = ref<ShopSettings | null>(null);
+  const settings = ref<any | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -13,7 +13,7 @@ export const useShopSettings = () => {
     error.value = null;
 
     try {
-      const response = await $fetch<{ data: ShopSettings }>(`${config.public.strapiUrl}/api/shop-setting`, {
+      const response = await $fetch<{ data: any }>(`${config.public.strapiUrl}/api/shop-setting`, {
         // Prevent fetch from throwing on 404
         onResponseError({ response }) {
           if (response.status === 404) {

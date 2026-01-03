@@ -39,7 +39,7 @@
               <div v-if="product.images.length > 1" class="thumbnail-gallery">
                 <button v-for="(image, index) in product.images" :key="index" class="thumbnail"
                   :class="{ active: selectedImageIndex === index }" @click="selectedImageIndex = index">
-                  <img :src="`${strapiUrl}${image.formats?.thumbnail?.url || image.url}`"
+                  <img :src="getThumbnailUrl(image)"
                     :alt="image.alternativeText" />
                 </button>
               </div>
@@ -136,34 +136,16 @@
                   </transition>
                 </div>
 
-                <!-- Return & Refund Policy -->
-                <div class="accordion-item" :class="{ active: activeAccordion === 'return' }">
-                  <button class="accordion-header" @click="toggleAccordion('return')"
-                    :aria-expanded="activeAccordion === 'return'">
-                    <span>RETURN & REFUND POLICY</span>
-                    <span class="icon">{{ activeAccordion === 'return' ? '−' : '+' }}</span>
-                  </button>
-                  <transition name="accordion">
-                    <div v-show="activeAccordion === 'return'" class="accordion-content">
-                      <div v-if="shopSettings?.returnPolicy" v-html="shopSettings.returnPolicy"></div>
-                      <div v-else>
-                        <p>We offer a 30-day return policy for unopened products. Please
-                          contact our customer service team for return authorization.</p>
-                      </div>
-                    </div>
-                  </transition>
-                </div>
-
                 <!-- Shipping Info -->
                 <div class="accordion-item" :class="{ active: activeAccordion === 'shipping' }">
                   <button class="accordion-header" @click="toggleAccordion('shipping')"
                     :aria-expanded="activeAccordion === 'shipping'">
-                    <span>SHIPPING INFO</span>
+                    <span style="text-transform: uppercase;">Delivery & Shipping Information</span>
                     <span class="icon">{{ activeAccordion === 'shipping' ? '−' : '+' }}</span>
                   </button>
                   <transition name="accordion">
                     <div v-show="activeAccordion === 'shipping'" class="accordion-content">
-                      <div v-if="shopSettings?.shippingInfo" v-html="shopSettings.shippingInfo"></div>
+                      <div v-if="shopSettings.shippingInfo" v-html="parseShippingInfo"></div>
                       <div v-else>
                         <p>Free shipping on orders over €50. Standard delivery takes 3-5
                           business days. Express shipping available at checkout.</p>
@@ -210,11 +192,13 @@ const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
 const config = useRuntimeConfig();
+const { parseMarkdown } = useMarkdown(); 
 
 const { fetchProductBySlug } = useProducts();
 const { fetchShopCoffeeData } = useShopCoffee();
 const { fetchReviewsByProduct } = useProductReviews();
 const { settings: shopSettings, fetchShopSettings } = useShopSettings();
+const { getStrapiMediaUrl } = useStrapi();
 const strapiUrl = config.public.strapiUrl;
 
 // State
@@ -236,6 +220,12 @@ const reviewStats = ref<ReviewStats>({
 });
 
 // Computed
+
+// Parse markdown description
+const parseShippingInfo = computed(() => {
+  if (!shopSettings.value.shippingInfo) return '';
+  return parseMarkdown(shopSettings.value.shippingInfo);
+});
 const productUrl = computed(() => {
   if (!product.value) return '';
   return `${config.public.siteUrl || 'https://carafe.coffee'}/shop-coffee/${product.value.slug}`;
@@ -245,12 +235,25 @@ const selectedImage = computed(() => {
   if (product.value && product.value.images[selectedImageIndex.value]) {
     const img = product.value.images[selectedImageIndex.value];
     return {
-      url: `${strapiUrl}${img.url}`,
+      url: getStrapiMediaUrl(img),
       alternativeText: img.alternativeText || product.value.name
     };
   }
   return { url: '', alternativeText: '' };
 });
+
+// Helper function to get thumbnail URL
+function getThumbnailUrl(image: any) {
+  if (image.formats?.thumbnail?.url) {
+    // Check if thumbnail URL is absolute (Cloudinary)
+    if (image.formats.thumbnail.url.startsWith('http')) {
+      return image.formats.thumbnail.url;
+    }
+    return `${strapiUrl}${image.formats.thumbnail.url}`;
+  }
+  // Fallback to main image
+  return getStrapiMediaUrl(image);
+}
 
 const canAddToCart = computed(() => {
   // If product has variants, check if a variant is selected and in stock
@@ -742,6 +745,34 @@ useHead(() => {
     .accordion-content {
       padding: 0 2rem 2rem 0;
       line-height: 1.4;
+      font-family: $font-body;
+      font-weight: 500;
+      color: $color-text;
+      font-size: $font-size-base;
+
+      p {
+        margin-bottom: 1rem;
+      }
+
+      a {
+        color: $color-primary-light;
+        text-decoration: underline;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: darken($color-primary-light, 10%);
+        }
+      }
+
+      :deep(a) {
+        color: $color-primary-light;
+        text-decoration: underline;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: darken($color-primary-light, 10%);
+        }
+      }
 
       .coffee-details {
         margin-top: 2rem;
@@ -756,14 +787,6 @@ useHead(() => {
           margin-bottom: 1.5rem;
           color: $color-text;
         }
-      }
-      font-family: $font-body;
-      font-weight: 500;
-      color: $color-text;
-      font-size: $font-size-base;
-
-      p {
-        margin-bottom: 1rem;
       }
 
     }

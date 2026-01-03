@@ -37,13 +37,17 @@
     "images": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"],
+      "allowedTypes": [
+        "images"
+      ],
       "required": false
     },
     "video": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["videos"],
+      "allowedTypes": [
+        "videos"
+      ],
       "required": false
     },
     "product": {
@@ -54,7 +58,10 @@
     },
     "status": {
       "type": "enumeration",
-      "enum": ["approved", "rejected"],
+      "enum": [
+        "approved",
+        "rejected"
+      ],
       "default": "approved",
       "required": true
     },

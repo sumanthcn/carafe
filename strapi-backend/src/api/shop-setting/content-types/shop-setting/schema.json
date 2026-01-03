@@ -12,28 +12,9 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "returnPolicy": {
-      "type": "richtext",
-      "required": true
-    },
     "shippingInfo": {
       "type": "richtext",
       "required": true
-    },
-    "freeShippingThreshold": {
-      "type": "decimal",
-      "default": 50,
-      "min": 0
-    },
-    "standardShippingCost": {
-      "type": "decimal",
-      "default": 5,
-      "min": 0
-    },
-    "currency": {
-      "type": "enumeration",
-      "default": "EUR",
-      "enum": ["EUR", "GBP", "USD"]
     }
   }
 }

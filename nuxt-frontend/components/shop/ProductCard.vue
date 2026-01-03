@@ -10,7 +10,7 @@
       <div class="product-image">
         <img
           v-if="product.images && product.images.length > 0"
-          :src="`${strapiUrl}${product.images[0].url}`"
+          :src="getImageUrl(product.images[0])"
           :alt="product.images[0].alternativeText || product.name"
           loading="lazy"
         />
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Product } from "~/types/strapi";
+import type { Product, StrapiMedia } from "~/types/strapi";
 
 interface ProductCardProps {
   product: Product;
@@ -60,6 +60,12 @@ const props = defineProps<ProductCardProps>();
 
 const config = useRuntimeConfig();
 const strapiUrl = config.public.strapiUrl;
+const { getStrapiMediaUrl } = useStrapi();
+
+// Helper to get image URL (handles both local and Cloudinary URLs)
+const getImageUrl = (image: StrapiMedia) => {
+  return getStrapiMediaUrl(image);
+};
 
 // Get base variant (250g) price
 const baseVariantPrice = computed(() => {
