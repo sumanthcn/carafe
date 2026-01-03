@@ -1,0 +1,45 @@
+{
+  "kind": "singleType",
+  "collectionName": "wholesales",
+  "info": {
+    "singularName": "wholesale",
+    "pluralName": "wholesales",
+    "displayName": "Wholesale"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "bannerSection": {
+      "type": "component",
+      "component": "sections.visit-cafe-banner",
+      "repeatable": false
+    },
+    "offerings": {
+      "type": "component",
+      "component": "sections.text-with-bg-image-and-icon-text-list",
+      "repeatable": false
+    },
+    "getStarted": {
+      "type": "component",
+      "component": "sections.brand-story",
+      "repeatable": false
+    },
+    "buildTogether": {
+      "type": "component",
+      "component": "sections.wholesale-section",
+      "repeatable": false
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "repeatable": false
+    },
+    "faqs": {
+      "type": "component",
+      "component": "sections.faq-section",
+      "repeatable": false
+    }
+  }
+}

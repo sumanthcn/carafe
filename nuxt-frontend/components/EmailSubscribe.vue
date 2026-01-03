@@ -235,6 +235,13 @@ async function handleSubscribe() {
   transition: all 0.2s ease;
   white-space: nowrap;
 
+  @media (max-width: 767px) {
+    position: absolute;
+        bottom: -65px;
+        left: 0;
+        right: 0;
+  }
+
   &:hover:not(:disabled) {
     background: $color-primary-dark;
     transform: translateY(-2px);

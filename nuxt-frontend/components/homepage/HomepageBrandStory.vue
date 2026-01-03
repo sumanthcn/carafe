@@ -79,6 +79,10 @@ withDefaults(defineProps<BrandStoryProps>(), {
 .brand-story {
   padding: 0rem 2rem;
 
+  @media (max-width: 767px) {
+    padding: 2rem;
+  }
+
   &--default {
     background: $color-background;
   }

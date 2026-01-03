@@ -430,6 +430,38 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAboutAbout extends Struct.SingleTypeSchema {
+  collectionName: 'abouts';
+  info: {
+    displayName: 'About';
+    pluralName: 'abouts';
+    singularName: 'about';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    bannerSection: Schema.Attribute.Component<
+      'sections.visit-cafe-banner',
+      false
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::about.about'> &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    section1: Schema.Attribute.Component<'sections.text-images', false>;
+    section2: Schema.Attribute.Component<'sections.text-images', false>;
+    section3: Schema.Attribute.Component<'sections.text-images', false>;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiArtAndCultureArtAndCulture extends Struct.SingleTypeSchema {
   collectionName: 'art_and_cultures';
   info: {
@@ -1061,6 +1093,48 @@ export interface ApiVisitCafeVisitCafe extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiWholesaleWholesale extends Struct.SingleTypeSchema {
+  collectionName: 'wholesales';
+  info: {
+    displayName: 'Wholesale';
+    pluralName: 'wholesales';
+    singularName: 'wholesale';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    bannerSection: Schema.Attribute.Component<
+      'sections.visit-cafe-banner',
+      false
+    >;
+    buildTogether: Schema.Attribute.Component<
+      'sections.wholesale-section',
+      false
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    faqs: Schema.Attribute.Component<'sections.faq-section', false>;
+    getStarted: Schema.Attribute.Component<'sections.brand-story', false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::wholesale.wholesale'
+    > &
+      Schema.Attribute.Private;
+    offerings: Schema.Attribute.Component<
+      'sections.text-with-bg-image-and-icon-text-list',
+      false
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    seo: Schema.Attribute.Component<'shared.seo', false>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -1571,6 +1645,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::about.about': ApiAboutAbout;
       'api::art-and-culture.art-and-culture': ApiArtAndCultureArtAndCulture;
       'api::customer-review.customer-review': ApiCustomerReviewCustomerReview;
       'api::customer-testimonial.customer-testimonial': ApiCustomerTestimonialCustomerTestimonial;
@@ -1585,6 +1660,7 @@ declare module '@strapi/strapi' {
       'api::shop-setting.shop-setting': ApiShopSettingShopSetting;
       'api::subscription.subscription': ApiSubscriptionSubscription;
       'api::visit-cafe.visit-cafe': ApiVisitCafeVisitCafe;
+      'api::wholesale.wholesale': ApiWholesaleWholesale;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

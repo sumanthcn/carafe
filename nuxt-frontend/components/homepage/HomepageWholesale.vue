@@ -63,6 +63,10 @@ defineProps<WholesaleSectionProps>();
 <style lang="scss" scoped>
 .wholesale-section {
   padding: 2rem;
+
+  @media (max-width: 767px) {
+    padding: 0;
+  }
 }
 
 .wholesale-wrapper {
@@ -81,6 +85,10 @@ defineProps<WholesaleSectionProps>();
   max-width: 700px;
   z-index: 1;
 
+  @media (max-width: 767px) {
+      display: none;
+    }
+
   @media (max-width: 1023px) {
     position: relative;
     width: 100%;
@@ -95,6 +103,7 @@ defineProps<WholesaleSectionProps>();
     height: auto;
     border-radius: 24px;
     object-fit: cover;
+
   }
 }
 
@@ -107,9 +116,14 @@ defineProps<WholesaleSectionProps>();
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 10px solid rgba(0, 0, 0, 0.05);
   max-width: 600px;
+  min-height: 320px;
 
   @media (max-width: 1023px) {
     max-width: 100%;
+  }
+
+  @media (max-width: 767px) {
+      padding: 3rem 2rem;
   }
 
   h2 {
@@ -119,6 +133,10 @@ defineProps<WholesaleSectionProps>();
     margin-bottom: 1.5rem;
     text-transform: uppercase;
     font-weight: bold;
+
+    @media (max-width: 767px) {
+      font-size: $font-size-3xl;
+    }
   }
 
   .wholesale-text {

@@ -64,7 +64,7 @@ const parsedDescription = computed(() => {
 // Banner Section
 .banner-section {
   position: relative;
-  height: 350px;
+  height: 400px;
   display: flex;
   align-items: center;
   background-size: cover;
@@ -73,7 +73,7 @@ const parsedDescription = computed(() => {
   overflow: hidden;
 
   @media (max-width: 991px) {
-    height: 350px;
+    height: 400px;
   }
 
   @media (max-width: 767px) {

@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_sections_text_with_bg_image_and_icon_text_lists",
+  "info": {
+    "displayName": "Text with BG Image and Icon Text List"
+  },
+  "options": {},
+  "attributes": {
+    "headline": {
+      "type": "string"
+    },
+    "description": {
+      "type": "richtext"
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "imageTexts": {
+      "type": "component",
+      "component": "elements.image-text",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

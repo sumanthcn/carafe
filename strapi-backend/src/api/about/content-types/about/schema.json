@@ -1,0 +1,40 @@
+{
+  "kind": "singleType",
+  "collectionName": "abouts",
+  "info": {
+    "singularName": "about",
+    "pluralName": "abouts",
+    "displayName": "About"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "bannerSection": {
+      "type": "component",
+      "component": "sections.visit-cafe-banner",
+      "repeatable": false
+    },
+    "section1": {
+      "type": "component",
+      "component": "sections.text-images",
+      "repeatable": false
+    },
+    "section2": {
+      "type": "component",
+      "component": "sections.text-images",
+      "repeatable": false
+    },
+    "section3": {
+      "type": "component",
+      "component": "sections.text-images",
+      "repeatable": false
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "repeatable": false
+    }
+  }
+}

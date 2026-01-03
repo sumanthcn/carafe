@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_elements_image_texts",
+  "info": {
+    "displayName": "Image Text"
+  },
+  "options": {},
+  "attributes": {
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "text": {
+      "type": "richtext"
+    }
+  },
+  "config": {}
+}

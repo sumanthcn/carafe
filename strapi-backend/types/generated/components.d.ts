@@ -116,6 +116,17 @@ export interface ElementsGettingHereItem extends Struct.ComponentSchema {
   };
 }
 
+export interface ElementsImageText extends Struct.ComponentSchema {
+  collectionName: 'components_elements_image_texts';
+  info: {
+    displayName: 'Image Text';
+  };
+  attributes: {
+    image: Schema.Attribute.Media<'images' | 'files'>;
+    text: Schema.Attribute.RichText;
+  };
+}
+
 export interface ElementsNavChild extends Struct.ComponentSchema {
   collectionName: 'components_elements_nav_child';
   info: {
@@ -562,6 +573,20 @@ export interface SectionsTextImages extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsTextWithBgImageAndIconTextList
+  extends Struct.ComponentSchema {
+  collectionName: 'components_sections_text_with_bg_image_and_icon_text_lists';
+  info: {
+    displayName: 'Text with BG Image and Icon Text List';
+  };
+  attributes: {
+    backgroundImage: Schema.Attribute.Media<'images' | 'files'>;
+    description: Schema.Attribute.RichText;
+    headline: Schema.Attribute.String;
+    imageTexts: Schema.Attribute.Component<'elements.image-text', true>;
+  };
+}
+
 export interface SectionsVisitCafeBanner extends Struct.ComponentSchema {
   collectionName: 'components_sections_visit_cafe_banners';
   info: {
@@ -606,6 +631,16 @@ export interface SectionsWholesaleSection extends Struct.ComponentSchema {
     cta: Schema.Attribute.Component<'elements.cta-button', false>;
     headline: Schema.Attribute.String;
     image: Schema.Attribute.Media<'images'>;
+  };
+}
+
+export interface SectionsWhyPartnerFaq extends Struct.ComponentSchema {
+  collectionName: 'components_sections_why_partner_faqs';
+  info: {
+    displayName: 'Why Partner FAQ';
+  };
+  attributes: {
+    faq: Schema.Attribute.Component<'sections.faq-section', true>;
   };
 }
 
@@ -747,6 +782,7 @@ declare module '@strapi/strapi' {
       'elements.footer-column': ElementsFooterColumn;
       'elements.footer-link': ElementsFooterLink;
       'elements.getting-here-item': ElementsGettingHereItem;
+      'elements.image-text': ElementsImageText;
       'elements.nav-child': ElementsNavChild;
       'elements.nav-item': ElementsNavItem;
       'elements.opening-hours': ElementsOpeningHours;
@@ -771,9 +807,11 @@ declare module '@strapi/strapi' {
       'sections.team-section': SectionsTeamSection;
       'sections.text-content': SectionsTextContent;
       'sections.text-images': SectionsTextImages;
+      'sections.text-with-bg-image-and-icon-text-list': SectionsTextWithBgImageAndIconTextList;
       'sections.visit-cafe-banner': SectionsVisitCafeBanner;
       'sections.visit-cafe-section': SectionsVisitCafeSection;
       'sections.wholesale-section': SectionsWholesaleSection;
+      'sections.why-partner-faq': SectionsWhyPartnerFaq;
       'shared.button': SharedButton;
       'shared.carousel-settings': SharedCarouselSettings;
       'shared.product-schema': SharedProductSchema;

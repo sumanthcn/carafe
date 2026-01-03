@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_sections_why_partner_faqs",
+  "info": {
+    "displayName": "Why Partner FAQ"
+  },
+  "options": {},
+  "attributes": {
+    "faq": {
+      "type": "component",
+      "component": "sections.faq-section",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}
