@@ -735,6 +735,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   };
   attributes: {
     billingAddress: Schema.Attribute.Component<'elements.address', false>;
+    carrier: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -743,7 +744,10 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     customerEmail: Schema.Attribute.Email & Schema.Attribute.Required;
     customerName: Schema.Attribute.String & Schema.Attribute.Required;
     customerPhone: Schema.Attribute.String;
+    deliveredAt: Schema.Attribute.DateTime;
     discount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    dispatchedAt: Schema.Attribute.DateTime;
+    isGuestOrder: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     items: Schema.Attribute.Component<'elements.order-item', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
@@ -751,6 +755,9 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     notes: Schema.Attribute.Text;
     orderNumber: Schema.Attribute.String &
       Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    orderTrackingToken: Schema.Attribute.String &
+      Schema.Attribute.Private &
       Schema.Attribute.Unique;
     paymentId: Schema.Attribute.String;
     paymentMethod: Schema.Attribute.String;
@@ -761,6 +768,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     shippingAddress: Schema.Attribute.Component<'elements.address', false>;
     shippingCost: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
+    shippingMethod: Schema.Attribute.String;
     status: Schema.Attribute.Enumeration<
       [
         'order_received',
@@ -777,6 +785,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     subtotal: Schema.Attribute.Decimal & Schema.Attribute.Required;
     tax: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     total: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    trackingNumber: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

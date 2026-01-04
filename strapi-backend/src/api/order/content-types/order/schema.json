@@ -103,6 +103,30 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "orderTrackingToken": {
+      "type": "string",
+      "unique": true,
+      "private": true
+    },
+    "shippingMethod": {
+      "type": "string"
+    },
+    "carrier": {
+      "type": "string"
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "dispatchedAt": {
+      "type": "datetime"
+    },
+    "deliveredAt": {
+      "type": "datetime"
+    },
+    "isGuestOrder": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

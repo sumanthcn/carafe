@@ -1,0 +1,44 @@
+{
+  "kind": "singleType",
+  "collectionName": "shipping_config",
+  "info": {
+    "singularName": "shipping-config",
+    "pluralName": "shipping-configs",
+    "displayName": "Shipping Configuration",
+    "description": "Shipping options and pricing configuration"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "freeShippingThreshold": {
+      "type": "decimal",
+      "required": true,
+      "default": 25.00
+    },
+    "shippingOptions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "elements.shipping-option",
+      "required": true
+    },
+    "allowedCountries": {
+      "type": "json",
+      "default": ["GB"]
+    },
+    "processingDays": {
+      "type": "integer",
+      "default": 2,
+      "min": 1
+    },
+    "excludeWeekends": {
+      "type": "boolean",
+      "default": true
+    },
+    "excludeBankHolidays": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

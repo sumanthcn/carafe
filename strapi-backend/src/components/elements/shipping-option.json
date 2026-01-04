@@ -1,0 +1,44 @@
+{
+  "collectionName": "components_elements_shipping_options",
+  "info": {
+    "displayName": "Shipping Option",
+    "icon": "truck",
+    "description": "Shipping carrier and pricing option"
+  },
+  "options": {},
+  "attributes": {
+    "carrierName": {
+      "type": "string",
+      "required": true
+    },
+    "serviceName": {
+      "type": "string",
+      "required": true
+    },
+    "cost": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "freeEligible": {
+      "type": "boolean",
+      "default": false
+    },
+    "estimatedDays": {
+      "type": "integer",
+      "min": 1,
+      "default": 1
+    },
+    "description": {
+      "type": "text"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
