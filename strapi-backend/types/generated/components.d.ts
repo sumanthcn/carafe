@@ -89,20 +89,6 @@ export interface ElementsFooterColumn extends Struct.ComponentSchema {
   };
 }
 
-export interface ElementsFooterLink extends Struct.ComponentSchema {
-  collectionName: 'components_elements_footer_links';
-  info: {
-    description: 'Footer navigation link';
-    displayName: 'Footer Link';
-  };
-  attributes: {
-    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    label: Schema.Attribute.String & Schema.Attribute.Required;
-    url: Schema.Attribute.String & Schema.Attribute.Required;
-  };
-}
-
 export interface ElementsGettingHereItem extends Struct.ComponentSchema {
   collectionName: 'components_elements_getting_here_items';
   info: {
@@ -697,34 +683,6 @@ export interface SharedCarouselSettings extends Struct.ComponentSchema {
   };
 }
 
-export interface SharedProductSchema extends Struct.ComponentSchema {
-  collectionName: 'components_shared_product_schema';
-  info: {
-    description: 'Product structured data for SEO';
-    displayName: 'Product Schema';
-    icon: 'code';
-  };
-  attributes: {
-    aggregateRating: Schema.Attribute.Decimal &
-      Schema.Attribute.SetMinMax<
-        {
-          max: 5;
-          min: 1;
-        },
-        number
-      >;
-    availability: Schema.Attribute.Enumeration<
-      ['InStock', 'OutOfStock', 'PreOrder', 'Discontinued']
-    > &
-      Schema.Attribute.DefaultTo<'InStock'>;
-    brand: Schema.Attribute.String &
-      Schema.Attribute.DefaultTo<'Carafe Coffee'>;
-    gtin: Schema.Attribute.String;
-    mpn: Schema.Attribute.String;
-    reviewCount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
-  };
-}
-
 export interface SharedSeo extends Struct.ComponentSchema {
   collectionName: 'components_shared_seo';
   info: {
@@ -780,7 +738,6 @@ declare module '@strapi/strapi' {
       'elements.faq-item': ElementsFaqItem;
       'elements.feature-item': ElementsFeatureItem;
       'elements.footer-column': ElementsFooterColumn;
-      'elements.footer-link': ElementsFooterLink;
       'elements.getting-here-item': ElementsGettingHereItem;
       'elements.image-text': ElementsImageText;
       'elements.nav-child': ElementsNavChild;
@@ -814,7 +771,6 @@ declare module '@strapi/strapi' {
       'sections.why-partner-faq': SectionsWhyPartnerFaq;
       'shared.button': SharedButton;
       'shared.carousel-settings': SharedCarouselSettings;
-      'shared.product-schema': SharedProductSchema;
       'shared.seo': SharedSeo;
     }
   }
