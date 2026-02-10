@@ -1,4 +1,5 @@
 import { useAuth } from '~/composables/useAuth';
+import { useCartStore } from '~/stores/cart';
 
 export default defineNuxtPlugin(async () => {
   const { initAuth } = useAuth();

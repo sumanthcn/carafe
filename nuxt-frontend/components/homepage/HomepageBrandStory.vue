@@ -18,7 +18,7 @@
           <div
             v-if="data.content"
             class="brand-story__text"
-            v-html="data.content"
+            v-html="parseMarkdown(data.content)"
           ></div>
           <NuxtLink
             v-if="data.cta"
@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 const { getStrapiMediaUrl } = useStrapi();
+const { parseMarkdown } = useMarkdown();
 
 interface BrandStoryProps {
   data?: {
@@ -73,6 +74,7 @@ interface BrandStoryProps {
 withDefaults(defineProps<BrandStoryProps>(), {
   backgroundColor: "default",
 });
+
 </script>
 
 <style lang="scss" scoped>
@@ -80,7 +82,7 @@ withDefaults(defineProps<BrandStoryProps>(), {
   padding: 0rem 2rem;
 
   @media (max-width: 767px) {
-    padding: 2rem;
+    padding: 2rem 0;
   }
 
   &--default {

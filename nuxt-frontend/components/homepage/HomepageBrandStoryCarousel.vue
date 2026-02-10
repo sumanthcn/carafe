@@ -18,7 +18,7 @@
           <div
             v-if="data.content"
             class="brand-story__text"
-            v-html="data.content"
+            v-html="parseMarkdown(data.content)"
           ></div>
           <NuxtLink
             v-if="data.cta"
@@ -77,6 +77,7 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from "swiper/vue";
 
 const { getStrapiMediaUrl } = useStrapi();
+const { parseMarkdown } = useMarkdown();
 
 interface BrandStoryCarouselProps {
   data?: {
@@ -116,6 +117,13 @@ withDefaults(defineProps<BrandStoryCarouselProps>(), {
   &__content {
     @media (min-width: 1024px) {
       margin-top: -$spacing-14;
+    }
+  }
+
+  .container {
+    @media (max-width: 767px) {
+      margin-top: 1rem;
+      padding: 0;
     }
   }
 }

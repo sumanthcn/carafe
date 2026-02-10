@@ -67,6 +67,10 @@ defineProps<TasteTheCraftProps>();
     color: $color-text;
     max-width: 65%;
     margin: 0 auto 3rem;
+
+    @media (max-width: 767px) {
+      max-width: 100%;
+    }
   }
 
   &__categories {

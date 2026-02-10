@@ -153,6 +153,9 @@ const parsedDescription = computed(() => {
   font-size: $font-size-base;
   text-align: center;
 
+  @media (max-width: 767px) {
+    padding: 0.5rem 2rem 2rem 2rem;
+  }
   .heading-text {
     font-family: $font-heading;
     font-size: $font-size-2xl;
@@ -169,6 +172,7 @@ const parsedDescription = computed(() => {
     margin: 0 auto;
     color: $color-text;
     line-height: 1.5;
+
   }
 }
 </style>

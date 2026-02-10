@@ -149,6 +149,10 @@ async function handleSubscribe() {
 <style lang="scss" scoped>
 .email-subscribe {
   padding: 4rem 2rem;
+
+  @media (max-width: 767px) {
+    padding: 3rem 0rem;
+  }
 }
 
 .container {

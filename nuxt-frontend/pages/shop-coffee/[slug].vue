@@ -122,7 +122,7 @@
                   </button>
                   <transition name="accordion">
                     <div v-show="activeAccordion === 'info'" class="accordion-content">
-                      <div v-if="product.description" v-html="product.description"></div>
+                      <div v-if="product.description" v-html="parseMarkdown(product.description)"></div>
                       <div v-else-if="product.shortDescription">
                         <p>{{ product.shortDescription }}</p>
                       </div>
@@ -271,10 +271,10 @@ import ProductAttributes from "~/components/product/ProductAttributes.vue";
 
 const route = useRoute();
 const router = useRouter();
-const cartStore = useCartStore();
 const config = useRuntimeConfig();
 const { parseMarkdown } = useMarkdown(); 
 const { isAuthenticated } = useAuth();
+const cartStore = useCartStore();
 
 const { fetchProductBySlug } = useProducts();
 const { fetchShopCoffeeData } = useShopCoffee();
@@ -613,6 +613,11 @@ useHead(() => {
   position: sticky;
   top: 2rem;
   align-self: start;
+
+  @media (max-width: 767px) {
+    position: relative;
+    top: auto;
+  }
   
   .main-image {
     width: 100%;

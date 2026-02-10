@@ -10,7 +10,7 @@
           <div
             v-if="data.content"
             class="wholesale-text"
-            v-html="data.content"
+            v-html="parseMarkdown(data.content)"
           ></div>
           <NuxtLink
             v-if="data.cta"
@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
 const { getStrapiMediaUrl } = useStrapi();
+const { parseMarkdown } = useMarkdown();
 
 interface WholesaleSectionProps {
   data?: {
@@ -124,6 +125,7 @@ defineProps<WholesaleSectionProps>();
 
   @media (max-width: 767px) {
       padding: 3rem 2rem;
+      margin-top: 2rem;
   }
 
   h2 {

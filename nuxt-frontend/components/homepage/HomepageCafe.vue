@@ -13,7 +13,7 @@
       "
     >
       <div class="cafe-section__overlay">
-        <div class="container">
+        <div>
           <h2>{{ data?.headline || "THE HEART OF CARAFE" }}</h2>
           <p v-if="data?.description">{{ data.description }}</p>
           <NuxtLink

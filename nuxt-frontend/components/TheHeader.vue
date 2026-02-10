@@ -623,7 +623,7 @@ function isNavActive(item: NavItem): boolean {
     position: relative;
     width: 24px;
     height: 2px;
-    background: white;
+    background: #001219;
     transition: background 0.2s ease;
 
     .header--scrolled & {

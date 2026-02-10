@@ -124,7 +124,7 @@ useHead({
             <div class="page__container">
               <div
                 class="page__text-content prose"
-                v-html="block.content"
+                v-html="parseMarkdown(block.content || '')"
               ></div>
             </div>
           </section>
@@ -293,10 +293,6 @@ useHead({
     .page__header & {
       color: $color-text;
     }
-  }
-
-  &__content {
-    // Dynamic content blocks container
   }
 
   &__container {

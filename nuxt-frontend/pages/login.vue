@@ -65,6 +65,8 @@
 </template>
 
 <script setup lang="ts">
+import { useCartStore } from '~/stores/cart';
+
 const { login, handlePostLoginRedirect } = useAuth();
 const cartStore = useCartStore();
 const route = useRoute();

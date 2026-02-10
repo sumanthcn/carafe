@@ -81,7 +81,7 @@
                 <img :src="getStrapiMediaUrl(item.icon)" :alt="item.name" />
               </div>
               <h3 class="item-name">{{ item.name }}</h3>
-              <div class="item-description" v-html="item.description"></div>
+              <div class="item-description" v-html="parseMarkdown(item.description)"></div>
             </div>
           </div>
         </div>
@@ -223,6 +223,10 @@ useHead(() => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+
+    @media (max-width: 767px) {
+      padding: 0;
+    }
   }
 
   .brand-story-grid {
@@ -455,6 +459,10 @@ useHead(() => {
     display: grid;
     gap: 30px;
 
+    @media (max-width: 767px) {
+      gap: 0;
+    }
+
     @media (min-width: 768px) {
       grid-template-columns: repeat(2, 1fr);
       gap: 32px;
@@ -495,8 +503,8 @@ useHead(() => {
         }
 
         @media (max-width: 767px) {
-          width: 50px;
-          height: 50px;
+          // width: 50px;
+          // height: 50px;
         }
       }
     }
@@ -525,6 +533,7 @@ useHead(() => {
 
       @media (max-width: 767px) {
         font-size: 0.875rem;
+        max-width: 100%;
       }
 
       p {
