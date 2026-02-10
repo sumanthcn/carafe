@@ -81,7 +81,7 @@
                 <img :src="getStrapiMediaUrl(item.icon)" :alt="item.name" />
               </div>
               <h3 class="item-name">{{ item.name }}</h3>
-              <div class="item-description" v-html="parseMarkdown(item.description)"></div>
+              <div class="item-description" v-html="item.description"></div>
             </div>
           </div>
         </div>

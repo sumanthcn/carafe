@@ -168,6 +168,10 @@ const carouselSettings = computed(() => {
     height: 100%;
     background-size: cover;
     background-position: center;
+
+    @media (max-width: 767px) {
+      background-position: 40% center; // Shift background for mobile to better focus on content
+    }
   }
 
   &__overlay {

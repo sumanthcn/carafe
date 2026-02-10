@@ -122,7 +122,7 @@
                   </button>
                   <transition name="accordion">
                     <div v-show="activeAccordion === 'info'" class="accordion-content">
-                      <div v-if="product.description" v-html="parseMarkdown(product.description)"></div>
+                      <div v-if="product.description" v-html="product.description"></div>
                       <div v-else-if="product.shortDescription">
                         <p>{{ product.shortDescription }}</p>
                       </div>
