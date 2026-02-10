@@ -8,9 +8,14 @@ const emit = defineEmits<{
 }>();
 
 const cartStore = useCartStore();
+const { isAuthenticated } = useAuth();
+const router = useRouter();
 
 // Internal state for when not using v-model
 const internalOpen = ref(false);
+
+// Checkout modal state
+const showCheckoutModal = ref(false);
 
 // Use either prop or internal state
 const isOpenState = computed({
@@ -26,14 +31,56 @@ const toggleCart = () => {
   isOpenState.value = !isOpenState.value;
 };
 
+// Handle checkout button click
+const handleCheckoutClick = () => {
+  if (isAuthenticated.value) {
+    // User is logged in, proceed to checkout
+    isOpenState.value = false;
+    router.push('/checkout');
+  } else {
+    // User is not logged in, show modal
+    showCheckoutModal.value = true;
+  }
+};
+
+// Continue as guest
+const continueAsGuest = () => {
+  showCheckoutModal.value = false;
+  isOpenState.value = false;
+  router.push('/checkout');
+};
+
+// Go to login
+const goToLogin = () => {
+  showCheckoutModal.value = false;
+  isOpenState.value = false;
+  router.push('/login?redirect=/checkout');
+};
+
+// Go to signup
+const goToSignup = () => {
+  showCheckoutModal.value = false;
+  isOpenState.value = false;
+  router.push('/signup?redirect=/checkout');
+};
+
+// Close modal
+const closeModal = () => {
+  showCheckoutModal.value = false;
+};
+
 // Expose toggle function
 defineExpose({ toggleCart });
 
 // Close on escape key
 onMounted(() => {
   const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === "Escape" && isOpenState.value) {
-      isOpenState.value = false;
+    if (e.key === "Escape") {
+      if (showCheckoutModal.value) {
+        showCheckoutModal.value = false;
+      } else if (isOpenState.value) {
+        isOpenState.value = false;
+      }
     }
   };
   document.addEventListener("keydown", handleEscape);
@@ -163,7 +210,8 @@ onMounted(() => {
                     @click="
                       cartStore.updateQuantity(
                         item.product.id,
-                        item.quantity - 1
+                        item.quantity - 1,
+                        item.selectedVariant?.id
                       )
                     "
                   >
@@ -175,7 +223,8 @@ onMounted(() => {
                     @click="
                       cartStore.updateQuantity(
                         item.product.id,
-                        item.quantity + 1
+                        item.quantity + 1,
+                        item.selectedVariant?.id
                       )
                     "
                   >
@@ -186,7 +235,7 @@ onMounted(() => {
               <button
                 class="cart-item__remove"
                 aria-label="Remove item"
-                @click="cartStore.removeItem(item.product.id)"
+                @click="cartStore.removeItem(item.product.id, item.selectedVariant?.id)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -214,39 +263,122 @@ onMounted(() => {
               <span>Subtotal</span>
               <span>{{ cartStore.formatPrice(cartStore.subtotal) }}</span>
             </div>
-            <div class="cart-sidebar__row">
-              <span>Shipping</span>
-              <span>{{
-                cartStore.shippingCost === 0
-                  ? "FREE"
-                  : cartStore.formatPrice(cartStore.shippingCost)
-              }}</span>
-            </div>
             <div class="cart-sidebar__row cart-sidebar__row--total">
               <span>Total</span>
-              <span>{{ cartStore.formatPrice(cartStore.total) }}</span>
+              <span>{{ cartStore.formatPrice(cartStore.subtotal) }}</span>
             </div>
-            <p
-              v-if="cartStore.subtotal < 50"
-              class="cart-sidebar__free-shipping"
-            >
-              Add {{ cartStore.formatPrice(50 - cartStore.subtotal) }} more for
-              free shipping
+            <p class="cart-sidebar__shipping-note">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Shipping charges will be calculated at checkout
             </p>
           </div>
 
           <!-- Actions -->
           <div class="cart-sidebar__actions">
-            <NuxtLink
-              to="/checkout"
+            <button
               class="btn btn--primary btn--full"
-              @click="isOpenState = false"
+              @click="handleCheckoutClick"
             >
               Checkout
-            </NuxtLink>
+            </button>
           </div>
         </div>
       </aside>
+    </Transition>
+
+    <!-- Checkout Modal -->
+    <Transition name="fade">
+      <div
+        v-if="showCheckoutModal"
+        class="checkout-modal-overlay"
+        @click="closeModal"
+      >
+        <div class="checkout-modal" @click.stop>
+          <button
+            class="checkout-modal__close"
+            aria-label="Close"
+            @click="closeModal"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+
+          <div class="checkout-modal__content">
+            <h3 class="checkout-modal__title">How would you like to checkout?</h3>
+            <p class="checkout-modal__description">
+              You're not logged in. Would you like to create an account for faster checkout and order tracking, or continue as a guest?
+            </p>
+
+            <div class="checkout-modal__actions">
+              <button
+                class="btn btn--primary btn--full"
+                @click="goToLogin"
+              >
+                Login to Your Account
+              </button>
+              
+              <button
+                class="btn btn--secondary btn--full"
+                @click="goToSignup"
+              >
+                Create New Account
+              </button>
+
+              <button
+                class="btn btn--outline btn--full"
+                @click="continueAsGuest"
+              >
+                Continue as Guest
+              </button>
+            </div>
+
+            <p class="checkout-modal__note">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Guest orders can still be tracked using your order number and email.
+            </p>
+          </div>
+        </div>
+      </div>
     </Transition>
   </Teleport>
 </template>
@@ -342,6 +474,24 @@ onMounted(() => {
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 1px solid #ddd;
+    }
+  }
+
+  &__shipping-note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f9f9f9;
+    border-radius: 4px;
+    line-height: 1.4;
+
+    svg {
+      flex-shrink: 0;
+      color: $color-primary;
     }
   }
 
@@ -480,5 +630,107 @@ onMounted(() => {
 .slide-enter-from,
 .slide-leave-to {
   transform: translateX(100%);
+}
+
+// Checkout Modal
+.checkout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.checkout-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 580px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideUp 0.3s ease-out;
+
+  &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #999;
+    transition: color 0.2s ease;
+    z-index: 1;
+
+    &:hover {
+      color: #333;
+    }
+  }
+
+  &__content {
+    padding: 2rem;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    color: $color-text;
+  }
+
+  &__description {
+    color: #666;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+    padding: 0.75rem;
+    background: #f9f9f9;
+    border-radius: 6px;
+    line-height: 1.4;
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+      color: $color-primary;
+    }
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .checkout-modal {
+    max-width: 100%;
+    margin: 1rem;
+  }
 }
 </style>

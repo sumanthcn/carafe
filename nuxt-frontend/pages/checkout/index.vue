@@ -38,16 +38,22 @@
                   type="email"
                   required
                   placeholder="your@email.com"
+                  :class="{ 'input-error': formErrors.email }"
                 />
+                <span v-if="formErrors.email" class="error-message">{{ formErrors.email }}</span>
               </div>
               <div class="form-group">
-                <label for="phone">Phone</label>
+                <label for="phone">Phone *</label>
                 <input
                   id="phone"
                   v-model="form.phone"
                   type="tel"
-                  placeholder="+44 20 1234 5678"
+                  required
+                  placeholder="+447700900000"
+                  :class="{ 'input-error': formErrors.phone }"
+                  @input="handlePhoneInput"
                 />
+                <span v-if="formErrors.phone" class="error-message">{{ formErrors.phone }}</span>
               </div>
             </div>
           </section>
@@ -55,6 +61,13 @@
           <!-- Shipping Address -->
           <section class="checkout-section">
             <h2>Shipping Address</h2>
+
+            <!-- Address Selector for Authenticated Users -->
+            <AddressSelector
+              v-if="isAuthenticated"
+              @address-selected="handleAddressSelected"
+            />
+
             <div class="form-grid">
               <div class="form-group">
                 <label for="firstName">First Name *</label>
@@ -63,7 +76,9 @@
                   v-model="form.firstName"
                   type="text"
                   required
+                  :class="{ 'input-error': formErrors.firstName }"
                 />
+                <span v-if="formErrors.firstName" class="error-message">{{ formErrors.firstName }}</span>
               </div>
               <div class="form-group">
                 <label for="lastName">Last Name *</label>
@@ -72,7 +87,9 @@
                   v-model="form.lastName"
                   type="text"
                   required
+                  :class="{ 'input-error': formErrors.lastName }"
                 />
+                <span v-if="formErrors.lastName" class="error-message">{{ formErrors.lastName }}</span>
               </div>
               <div class="form-group form-group--full">
                 <label for="address1">Address Line 1 *</label>
@@ -82,7 +99,9 @@
                   type="text"
                   required
                   placeholder="Street address"
+                  :class="{ 'input-error': formErrors.address1 }"
                 />
+                <span v-if="formErrors.address1" class="error-message">{{ formErrors.address1 }}</span>
               </div>
               <div class="form-group form-group--full">
                 <label for="address2">Address Line 2</label>
@@ -95,7 +114,14 @@
               </div>
               <div class="form-group">
                 <label for="city">City *</label>
-                <input id="city" v-model="form.city" type="text" required />
+                <input 
+                  id="city" 
+                  v-model="form.city" 
+                  type="text" 
+                  required 
+                  :class="{ 'input-error': formErrors.city }"
+                />
+                <span v-if="formErrors.city" class="error-message">{{ formErrors.city }}</span>
               </div>
               <div class="form-group">
                 <label for="postcode">Postcode *</label>
@@ -104,7 +130,10 @@
                   v-model="form.postcode"
                   type="text"
                   required
+                  placeholder="SW1A 1AA"
+                  :class="{ 'input-error': formErrors.postcode }"
                 />
+                <span v-if="formErrors.postcode" class="error-message">{{ formErrors.postcode }}</span>
               </div>
               <div class="form-group form-group--full">
                 <label for="country">Country *</label>
@@ -118,13 +147,28 @@
                   <option value="NL">Netherlands</option>
                 </select>
               </div>
+
+              <!-- Save Address Checkbox for Authenticated Users -->
+              <div v-if="isAuthenticated" class="form-group form-group--full form-group--checkbox">
+                <label class="checkbox-label">
+                  <input
+                    v-model="saveAddress"
+                    type="checkbox"
+                    class="checkbox-input"
+                  />
+                  <span>Save this address for future orders</span>
+                </label>
+              </div>
             </div>
           </section>
 
           <!-- Shipping Method -->
           <section class="checkout-section">
             <h2>Shipping Method</h2>
-            <div class="shipping-options">
+            <div v-if="shippingOptions.length === 0" class="loading-message">
+              Loading shipping options...
+            </div>
+            <div v-else class="shipping-options">
               <label
                 v-for="option in shippingOptions"
                 :key="option.id"
@@ -147,12 +191,19 @@
                   }}</span>
                 </div>
                 <span class="shipping-option__price">
-                  {{
-                    option.price === 0 ? "Free" : `£${option.price.toFixed(2)}`
-                  }}
+                  <template v-if="option.freeEligible && cartStore.subtotal >= (checkout.shippingConfig.value?.freeShippingThreshold || 0)">
+                    <span class="free-badge">FREE</span>
+                    <span class="original-price">£{{ option.price.toFixed(2) }}</span>
+                  </template>
+                  <template v-else>
+                    {{ option.price === 0 ? "Free" : `£${option.price.toFixed(2)}` }}
+                  </template>
                 </span>
               </label>
             </div>
+            <p v-if="checkout.shippingConfig.value?.freeShippingThreshold && cartStore.subtotal < checkout.shippingConfig.value.freeShippingThreshold" class="free-shipping-note">
+              Add £{{ (checkout.shippingConfig.value.freeShippingThreshold - cartStore.subtotal).toFixed(2) }} more for free shipping
+            </p>
           </section>
 
           <!-- Payment -->
@@ -192,7 +243,7 @@
             <ul class="order-summary__items">
               <li
                 v-for="item in cartStore.items"
-                :key="item.product.id"
+                :key="`${item.product.id}-${item.selectedVariant?.id || 'default'}`"
                 class="order-summary__item"
               >
                 <div class="order-summary__item-image">
@@ -204,21 +255,87 @@
                     height="64"
                     loading="lazy"
                   />
-                  <span class="order-summary__item-quantity">{{
-                    item.quantity
-                  }}</span>
                 </div>
                 <div class="order-summary__item-details">
-                  <span class="order-summary__item-name">{{ item.product.name }}</span>
+                  <div class="order-summary__item-header">
+                    <span class="order-summary__item-name">{{ item.product.name }}</span>
+                    <button
+                      class="order-summary__item-remove"
+                      aria-label="Remove item"
+                      @click="cartStore.removeItem(item.product.id, item.selectedVariant?.id)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
                   <span
-                    v-if="item.product.weight"
+                    v-if="item.selectedVariant"
                     class="order-summary__item-variant"
-                    >{{ item.product.weight }}</span
+                    >{{ item.selectedVariant.weight }}</span
                   >
+                  
+                  <div class="order-summary__item-bottom">
+                    <div class="order-summary__item-quantity-control">
+                      <button
+                        class="quantity-btn"
+                        aria-label="Decrease quantity"
+                        @click="cartStore.updateQuantity(item.product.id, item.quantity - 1, item.selectedVariant?.id)"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                      <span class="quantity-value">{{ item.quantity }}</span>
+                      <button
+                        class="quantity-btn"
+                        aria-label="Increase quantity"
+                        @click="cartStore.updateQuantity(item.product.id, item.quantity + 1, item.selectedVariant?.id)"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                      </button>
+                    </div>
+                    <span class="order-summary__item-price">
+                      £{{ ((item.selectedVariant 
+                        ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+                        : 0) * item.quantity).toFixed(2) }}
+                    </span>
+                  </div>
                 </div>
-                <span class="order-summary__item-price">
-                  £{{ ((item.product.salePrice || item.product.price) * item.quantity).toFixed(2) }}
-                </span>
               </li>
             </ul>
 
@@ -230,14 +347,10 @@
               <div class="order-summary__row">
                 <span>Shipping</span>
                 <span>{{
-                  selectedShipping?.price === 0
+                  shippingCost === 0
                     ? "Free"
-                    : `£${selectedShipping?.price.toFixed(2)}`
+                    : `£${shippingCost.toFixed(2)}`
                 }}</span>
-              </div>
-              <div class="order-summary__row">
-                <span>Tax (VAT 20%)</span>
-                <span>£{{ cartStore.tax.toFixed(2) }}</span>
               </div>
               <div class="order-summary__row order-summary__row--total">
                 <span>Total</span>
@@ -285,10 +398,7 @@ const strapiUrl = config.public.strapiUrl;
 const { getStrapiMediaUrl } = useStrapi();
 
 
-// Protect checkout page with auth
-definePageMeta({
-  middleware: ['auth'],
-});
+// Guest checkout is now supported, no auth middleware required
 
 // SEO
 useHead({
@@ -296,13 +406,15 @@ useHead({
   meta: [{ name: "robots", content: "noindex, nofollow" }],
 });
 
-const { user } = useAuth();
+const { user, isAuthenticated } = useAuth();
 const cartStore = useCartStore();
 const { createOrder } = useOrders();
+const checkout = useCheckout();
+const { createAddress } = useAddresses();
 
 const form = reactive({
   email: "",
-  phone: "",
+  phone: "+44",
   firstName: "",
   lastName: "",
   address1: "",
@@ -310,59 +422,231 @@ const form = reactive({
   city: "",
   postcode: "",
   country: "GB",
-  shippingMethod: "standard",
+  shippingMethod: null as number | null,
   notes: "",
 });
 
-// Auto-populate email from logged-in user
-onMounted(() => {
+const saveAddress = ref(false);
+
+// Handle address selection from saved addresses
+function handleAddressSelected(address: any) {
+  if (address) {
+    form.firstName = address.firstName;
+    form.lastName = address.lastName;
+    form.phone = address.phone;
+    form.address1 = address.address1;
+    form.address2 = address.address2 || "";
+    form.city = address.city;
+    form.postcode = address.postcode;
+    // Map country name to country code
+    const countryMap: Record<string, string> = {
+      'United Kingdom': 'GB',
+      'Ireland': 'IE',
+      'France': 'FR',
+      'Germany': 'DE',
+      'Spain': 'ES',
+      'Italy': 'IT',
+      'Netherlands': 'NL',
+      'Belgium': 'BE',
+    };
+    form.country = countryMap[address.country] || 'GB';
+  }
+}
+
+// Form validation errors
+const formErrors = reactive({
+  email: "",
+  phone: "",
+  firstName: "",
+  lastName: "",
+  address1: "",
+  city: "",
+  postcode: "",
+});
+
+// Validation functions
+const validateEmail = (email: string) => {
+  if (!email) return "Email is required";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return "Please enter a valid email address";
+  return "";
+};
+
+const validatePhone = (phone: string) => {
+  if (!phone || phone === "+44" || phone === "+44 ") return "Phone number is required";
+  // UK phone number validation (should be +44 followed by 10 digits)
+  const cleanPhone = phone.replace(/\s/g, "");
+  if (cleanPhone.length < 12) return "Please enter a valid UK phone number"; // +44 + 10 digits = 13 minimum
+  return "";
+};
+
+const validatePostcode = (postcode: string) => {
+  if (!postcode) return "Postcode is required";
+  // UK postcode validation
+  const postcodeRegex = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i;
+  if (!postcodeRegex.test(postcode)) return "Please enter a valid UK postcode";
+  return "";
+};
+
+const validateRequired = (value: string, fieldName: string) => {
+  if (!value || !value.trim()) return `${fieldName} is required`;
+  return "";
+};
+
+// Format phone number - just keep +44 prefix without spaces
+const formatPhoneNumber = (value: string) => {
+  // Remove all non-digit characters except + at the start
+  let cleaned = value.replace(/[^\d+]/g, '');
+  
+  // Ensure it starts with +44
+  if (!cleaned.startsWith('+44')) {
+    if (cleaned.startsWith('44')) {
+      cleaned = '+' + cleaned;
+    } else if (cleaned.startsWith('0')) {
+      cleaned = '+44' + cleaned.substring(1);
+    } else if (cleaned.startsWith('+')) {
+      cleaned = '+44';
+    } else {
+      cleaned = '+44' + cleaned;
+    }
+  }
+  
+  // Limit to +44 + 10 digits
+  const match = cleaned.match(/^\+44(\d{0,10})/);
+  if (match) {
+    return '+44' + match[1];
+  }
+  
+  return '+44';
+};
+
+// Watch form fields for validation
+watch(() => form.email, (newValue) => {
+  formErrors.email = validateEmail(newValue);
+});
+
+watch(() => form.phone, (newValue) => {
+  formErrors.phone = validatePhone(newValue);
+});
+
+watch(() => form.firstName, (newValue) => {
+  formErrors.firstName = validateRequired(newValue, "First name");
+});
+
+watch(() => form.lastName, (newValue) => {
+  formErrors.lastName = validateRequired(newValue, "Last name");
+});
+
+watch(() => form.address1, (newValue) => {
+  formErrors.address1 = validateRequired(newValue, "Address");
+});
+
+watch(() => form.city, (newValue) => {
+  formErrors.city = validateRequired(newValue, "City");
+});
+
+watch(() => form.postcode, (newValue) => {
+  formErrors.postcode = validatePostcode(newValue);
+});
+
+// Handle phone number formatting on input
+const handlePhoneInput = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const cursorPos = input.selectionStart || 0;
+  const oldValue = form.phone;
+  const newValue = formatPhoneNumber(input.value);
+  
+  form.phone = newValue;
+  
+  // Restore cursor position
+  nextTick(() => {
+    const diff = newValue.length - oldValue.length;
+    input.setSelectionRange(cursorPos + diff, cursorPos + diff);
+  });
+};
+
+// Auto-populate email from logged-in user and fetch shipping options
+onMounted(async () => {
   if (user.value?.email) {
     form.email = user.value.email;
   }
+  
+  // Fetch shipping options from API
+  await checkout.fetchShippingOptions();
+  
+  // Select first available option by default
+  if (checkout.activeShippingOptions.value.length > 0) {
+    form.shippingMethod = checkout.activeShippingOptions.value[0].id;
+    checkout.selectedShippingId.value = form.shippingMethod;
+  }
 });
 
-const shippingOptions = [
-  {
-    id: "standard",
-    name: "Standard Delivery",
-    description: "3-5 business days",
-    price: 4.95,
-  },
-  {
-    id: "express",
-    name: "Express Delivery",
-    description: "1-2 business days",
-    price: 9.95,
-  },
-  {
-    id: "free",
-    name: "Free Delivery",
-    description: "5-7 business days (orders over £35)",
-    price: 0,
-  },
-];
+// Update selected shipping when form changes
+watch(() => form.shippingMethod, (newValue) => {
+  checkout.selectedShippingId.value = newValue;
+});
 
 const isProcessing = ref(false);
 const error = ref("");
 
-const selectedShipping = computed(() =>
-  shippingOptions.find((o) => o.id === form.shippingMethod)
+// Shipping options from API
+const shippingOptions = computed(() => {
+  return checkout.activeShippingOptions.value.map(opt => ({
+    id: opt.id,
+    name: `${opt.carrierName} - ${opt.serviceName}`,
+    description: `${opt.estimatedDays} business days`,
+    price: opt.cost,
+    freeEligible: opt.freeEligible,
+  }));
+});
+
+const selectedShipping = computed(() => 
+  shippingOptions.value.find((o) => o.id === form.shippingMethod)
 );
 
-const orderTotal = computed(
-  () => cartStore.total + (selectedShipping.value?.price || 0)
-);
+// Calculate shipping cost with free shipping logic
+const shippingCost = computed(() => {
+  if (!selectedShipping.value) return 0;
+  
+  const subtotal = cartStore.subtotal;
+  const threshold = checkout.shippingConfig.value?.freeShippingThreshold || 0;
+  
+  // Check if free shipping applies
+  if (selectedShipping.value.freeEligible && subtotal >= threshold) {
+    return 0;
+  }
+  
+  return selectedShipping.value.price;
+});
+
+const orderTotal = computed(() => cartStore.subtotal + shippingCost.value);
 
 const isFormValid = computed(() => {
-  return (
+  const hasAllFields = (
     form.email &&
+    form.phone &&
+    form.phone !== "+44" &&
+    form.phone !== "+44 " &&
     form.firstName &&
     form.lastName &&
     form.address1 &&
     form.city &&
     form.postcode &&
-    form.country
+    form.country &&
+    form.shippingMethod !== null
   );
+  
+  const hasNoErrors = (
+    !formErrors.email &&
+    !formErrors.phone &&
+    !formErrors.firstName &&
+    !formErrors.lastName &&
+    !formErrors.address1 &&
+    !formErrors.city &&
+    !formErrors.postcode
+  );
+  
+  return hasAllFields && hasNoErrors;
 });
 
 const processPayment = async () => {
@@ -372,24 +656,37 @@ const processPayment = async () => {
   error.value = "";
 
   try {
+    // Get selected shipping method name
+    const selectedOption = checkout.activeShippingOptions.value.find(opt => opt.id === form.shippingMethod);
+    const shippingMethodStr = selectedOption 
+      ? `${selectedOption.carrierName} - ${selectedOption.serviceName}`
+      : '';
+
     // Step 1: Create order in Strapi
-    const orderItems = cartStore.items.map((item) => ({
-      productId: item.product.id,
-      productName: item.product.name,
-      productSlug: item.product.slug,
-      quantity: item.quantity,
-      unitPrice: item.product.salePrice || item.product.price,
-      totalPrice: (item.product.salePrice || item.product.price) * item.quantity,
-      weight: String(item.product.weight || ''),
-    }));
+    const orderItems = cartStore.items.map((item) => {
+      const price = item.selectedVariant 
+        ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+        : 0;
+      
+      return {
+        productId: item.product.id,
+        productName: item.product.name,
+        productSlug: item.product.slug,
+        quantity: item.quantity,
+        unitPrice: price,
+        totalPrice: price * item.quantity,
+        sku: item.selectedVariant?.sku || '',
+        weight: item.selectedVariant?.weight || '',
+      };
+    });
 
     const orderResult = await createOrder({
       items: orderItems,
       subtotal: cartStore.subtotal,
-      shippingCost: selectedShipping.value?.price || 0,
-      tax: cartStore.tax,
+      shippingCost: shippingCost.value,
+      tax: 0, // VAT is included in product prices
       total: orderTotal.value,
-      currency: cartStore.currency || 'EUR',
+      currency: 'GBP',
       customerEmail: form.email,
       customerName: `${form.firstName} ${form.lastName}`,
       customerPhone: form.phone,
@@ -399,12 +696,44 @@ const processPayment = async () => {
         postcode: form.postcode,
         country: form.country,
       },
-      shippingMethod: form.shippingMethod,
+      shippingMethod: shippingMethodStr,
       notes: form.notes,
     });
 
     if (!orderResult.success || !orderResult.order) {
       throw new Error(orderResult.error || 'Failed to create order');
+    }
+
+    // Save address if user checked the box (authenticated users only)
+    if (saveAddress.value && isAuthenticated.value) {
+      try {
+        const countryNameMap: Record<string, string> = {
+          'GB': 'United Kingdom',
+          'IE': 'Ireland',
+          'FR': 'France',
+          'DE': 'Germany',
+          'ES': 'Spain',
+          'IT': 'Italy',
+          'NL': 'Netherlands',
+          'BE': 'Belgium',
+        };
+
+        await createAddress({
+          label: 'Home', // Default label, can be customized later
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          address1: form.address1,
+          address2: form.address2 || undefined,
+          city: form.city,
+          postcode: form.postcode,
+          country: countryNameMap[form.country] || 'United Kingdom',
+          isDefault: false,
+        });
+      } catch (addressErr) {
+        // Don't fail checkout if address save fails
+        console.error('Failed to save address:', addressErr);
+      }
     }
 
     // Step 2: Initiate Worldpay payment
@@ -414,7 +743,7 @@ const processPayment = async () => {
         orderId: orderResult.order.id,
         orderNumber: orderResult.order.orderNumber,
         amount: orderTotal.value,
-        currency: cartStore.currency || 'EUR',
+        currency: 'GBP',
         customer: {
           email: form.email,
           phone: form.phone,
@@ -591,7 +920,48 @@ const processPayment = async () => {
     &::placeholder {
       color: $color-gray-400;
     }
+
+    &.input-error {
+      border-color: #ef4444;
+      background-color: #fef2f2;
+
+      &:focus {
+        border-color: #dc2626;
+      }
+    }
   }
+
+  .error-message {
+    display: block;
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    font-weight: 400;
+  }
+
+  &--checkbox {
+    margin-top: $spacing-4;
+  }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  user-select: none;
+
+  span {
+    font-size: $font-size-sm;
+    color: $color-dark;
+  }
+}
+
+.checkbox-input {
+  width: 1.125rem;
+  height: 1.125rem;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .shipping-options {
@@ -642,7 +1012,42 @@ const processPayment = async () => {
   &__price {
     font-weight: 600;
     color: $color-dark;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .free-badge {
+      background: #10b981;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .original-price {
+      text-decoration: line-through;
+      color: $color-gray-400;
+      font-size: 0.875rem;
+    }
   }
+}
+
+.free-shipping-note {
+  margin-top: $spacing-3;
+  padding: $spacing-3;
+  background: #f0fdf4;
+  border-left: 3px solid #10b981;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  color: #047857;
+}
+
+.loading-message {
+  padding: $spacing-4;
+  text-align: center;
+  color: $color-gray-500;
+  font-size: $font-size-sm;
 }
 
 .payment-icons {
@@ -683,9 +1088,8 @@ const processPayment = async () => {
 
   &__item {
     display: flex;
-    align-items: center;
-    gap: $spacing-4;
-    padding: $spacing-3 0;
+    gap: $spacing-3;
+    padding: $spacing-4 0;
     border-bottom: 1px solid $color-gray-100;
 
     &:last-child {
@@ -705,44 +1109,117 @@ const processPayment = async () => {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: $border-radius-md;
     }
-  }
-
-  &__item-quantity {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: $color-primary;
-    color: $color-white;
-    font-size: $font-size-xs;
-    font-weight: 600;
-    border-radius: $border-radius-full;
   }
 
   &__item-details {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2;
+    min-width: 0;
+  }
+
+  &__item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $spacing-2;
   }
 
   &__item-name {
-    display: block;
     font-weight: 500;
     color: $color-dark;
     font-size: $font-size-sm;
+    line-height: 1.3;
+  }
+
+  &__item-remove {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: $color-gray-400;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: #ef4444;
+    }
+
+    svg {
+      display: block;
+    }
   }
 
   &__item-variant {
     font-size: $font-size-xs;
     color: $color-gray-500;
+    display: block;
+  }
+
+  &__item-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-2;
+  }
+
+  &__item-quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: $color-gray-50;
+    border-radius: $border-radius-md;
+    padding: 0.25rem;
+
+    .quantity-btn {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border: 1px solid $color-gray-200;
+      border-radius: $border-radius-sm;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: $color-gray-600;
+
+      &:hover {
+        background: $color-primary;
+        border-color: $color-primary;
+        color: white;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      svg {
+        display: block;
+      }
+    }
+
+    .quantity-value {
+      min-width: 24px;
+      text-align: center;
+      font-size: $font-size-sm;
+      font-weight: 500;
+      color: $color-dark;
+      user-select: none;
+    }
   }
 
   &__item-price {
-    font-weight: 500;
+    font-weight: 600;
     color: $color-dark;
+    font-size: $font-size-sm;
+    white-space: nowrap;
   }
 
   &__totals {

@@ -49,6 +49,9 @@
             <NuxtLink to="/account/orders" class="btn btn--primary">
               View My Orders
             </NuxtLink>
+            <NuxtLink to="/account/addresses" class="btn btn--secondary">
+              Manage Addresses
+            </NuxtLink>
             <button @click="logout" class="btn btn--outline">
               Logout
             </button>

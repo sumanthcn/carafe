@@ -109,10 +109,13 @@ export const useCartStore = defineStore("cart", {
     /**
      * Remove item from cart
      */
-    removeItem(productId: number) {
-      const index = this.items.findIndex(
-        (item) => item.product.id === productId
-      );
+    removeItem(productId: number, variantId?: number) {
+      const index = this.items.findIndex((item) => {
+        if (variantId && item.selectedVariant) {
+          return item.product.id === productId && item.selectedVariant.id === variantId;
+        }
+        return item.product.id === productId && !item.selectedVariant;
+      });
       if (index > -1) {
         this.items.splice(index, 1);
       }
@@ -123,11 +126,16 @@ export const useCartStore = defineStore("cart", {
     /**
      * Update item quantity
      */
-    updateQuantity(productId: number, quantity: number) {
-      const item = this.items.find((item) => item.product.id === productId);
+    updateQuantity(productId: number, quantity: number, variantId?: number) {
+      const item = this.items.find((item) => {
+        if (variantId && item.selectedVariant) {
+          return item.product.id === productId && item.selectedVariant.id === variantId;
+        }
+        return item.product.id === productId && !item.selectedVariant;
+      });
       if (item) {
         if (quantity <= 0) {
-          this.removeItem(productId);
+          this.removeItem(productId, variantId);
         } else {
           item.quantity = quantity;
         }
@@ -168,6 +176,7 @@ export const useCartStore = defineStore("cart", {
             productId: item.product.id,
             productSlug: item.product.slug,
             quantity: item.quantity,
+            variantId: item.selectedVariant?.id,
           })),
           currency: this.currency,
         };
@@ -191,9 +200,18 @@ export const useCartStore = defineStore("cart", {
             for (const item of cartData.items) {
               const product = await getProductBySlug(item.productSlug);
               if (product) {
+                // Find the variant if variantId is present
+                let selectedVariant: ProductVariant | undefined = undefined;
+                if (item.variantId && product.variants) {
+                  selectedVariant = product.variants.find(
+                    (v: ProductVariant) => v.id === item.variantId
+                  );
+                }
+
                 loadedItems.push({
                   product,
                   quantity: item.quantity,
+                  selectedVariant,
                 });
               }
             }

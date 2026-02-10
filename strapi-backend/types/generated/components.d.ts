@@ -12,6 +12,7 @@ export interface ElementsAddress extends Struct.ComponentSchema {
     country: Schema.Attribute.String;
     latitude: Schema.Attribute.Decimal;
     longitude: Schema.Attribute.Decimal;
+    phone: Schema.Attribute.String;
     postcode: Schema.Attribute.String;
     street: Schema.Attribute.String;
   };
@@ -199,6 +200,39 @@ export interface ElementsOrderItem extends Struct.ComponentSchema {
     totalPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
     unitPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
     weight: Schema.Attribute.String;
+  };
+}
+
+export interface ElementsShippingOption extends Struct.ComponentSchema {
+  collectionName: 'components_elements_shipping_options';
+  info: {
+    description: 'Shipping carrier and pricing option';
+    displayName: 'Shipping Option';
+    icon: 'truck';
+  };
+  attributes: {
+    carrierName: Schema.Attribute.String & Schema.Attribute.Required;
+    cost: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    description: Schema.Attribute.Text;
+    displayOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    estimatedDays: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<1>;
+    freeEligible: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    serviceName: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -744,6 +778,7 @@ declare module '@strapi/strapi' {
       'elements.nav-item': ElementsNavItem;
       'elements.opening-hours': ElementsOpeningHours;
       'elements.order-item': ElementsOrderItem;
+      'elements.shipping-option': ElementsShippingOption;
       'elements.social-link': ElementsSocialLink;
       'elements.team-member': ElementsTeamMember;
       'elements.visit-cafe-card': ElementsVisitCafeCard;

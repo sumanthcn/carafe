@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_addresses",
+  "info": {
+    "singularName": "user-address",
+    "pluralName": "user-addresses",
+    "displayName": "User Address",
+    "description": "Saved addresses for users"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "label": {
+      "type": "string",
+      "required": true,
+      "maxLength": 50
+    },
+    "firstName": {
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "type": "string",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "address1": {
+      "type": "string",
+      "required": true
+    },
+    "address2": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string",
+      "required": true
+    },
+    "postcode": {
+      "type": "string",
+      "required": true
+    },
+    "country": {
+      "type": "string",
+      "required": true,
+      "default": "United Kingdom"
+    },
+    "isDefault": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

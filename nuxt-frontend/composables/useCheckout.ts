@@ -209,17 +209,17 @@ export const useCheckout = () => {
             : checkoutData.value.billingAddress,
           items: cart.items.map(item => {
             // Get price from variant or product
-            const price = item.selectedVariant 
+            const unitPrice = item.selectedVariant 
               ? (item.selectedVariant.salePrice || item.selectedVariant.price)
-              : (item.product.defaultPrice || 0);
+              : (item.product.variants?.[0]?.price || 0);
 
             return {
               productId: item.product.id,
               productName: item.product.name,
               variantId: item.selectedVariant?.id || null,
               quantity: item.quantity,
-              price: price,
-              total: item.quantity * price,
+              unitPrice: unitPrice,
+              totalPrice: item.quantity * unitPrice,
             };
           }),
           subtotal: orderSummary.value.subtotal,

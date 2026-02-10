@@ -32,7 +32,7 @@ export default {
       path: '/orders/:id/status',
       handler: 'order.updateStatus',
       config: {
-        policies: ['admin::isAuthenticated'], // Admin only
+        policies: [], // Admin check handled in controller
       },
     },
     {

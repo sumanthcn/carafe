@@ -20,6 +20,9 @@
     "country": {
       "type": "string"
     },
+    "phone": {
+      "type": "string"
+    },
     "latitude": {
       "type": "decimal"
     },

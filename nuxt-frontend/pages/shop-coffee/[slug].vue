@@ -178,6 +178,87 @@
       <EmailSubscribe />
     </div>
   </div>
+
+  <!-- Checkout Modal -->
+  <Transition name="fade">
+    <div
+      v-if="showCheckoutModal"
+      class="checkout-modal-overlay"
+      @click="closeModal"
+    >
+      <div class="checkout-modal" @click.stop>
+        <button
+          class="checkout-modal__close"
+          aria-label="Close"
+          @click="closeModal"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div class="checkout-modal__content">
+          <h3 class="checkout-modal__title">How would you like to checkout?</h3>
+          <p class="checkout-modal__description">
+            You're not logged in. Would you like to create an account for faster checkout and order tracking, or continue as a guest?
+          </p>
+
+          <div class="checkout-modal__actions">
+            <button
+              class="btn btn--primary btn--full"
+              @click="goToLogin"
+            >
+              Login to Your Account
+            </button>
+            
+            <button
+              class="btn btn--secondary btn--full"
+              @click="goToSignup"
+            >
+              Create New Account
+            </button>
+
+            <button
+              class="btn btn--outline btn--full"
+              @click="continueAsGuest"
+            >
+              Continue as Guest
+            </button>
+          </div>
+
+          <p class="checkout-modal__note">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            Creating an account allows you to track orders and save addresses for faster checkout.
+          </p>
+        </div>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -193,6 +274,7 @@ const router = useRouter();
 const cartStore = useCartStore();
 const config = useRuntimeConfig();
 const { parseMarkdown } = useMarkdown(); 
+const { isAuthenticated } = useAuth();
 
 const { fetchProductBySlug } = useProducts();
 const { fetchShopCoffeeData } = useShopCoffee();
@@ -211,6 +293,8 @@ const activeAccordion = ref<string | null>('info');
 const isAddingToCart = ref(false);
 const isBuyingNow = ref(false);
 const selectedVariant = ref<ProductVariant | null>(null);
+const selectedQuantity = ref(1);
+const showCheckoutModal = ref(false);
 
 // Reviews
 const reviewStats = ref<ReviewStats>({
@@ -329,8 +413,9 @@ function toggleAccordion(section: string) {
   activeAccordion.value = activeAccordion.value === section ? null : section;
 }
 
-function handleVariantSelected(variant: ProductVariant | null) {
+function handleVariantSelected(variant: ProductVariant | null, quantity: number) {
   selectedVariant.value = variant;
+  selectedQuantity.value = quantity;
 }
 
 async function handleAddToCart() {
@@ -343,9 +428,9 @@ async function handleAddToCart() {
           alert('Please select product options');
           return;
         }
-        cartStore.addItem(product.value, 1, selectedVariant.value);
+        cartStore.addItem(product.value, selectedQuantity.value, selectedVariant.value);
       } else {
-        cartStore.addItem(product.value, 1);
+        cartStore.addItem(product.value, selectedQuantity.value);
       }
       // Optional: Add success toast/notification here
     } finally {
@@ -364,18 +449,49 @@ async function handleBuyNow() {
       if (product.value.variants && product.value.variants.length > 0) {
         if (!selectedVariant.value) {
           alert('Please select product options');
+          isBuyingNow.value = false;
           return;
         }
-        cartStore.addItem(product.value, 1, selectedVariant.value);
+        cartStore.addItem(product.value, selectedQuantity.value, selectedVariant.value);
       } else {
-        cartStore.addItem(product.value, 1);
+        cartStore.addItem(product.value, selectedQuantity.value);
       }
+      
+      // Check authentication before proceeding to checkout
+      if (!isAuthenticated.value) {
+        // User is not logged in, show modal
+        showCheckoutModal.value = true;
+        isBuyingNow.value = false;
+        return;
+      }
+      
+      // User is logged in, proceed to checkout
       await router.push('/checkout');
     } finally {
       isBuyingNow.value = false;
     }
   }
 }
+
+// Modal handlers
+const closeModal = () => {
+  showCheckoutModal.value = false;
+};
+
+const continueAsGuest = () => {
+  showCheckoutModal.value = false;
+  router.push('/checkout');
+};
+
+const goToLogin = () => {
+  showCheckoutModal.value = false;
+  router.push('/login?redirect=/checkout');
+};
+
+const goToSignup = () => {
+  showCheckoutModal.value = false;
+  router.push('/signup?redirect=/checkout');
+};
 
 onMounted(() => {
   loadProduct();
@@ -810,6 +926,102 @@ useHead(() => {
 .accordion-enter-from,
 .accordion-leave-to {
   max-height: 0;
+  opacity: 0;
+}
+
+// Checkout Modal
+.checkout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.checkout-modal {
+  background: white;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #666;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #000;
+    }
+  }
+
+  &__content {
+    padding: 2.5rem;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
+  &__description {
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #666;
+    line-height: 1.5;
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+    }
+  }
+
+  .btn {
+    &--full {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+// Fade transition for modal
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

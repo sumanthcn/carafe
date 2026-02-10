@@ -6,7 +6,7 @@ export default factories.createCoreController('api::shipping-config.shipping-con
    */
   async find(ctx) {
     try {
-      const config = await strapi.entityService.findMany('api::shipping-config.shipping-config', {
+      const config: any = await strapi.entityService.findMany('api::shipping-config.shipping-config', {
         populate: ['shippingOptions'],
       });
 

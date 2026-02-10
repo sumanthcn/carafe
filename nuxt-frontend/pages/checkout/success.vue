@@ -52,10 +52,26 @@
           <NuxtLink to="/shop-coffee" class="btn btn--primary">
             Continue Shopping
           </NuxtLink>
-          <NuxtLink to="/account/orders" class="btn btn--outline">
-            View Order Details
+          <NuxtLink 
+            v-if="!isGuestOrder" 
+            to="/account/orders" 
+            class="btn btn--outline"
+          >
+            View Order History
+          </NuxtLink>
+          <NuxtLink 
+            v-else-if="trackingUrl" 
+            :to="trackingUrl" 
+            class="btn btn--outline"
+          >
+            Track Your Order
           </NuxtLink>
         </div>
+
+        <p v-if="isGuestOrder" class="order-confirmation__guest-notice">
+          <strong>Guest Order:</strong> A tracking link has been sent to your email. 
+          Bookmark this page or save your order number to track your delivery.
+        </p>
 
         <p class="order-confirmation__support">
           Questions about your order?
@@ -78,12 +94,30 @@ useHead({
 const route = useRoute();
 const cartStore = useCartStore();
 const { fetchOrder } = useOrders();
+const { user } = useAuth();
 
 const orderNumber = ref<string>('');
 const orderDate = ref<Date | null>(null);
+const isGuestOrder = ref<boolean>(false);
+const trackingUrl = ref<string>('');
 
 // Fetch order details
 onMounted(async () => {
+  // Check for guest order with tracking token
+  const token = route.query.token as string;
+  const order = route.query.order as string;
+  
+  if (token && order) {
+    // Guest order with tracking token
+    isGuestOrder.value = true;
+    orderNumber.value = order;
+    orderDate.value = new Date();
+    trackingUrl.value = `/track-order?order=${order}&token=${token}`;
+    cartStore.clearCart();
+    return;
+  }
+  
+  // Try to fetch order details for authenticated users
   const orderId = route.query.orderId as string;
   
   if (orderId) {
@@ -92,6 +126,7 @@ onMounted(async () => {
     if (result.success && result.order) {
       orderNumber.value = result.order.orderNumber;
       orderDate.value = new Date(result.order.createdAt);
+      isGuestOrder.value = !user.value;
     }
     
     // Clear cart after successful order
@@ -100,6 +135,7 @@ onMounted(async () => {
     // Fallback to query params if no orderId
     orderNumber.value = route.query.orderCode as string || '';
     orderDate.value = new Date();
+    isGuestOrder.value = !user.value;
     cartStore.clearCart();
   }
 });

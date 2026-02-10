@@ -7,7 +7,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
    */
   async create(ctx) {
     try {
-      const { data } = ctx.request.body;
+      // Accept data from body directly or from body.data
+      const data = ctx.request.body.data || ctx.request.body;
       const user = ctx.state.user;
 
       // Validate required fields
@@ -70,9 +71,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const total = subtotal + shippingCost + tax - discount;
 
       // Prepare order data
-      const orderData = {
+      const orderData: any = {
         orderNumber,
-        status: 'order_received',
+        status: 'order_received' as const,
         customerEmail: data.customerEmail,
         customerName: data.customerName,
         customerPhone: data.customerPhone || null,
@@ -95,7 +96,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       };
 
       // Create order
-      const order = await strapi.entityService.create('api::order.order', {
+      const order: any = await strapi.entityService.create('api::order.order', {
         data: orderData,
         populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
       });
@@ -232,10 +233,24 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   /**
    * Update order status (admin only)
    */
+  /**
+   * Update order status (admin only)
+   */
   async updateStatus(ctx) {
     try {
+      const user = ctx.state.user;
       const { id } = ctx.params;
       const { status, carrier, trackingNumber } = ctx.request.body;
+
+      // Check authentication
+      if (!user) {
+        return ctx.unauthorized('Authentication required');
+      }
+
+      // Check if user is admin
+      if (user.role?.type !== 'admin' && user.role?.type !== 'administrator') {
+        return ctx.forbidden('Admin access required');
+      }
 
       if (!status) {
         return ctx.badRequest('Status is required');
@@ -366,7 +381,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     try {
-      const order = await strapi.entityService.findOne('api::order.order', id, {
+      const order: any = await strapi.entityService.findOne('api::order.order', ctx.params.id, {
         populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
       });
 

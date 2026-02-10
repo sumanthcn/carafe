@@ -940,6 +940,57 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiShippingConfigShippingConfig
+  extends Struct.SingleTypeSchema {
+  collectionName: 'shipping_config';
+  info: {
+    description: 'Shipping options and pricing configuration';
+    displayName: 'Shipping Configuration';
+    pluralName: 'shipping-configs';
+    singularName: 'shipping-config';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    allowedCountries: Schema.Attribute.JSON &
+      Schema.Attribute.DefaultTo<['GB']>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    excludeBankHolidays: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    excludeWeekends: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<true>;
+    freeShippingThreshold: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<25>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::shipping-config.shipping-config'
+    > &
+      Schema.Attribute.Private;
+    processingDays: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<2>;
+    publishedAt: Schema.Attribute.DateTime;
+    shippingOptions: Schema.Attribute.Component<
+      'elements.shipping-option',
+      true
+    > &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiShopCoffeeShopCoffee extends Struct.SingleTypeSchema {
   collectionName: 'shop_coffee';
   info: {
@@ -1054,6 +1105,54 @@ export interface ApiSubscriptionSubscription
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiUserAddressUserAddress extends Struct.CollectionTypeSchema {
+  collectionName: 'user_addresses';
+  info: {
+    description: 'Saved addresses for users';
+    displayName: 'User Address';
+    pluralName: 'user-addresses';
+    singularName: 'user-address';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    address1: Schema.Attribute.String & Schema.Attribute.Required;
+    address2: Schema.Attribute.String;
+    city: Schema.Attribute.String & Schema.Attribute.Required;
+    country: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'United Kingdom'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    firstName: Schema.Attribute.String & Schema.Attribute.Required;
+    isDefault: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    label: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 50;
+      }>;
+    lastName: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-address.user-address'
+    > &
+      Schema.Attribute.Private;
+    phone: Schema.Attribute.String & Schema.Attribute.Required;
+    postcode: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
   };
 }
 
@@ -1665,9 +1764,11 @@ declare module '@strapi/strapi' {
       'api::page.page': ApiPagePage;
       'api::product-category.product-category': ApiProductCategoryProductCategory;
       'api::product.product': ApiProductProduct;
+      'api::shipping-config.shipping-config': ApiShippingConfigShippingConfig;
       'api::shop-coffee.shop-coffee': ApiShopCoffeeShopCoffee;
       'api::shop-setting.shop-setting': ApiShopSettingShopSetting;
       'api::subscription.subscription': ApiSubscriptionSubscription;
+      'api::user-address.user-address': ApiUserAddressUserAddress;
       'api::visit-cafe.visit-cafe': ApiVisitCafeVisitCafe;
       'api::wholesale.wholesale': ApiWholesaleWholesale;
       'plugin::content-releases.release': PluginContentReleasesRelease;

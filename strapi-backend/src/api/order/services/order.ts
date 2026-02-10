@@ -20,6 +20,12 @@ export default factories.createCoreService('api::order.order', ({ strapi }) => (
       const config = await strapi.entityService.findMany('api::shipping-config.shipping-config', {
         populate: ['shippingOptions'],
       });
+      
+      // For Single Type, findMany returns array with one item or the object directly
+      if (Array.isArray(config) && config.length > 0) {
+        return config[0];
+      }
+      
       return config;
     } catch (error) {
       strapi.log.error('Failed to fetch shipping config:', error);
@@ -31,11 +37,18 @@ export default factories.createCoreService('api::order.order', ({ strapi }) => (
    * Calculate shipping cost based on subtotal and selected method
    */
   async calculateShippingCost(subtotal: number, shippingMethod: string) {
-    const config = await this.getShippingConfig();
+    const config: any = await this.getShippingConfig();
     
     if (!config || !config.shippingOptions) {
+      strapi.log.error('Shipping configuration not found or has no options');
       throw new Error('Shipping configuration not found');
     }
+
+    // Log available options for debugging
+    strapi.log.info('Available shipping options:', config.shippingOptions.map((opt: any) => 
+      `${opt.carrierName} - ${opt.serviceName}`
+    ));
+    strapi.log.info('Requested shipping method:', shippingMethod);
 
     const selectedOption = config.shippingOptions.find(
       (option: any) => option.isActive && 
@@ -43,6 +56,7 @@ export default factories.createCoreService('api::order.order', ({ strapi }) => (
     );
 
     if (!selectedOption) {
+      strapi.log.error(`Invalid shipping method: "${shippingMethod}". Available: ${config.shippingOptions.map((opt: any) => `"${opt.carrierName} - ${opt.serviceName}"`).join(', ')}`);
       throw new Error('Invalid shipping method');
     }
 
@@ -86,7 +100,7 @@ export default factories.createCoreService('api::order.order', ({ strapi }) => (
    * Calculate estimated delivery date
    */
   async calculateDeliveryEstimate(shippingMethod: string) {
-    const config = await this.getShippingConfig();
+    const config: any = await this.getShippingConfig();
     
     if (!config || !config.shippingOptions) {
       return null;
@@ -274,9 +288,9 @@ export default factories.createCoreService('api::order.order', ({ strapi }) => (
    */
   async canUserReviewProduct(userId: number, productId: number) {
     try {
-      const orders = await strapi.entityService.findMany('api::order.order', {
+      const orders: any = await strapi.entityService.findMany('api::order.order', {
         filters: {
-          user: userId,
+          user: { id: userId },
           status: 'delivered',
         },
         populate: ['items'],
