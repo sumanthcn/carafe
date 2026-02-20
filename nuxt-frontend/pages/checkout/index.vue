@@ -567,7 +567,42 @@ const handlePhoneInput = (event: Event) => {
 
 // Auto-populate email from logged-in user and fetch shipping options
 onMounted(async () => {
-  if (user.value?.email) {
+  const route = useRoute();
+  const orderId = route.query.orderId as string;
+  
+  // If orderId is present, try to reload the order from Strapi
+  if (orderId) {
+    console.log('Reloading order:', orderId);
+    try {
+      const config = useRuntimeConfig();
+      const strapiUrl = config.public.strapiUrl;
+      const order = await $fetch(`${strapiUrl}/api/orders/${orderId}?populate=*`);
+      
+      if (order?.data) {
+        const orderData = order.data;
+        console.log('Order loaded:', orderData);
+        
+        // Populate form with order data
+        if (orderData.customer_email) form.email = orderData.customer_email;
+        if (orderData.customer_phone) form.phone = orderData.customer_phone;
+        if (orderData.shipping_first_name) form.firstName = orderData.shipping_first_name;
+        if (orderData.shipping_last_name) form.lastName = orderData.shipping_last_name;
+        if (orderData.shipping_address_line1) form.addressLine1 = orderData.shipping_address_line1;
+        if (orderData.shipping_address_line2) form.addressLine2 = orderData.shipping_address_line2;
+        if (orderData.shipping_city) form.city = orderData.shipping_city;
+        if (orderData.shipping_postal_code) form.postalCode = orderData.shipping_postal_code;
+        if (orderData.shipping_country) form.country = orderData.shipping_country;
+        
+        // TODO: Restore cart items from order (if needed)
+        // For now, assume cart is still in localStorage/state
+      }
+    } catch (error) {
+      console.error('Failed to reload order:', error);
+      // Continue with empty form
+    }
+  }
+  
+  if (user.value?.email && !form.email) {
     form.email = user.value.email;
   }
   
@@ -736,8 +771,8 @@ const processPayment = async () => {
       }
     }
 
-    // Step 2: Initiate Worldpay payment
-    const paymentResponse = await $fetch("/api/payment/initiate", {
+    // Step 2: Initiate Worldpay payment using REST API
+    const paymentResponse = await $fetch("/api/worldpay/create-payment", {
       method: "POST",
       body: {
         orderId: orderResult.order.id,
@@ -760,13 +795,18 @@ const processPayment = async () => {
       },
     });
 
-    // Step 3: Redirect to Worldpay payment page
-    if (paymentResponse?.redirectUrl) {
+    // Step 3: Redirect to Worldpay hosted payment page
+    if (paymentResponse?.success && paymentResponse?.redirectUrl) {
+      console.log('Redirecting to Worldpay:', paymentResponse.redirectUrl);
+      console.log('Transaction reference:', paymentResponse.transactionReference);
+      
       // Clear cart before redirecting
       cartStore.clearCart();
+      
+      // Redirect to Worldpay's hosted payment page
       window.location.href = paymentResponse.redirectUrl;
     } else {
-      throw new Error('No payment redirect URL received');
+      throw new Error(paymentResponse?.error || 'No payment redirect URL received');
     }
   } catch (err: any) {
     console.error('Checkout error:', err);

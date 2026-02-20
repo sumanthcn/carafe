@@ -4,8 +4,16 @@ export default defineNuxtConfig({
 
   // Runtime config for environment variables
   runtimeConfig: {
-    // Private keys (server-side only)
+    // Private keys (server-side only) - NEVER exposed to client
     strapiApiToken: process.env.STRAPI_API_TOKEN,
+    
+    // Worldpay REST API Credentials (NEW - for Hosted Payment Pages)
+    worldpayUsername: process.env.WORLDPAY_USERNAME,
+    worldpayPassword: process.env.WORLDPAY_PASSWORD,
+    worldpayMerchantEntity: process.env.WORLDPAY_MERCHANT_ENTITY,
+    worldpayBaseUrl: process.env.WORLDPAY_BASE_URL || 'https://try.access.worldpay.com',
+    
+    // Legacy Worldpay credentials (kept for reference, not used in REST API)
     worldpayMerchantCode: process.env.WORLDPAY_MERCHANT_CODE,
     worldpayInstallationId: process.env.WORLDPAY_INSTALLATION_ID,
     worldpayXmlUsername: process.env.WORLDPAY_XML_USERNAME,

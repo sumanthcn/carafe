@@ -1,0 +1,32 @@
+# ========================================
+# STRAPI BACKEND CONFIGURATION
+# ========================================
+# PRODUCTION: Use production Strapi backend
+# NUXT_PUBLIC_STRAPI_URL=https://admin.carafecoffee.co.uk
+# LOCALHOST: Uncomment line below and comment line above to use local Strapi
+NUXT_PUBLIC_STRAPI_URL=http://localhost:1337
+
+# Strapi API Token (for server-side API calls)
+# Get this from: Strapi Admin > Settings > API Tokens
+STRAPI_API_TOKEN=bd292bbb12ac5a2d61329777f051cd4468d8ed5d4aef290c8fa016be9a4eb0027833a71c6456bf08006e635eebe32367ded5617833a7cfb92bd8b6c58bb01639690a75e0c5287b8028138444bbfd35d9ed9d113ca56fe0beec970c3cef089d52f22cd3880b4ee93225d9461b53cecbfb311074b3dd04054b257dfb620d42d77f
+
+# ========================================
+# APP CONFIGURATION
+# ========================================
+NUXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# ========================================
+# WORLDPAY PAYMENT GATEWAY
+# ========================================
+WORLDPAY_MERCHANT_CODE=PO4086818161
+WORLDPAY_INSTALLATION_ID=511e3dd8-0bba-430f-af56-917b0d8999d2
+WORLDPAY_XML_USERNAME=AuEnNd3sXq2y6yiM
+WORLDPAY_XML_PASSWORD=NW3E64hxX6ZzxiBYeKAqrDrShsEcPOD4yNMBZVountBntqtU3NWazrqDrLBacXQ9
+WORLDPAY_MAC_SECRET=your-mac-secret
+WORLDPAY_TEST_MODE=true
+
+# Worldpay Redirect URLs (optional - will use defaults if not set)
+WORLDPAY_SUCCESS_URL=http://localhost:3000/checkout/success
+WORLDPAY_CANCEL_URL=http://localhost:3000/checkout
+WORLDPAY_PENDING_URL=http://localhost:3000/checkout/pending
+WORLDPAY_FAILURE_URL=http://localhost:3000/checkout

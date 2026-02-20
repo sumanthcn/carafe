@@ -1,47 +1,62 @@
 <template>
   <div class="product-variant-selector">
-    <!-- Weight Selection -->
-    <div v-if="availableWeights.length > 0" class="selector-group">
-      <label class="selector-label">Weight</label>
-      <div class="selector-options">
-        <button
-          v-for="weight in availableWeights"
-          :key="weight"
-          :class="['selector-option', { active: selectedWeight === weight }]"
-          @click="selectWeight(weight)"
+    <!-- Three Column Layout for Dropdowns -->
+    <div class="selector-grid">
+      <!-- Weight Selection -->
+      <div v-if="availableWeights.length > 0" class="selector-group">
+        <label class="selector-label">Weight</label>
+        <select 
+          v-model="selectedWeight" 
+          class="selector-dropdown"
+          @change="selectWeight(selectedWeight)"
         >
-          {{ weight }}
-        </button>
+          <option value="" disabled>Select Weight</option>
+          <option
+            v-for="weight in availableWeights"
+            :key="weight"
+            :value="weight"
+          >
+            {{ weight }}
+          </option>
+        </select>
       </div>
-    </div>
 
-    <!-- Roast Level Selection -->
-    <div v-if="availableRoastLevels.length > 0" class="selector-group">
-      <label class="selector-label">Roast Level</label>
-      <div class="selector-options">
-        <button
-          v-for="roast in availableRoastLevels"
-          :key="roast"
-          :class="['selector-option', { active: selectedRoast === roast }]"
-          @click="roast && selectRoast(roast)"
+      <!-- Roast Level Selection -->
+      <div v-if="availableRoastLevels.length > 0" class="selector-group">
+        <label class="selector-label">Roast Level</label>
+        <select 
+          v-model="selectedRoast" 
+          class="selector-dropdown"
+          @change="selectedRoast && selectRoast(selectedRoast)"
         >
-          {{ roast }}
-        </button>
+          <option value="" disabled>Select Roast</option>
+          <option
+            v-for="roast in availableRoastLevels"
+            :key="roast"
+            :value="roast"
+          >
+            {{ roast }}
+          </option>
+        </select>
       </div>
-    </div>
 
-    <!-- Grind Size Selection -->
-    <div v-if="availableGrindSizes.length > 0" class="selector-group">
-      <label class="selector-label">Grind Size</label>
-      <div class="selector-options selector-options--grid">
-        <button
-          v-for="grind in availableGrindSizes"
-          :key="grind"
-          :class="['selector-option', { active: selectedGrind === grind }]"
-          @click="grind && selectGrind(grind)"
+      <!-- Grind Size Selection -->
+      <div v-if="availableGrindSizes.length > 0" class="selector-group">
+        <label class="selector-label">Grind Size</label>
+        <select 
+          v-model="selectedGrind" 
+          class="selector-dropdown"
+          @change="selectedGrind && selectGrind(selectedGrind)"
         >
-          {{ grind }}
-        </button>
+          <option value="" disabled>Select Grind</option>
+          <option
+            v-for="grind in availableGrindSizes"
+            :key="grind"
+            :value="grind"
+          >
+            {{ grind }}
+          </option>
+        </select>
       </div>
     </div>
 
@@ -272,8 +287,22 @@ watch([selectedVariant, quantity], ([variant, qty]) => {
   margin: 2rem 0;
 }
 
+// Three Column Grid Layout
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
 .selector-group {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .selector-label {
@@ -286,43 +315,37 @@ watch([selectedVariant, quantity], ([variant, qty]) => {
   color: $color-text;
 }
 
-.selector-options {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-
-  &--grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-}
-
-.selector-option {
-  padding: 0.75rem 1.5rem;
+// Dropdown Styles
+.selector-dropdown {
+  width: 100%;
+  padding: 0.875rem 1rem;
   border: 2px solid #e5e7eb;
   background: white;
   color: $color-text;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-align: center;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 3rem;
 
   &:hover {
     border-color: $color-primary;
-    background: lighten($color-primary, 45%);
+    background-color: lighten($color-primary, 48%);
   }
 
-  &.active {
+  &:focus {
+    outline: none;
     border-color: $color-primary;
-    background: $color-primary;
-    color: white;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  option {
+    padding: 0.5rem;
   }
 }
 

@@ -27,17 +27,16 @@ interface WorldpayResponse {
 }
 
 /**
- * Worldpay Payment Initiation Server Route
+ * Worldpay Hosted Payment Pages Integration
  *
  * Architecture:
  * 1. Frontend creates order in Strapi first
- * 2. Frontend submits payment request to this route with orderId
- * 3. Server creates payment request with Worldpay
- * 4. Server updates order with Worldpay order code
- * 5. Server returns redirect URL to hosted payment page
- * 6. Customer completes payment on Worldpay
- * 7. Worldpay redirects to success/failure URL
- * 8. Webhook confirms payment status
+ * 2. Frontend requests payment URL from this route
+ * 3. Server generates Worldpay hosted payment page URL with order details
+ * 4. Frontend redirects customer to Worldpay's hosted page
+ * 5. Customer completes payment on Worldpay
+ * 6. Worldpay redirects to success/failure URL on your site
+ * 7. Webhook confirms payment status (optional)
  */
 export default defineEventHandler(async (event): Promise<WorldpayResponse> => {
   const config = useRuntimeConfig();
@@ -53,19 +52,42 @@ export default defineEventHandler(async (event): Promise<WorldpayResponse> => {
 
   // Get Worldpay credentials from environment
   const merchantCode = config.worldpayMerchantCode;
-  const xmlPassword = config.worldpayXmlPassword;
+  const installationId = config.worldpayInstallationId;
   const isProduction = process.env.WORLDPAY_ENV === "live";
 
-  // Worldpay API URLs
+  // Validate credentials
+  if (!merchantCode || !installationId) {
+    console.error("Missing Worldpay credentials:", { 
+      merchantCode: merchantCode ? "set" : "missing", 
+      installationId: installationId ? "set" : "missing",
+    });
+    throw createError({
+      statusCode: 500,
+      message: "Worldpay credentials not configured",
+    });
+  }
+
+  console.log("Payment initiation request:", {
+    orderId: body.orderId,
+    orderNumber: body.orderNumber,
+    amount: body.amount,
+    currency: body.currency,
+    merchantCode: merchantCode,
+    installationId: installationId,
+  });
+
+  // Worldpay Hosted Payment Page URL
   const worldpayUrl = isProduction
-    ? "https://secure.worldpay.com/jsp/merchant/xml/paymentService.jsp"
-    : "https://secure-test.worldpay.com/jsp/merchant/xml/paymentService.jsp";
+    ? "https://secure.worldpay.com/wcc/purchase"
+    : "https://secure-test.worldpay.com/wcc/purchase";
+
+  console.log("Using Worldpay Hosted Payment Page:", worldpayUrl);
 
   // Generate unique Worldpay order code
   const worldpayOrderCode = `${body.orderNumber}-${Date.now()}`;
 
-  // Convert amount to minor units (cents/pence)
-  const amountInMinorUnits = Math.round(body.amount * 100);
+  // Convert amount to major units (pounds/euros with 2 decimal places)
+  const amountFormatted = body.amount.toFixed(2);
 
   // Build success/failure URLs
   const siteUrl = config.public.siteUrl || 'http://localhost:3000';
@@ -73,120 +95,62 @@ export default defineEventHandler(async (event): Promise<WorldpayResponse> => {
   const failureUrl = `${siteUrl}/checkout?error=payment_failed`;
   const cancelUrl = `${siteUrl}/checkout?error=payment_cancelled`;
 
-  // Build Worldpay XML request
-  const xmlRequest = buildWorldpayXml({
-    merchantCode,
-    orderCode: worldpayOrderCode,
-    amount: amountInMinorUnits,
-    currency: body.currency || "EUR",
-    customerEmail: body.customer.email,
-    customerName: `${body.customer.firstName} ${body.customer.lastName}`,
-    description: `Order ${body.orderNumber}`,
-    successUrl,
-    failureUrl,
-    cancelUrl,
-  });
+  console.log("Redirect URLs:", { successUrl, failureUrl, cancelUrl });
 
   try {
-    // Make request to Worldpay
-    const response = await $fetch(worldpayUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/xml",
-        Authorization: `Basic ${Buffer.from(
-          `${merchantCode}:${xmlPassword}`
-        ).toString("base64")}`,
-      },
-      body: xmlRequest,
-    });
-
-    // Parse Worldpay response
-    const redirectUrl = extractRedirectUrl(response as string);
-
-    if (!redirectUrl) {
-      console.error("Worldpay response:", response);
-      throw new Error("Failed to get redirect URL from Worldpay");
-    }
-
     // Update order in Strapi with Worldpay order code
     await updateOrderWithWorldpayCode(event, {
       orderId: body.orderId,
       worldpayOrderCode,
     });
 
+    // Build Worldpay hosted payment page URL with query parameters
+    const paymentParams = new URLSearchParams({
+      instId: installationId,
+      cartId: worldpayOrderCode,
+      amount: amountFormatted,
+      currency: body.currency || "GBP",
+      desc: `Order ${body.orderNumber}`,
+      name: `${body.customer.firstName} ${body.customer.lastName}`,
+      email: body.customer.email,
+      address1: body.customer.address.line1,
+      address2: body.customer.address.line2 || "",
+      town: body.customer.address.city,
+      postcode: body.customer.address.postcode,
+      country: body.customer.address.country,
+      tel: body.customer.phone || "",
+      // Callback URLs
+      MC_callback: successUrl,
+      MC_cancel: cancelUrl,
+      MC_error: failureUrl,
+    });
+
+    // Only add testMode for production (0 = use test cards in production environment)
+    // For test environment (secure-test.worldpay.com), don't include testMode parameter
+    if (isProduction) {
+      paymentParams.append('testMode', '0');
+    }
+
+
+    const redirectUrl = `${worldpayUrl}?${paymentParams.toString()}`;
+
+    console.log("Generated payment URL (first 100 chars):", redirectUrl.substring(0, 100));
+
     return {
       redirectUrl,
       orderCode: worldpayOrderCode,
     };
-  } catch (error) {
-    console.error("Worldpay payment error:", error);
+  } catch (error: any) {
+    console.error("Payment initiation error:", {
+      message: error.message,
+      stack: error.stack,
+    });
     throw createError({
       statusCode: 500,
-      message: "Payment initiation failed",
+      message: `Payment initiation failed: ${error.message || "Unknown error"}`,
     });
   }
 });
-
-/**
- * Build Worldpay XML payment request
- */
-function buildWorldpayXml(params: {
-  merchantCode: string;
-  orderCode: string;
-  amount: number;
-  currency: string;
-  customerEmail: string;
-  customerName: string;
-  description: string;
-  successUrl: string;
-  failureUrl: string;
-  cancelUrl: string;
-}): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE paymentService PUBLIC "-//WorldPay//DTD WorldPay PaymentService v1//EN" "http://dtd.worldpay.com/paymentService_v1.dtd">
-<paymentService version="1.4" merchantCode="${params.merchantCode}">
-  <submit>
-    <order orderCode="${params.orderCode}">
-      <description>${escapeXml(params.description)}</description>
-      <amount currencyCode="${params.currency}" exponent="2" value="${
-    params.amount
-  }"/>
-      <orderContent>
-        <![CDATA[Carafe Coffee - Online Order]]>
-      </orderContent>
-      <paymentMethodMask>
-        <include code="ALL"/>
-      </paymentMethodMask>
-      <shopper>
-        <shopperEmailAddress>${escapeXml(
-          params.customerEmail
-        )}</shopperEmailAddress>
-      </shopper>
-    </order>
-  </submit>
-</paymentService>`;
-}
-
-/**
- * Extract redirect URL from Worldpay XML response
- */
-function extractRedirectUrl(xmlResponse: string): string | null {
-  // Simple regex extraction - in production use proper XML parser
-  const match = xmlResponse.match(/<reference id="[^"]*">([^<]+)<\/reference>/);
-  return match ? match[1] : null;
-}
-
-/**
- * Escape XML special characters
- */
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
 
 /**
  * Update order in Strapi with Worldpay order code
