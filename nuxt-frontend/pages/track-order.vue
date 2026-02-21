@@ -1,176 +1,185 @@
 <template>
   <div class="track-order-page">
+
+    <section class="page-hero">
+      <div class="page-hero__content">
+        <h1 class="page-hero__title">Track Your Order</h1>
+        <p class="page-hero__subtitle">Enter your order number and email to see the latest status</p>
+      </div>
+    </section>
+
     <div class="container">
-      <h1 class="page-title">Track Your Order</h1>
 
-      <!-- Tracking Form -->
-      <div v-if="!order" class="tracking-form-section">
-        <div class="tracking-form-card">
-          <p class="form-description">
-            Enter your order number and email address to track your order status.
-            Guest customers can also use the tracking link from their order confirmation email.
-          </p>
+      <section v-if="!order" class="track-section">
+        <div class="track-card">
+          <div class="track-card__icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="1" y="3" width="15" height="13" rx="1"/>
+              <path d="M16 8h4l3 3v5h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/>
+              <circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+          <h2>Order Lookup</h2>
+          <p>Track any Carafe Coffee order — no account required</p>
 
-          <form @submit.prevent="() => handleTrackOrder()" class="tracking-form">
+          <form class="track-form" @submit.prevent="doTrack">
             <div class="form-group">
-              <label for="orderNumber">Order Number <span class="required">*</span></label>
+              <label class="form-label" for="orderNum">Order Number</label>
               <input
-                id="orderNumber"
+                id="orderNum"
                 v-model="orderNumber"
                 type="text"
-                placeholder="ORD-1704366123-ABC123"
+                class="form-input"
+                placeholder="e.g. ORD-1771661478431-F5C672"
                 required
               />
-              <small class="help-text">
-                Format: ORD-XXXXXXXXXX-XXXXXX
-              </small>
+              <span class="form-hint">Found in your order confirmation email</span>
             </div>
 
             <div class="form-group">
-              <label for="email">Email Address <span class="required">*</span></label>
+              <label class="form-label" for="emailInput">Email Address</label>
               <input
-                id="email"
+                id="emailInput"
                 v-model="email"
                 type="email"
-                placeholder="your@email.com"
+                class="form-input"
+                placeholder="The email used at checkout"
                 required
               />
             </div>
 
-            <div v-if="error" class="alert alert-error">
-              {{ error }}
+            <div v-if="trackingError" class="form-error">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              {{ trackingError }}
             </div>
 
-            <button
-              type="submit"
-              class="btn btn-primary btn-block"
-              :disabled="isLoading || !orderNumber || !email"
-            >
-              <span v-if="isLoading">Tracking Order...</span>
-              <span v-else>Track Order</span>
+            <button type="submit" class="btn btn--track" :disabled="loading">
+              <span v-if="loading" class="btn-spinner"></span>
+              <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              {{ loading ? 'Searching...' : 'Track Order' }}
             </button>
           </form>
 
-          <div class="auth-notice">
-            <p>
-              Have an account? 
-              <NuxtLink to="/login">Sign in</NuxtLink> 
-              to view all your orders
-            </p>
+          <div class="track-help">
+            <p>Have an account? <NuxtLink to="/account/orders">View all your orders &rarr;</NuxtLink></p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Order Tracking Results -->
-      <div v-else class="tracking-results">
-        <div class="tracking-header">
-          <div class="order-info">
-            <h2>Order {{ order.orderNumber }}</h2>
-            <p class="order-date">
-              Placed on {{ formatDate(order.createdAt) }}
-            </p>
+      <section v-else class="result-section">
+        <div class="result-card">
+
+          <div class="result-card__header">
+            <div class="result-header-info">
+              <span class="order-label">Order</span>
+              <h2 class="order-number">{{ order.orderNumber }}</h2>
+              <span class="order-date">Placed on {{ formatDate(order.createdAt) }}</span>
+            </div>
+            <div :class="`order-badge order-badge--${statusMeta.color}`">
+              {{ statusMeta.icon }} {{ statusMeta.label }}
+            </div>
           </div>
-          <button @click="resetTracking" class="btn btn-secondary">
-            Track Another Order
-          </button>
-        </div>
 
-        <!-- Status Timeline -->
-        <div class="status-timeline">
-          <h3>Order Status</h3>
-          <div class="timeline">
+          <div v-if="progressSteps.length" class="progress-tracker">
             <div
-              v-for="step in getStatusTimeline"
+              v-for="(step, index) in progressSteps"
               :key="step.key"
-              class="timeline-step"
-              :class="{
-                completed: step.completed,
-                active: step.current,
-                pending: !step.completed && !step.current
-              }"
+              :class="['progress-step', { 'is-done': step.done, 'is-active': step.active }]"
             >
-              <div class="timeline-icon">
-                <i v-if="step.completed" class="fas fa-check-circle"></i>
-                <i v-else-if="step.current" class="fas fa-circle"></i>
-                <i v-else class="far fa-circle"></i>
+              <div class="progress-step__dot">
+                <svg v-if="step.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span v-else-if="step.active" class="active-pulse"></span>
               </div>
-              <div class="timeline-content">
-                <h4>{{ step.label }}</h4>
-                <p v-if="step.completed" class="timeline-status">Completed</p>
-                <p v-else-if="step.current" class="timeline-status">In Progress</p>
+              <div v-if="index < progressSteps.length - 1" :class="['progress-step__line', { 'is-done': step.done }]"></div>
+              <span class="progress-step__label">{{ step.label }}</span>
+            </div>
+          </div>
+
+          <div v-else class="status-banner" :class="`status-banner--${statusMeta.color}`">
+            {{ statusMeta.icon }} This order has been {{ statusMeta.label.toLowerCase() }}
+          </div>
+
+          <div class="result-body">
+            <div class="info-block">
+              <h3 class="info-block__title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="1" y="3" width="15" height="13" rx="1"/>
+                  <path d="M16 8h4l3 3v5h-7V8z"/>
+                  <circle cx="5.5" cy="18.5" r="2.5"/>
+                  <circle cx="18.5" cy="18.5" r="2.5"/>
+                </svg>
+                Shipping
+              </h3>
+              <div class="info-rows">
+                <div class="info-row">
+                  <span class="info-row__label">Method</span>
+                  <span class="info-row__value">{{ order.shippingMethod || '—' }}</span>
+                </div>
+                <div v-if="order.carrier" class="info-row">
+                  <span class="info-row__label">Carrier</span>
+                  <span class="info-row__value">{{ order.carrier }}</span>
+                </div>
+                <div v-if="order.trackingNumber" class="info-row">
+                  <span class="info-row__label">Tracking No.</span>
+                  <span class="info-row__value"><code class="tracking-code">{{ order.trackingNumber }}</code></span>
+                </div>
+                <div v-if="order.shippingAddress && order.shippingAddress.city" class="info-row">
+                  <span class="info-row__label">Delivering to</span>
+                  <span class="info-row__value">{{ order.shippingAddress.city }}{{ order.shippingAddress.postcode ? ', ' + order.shippingAddress.postcode : '' }}</span>
+                </div>
+                <div v-if="order.dispatchedAt" class="info-row">
+                  <span class="info-row__label">Dispatched</span>
+                  <span class="info-row__value">{{ formatDate(order.dispatchedAt) }}</span>
+                </div>
+                <div v-if="order.deliveredAt" class="info-row">
+                  <span class="info-row__label">Delivered</span>
+                  <span class="info-row__value info-row__value--success">{{ formatDate(order.deliveredAt) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-block">
+              <h3 class="info-block__title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                </svg>
+                Items ({{ order.items.length }})
+              </h3>
+              <div class="items-list">
+                <div v-for="(item, i) in order.items" :key="i" class="item-row">
+                  <span class="item-name">{{ item.name }}</span>
+                  <span class="item-qty">x{{ item.quantity }}</span>
+                </div>
+              </div>
+              <div class="order-total">
+                <span>Total</span>
+                <span class="total-amount">{{ formatPrice(order.total, order.currency) }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Carrier Tracking Link -->
-          <div v-if="getCarrierTrackingUrl" class="carrier-tracking">
-            <a :href="getCarrierTrackingUrl" target="_blank" class="btn btn-outline">
-              <i class="fas fa-external-link-alt"></i>
-              Track with {{ order.carrier }}
-            </a>
-          </div>
-
-          <!-- Estimated Delivery -->
-          <div v-if="estimatedDeliveryDate && order.status !== 'delivered'" class="delivery-estimate">
-            <i class="fas fa-calendar-alt"></i>
-            Estimated delivery: <strong>{{ estimatedDeliveryDate }}</strong>
+          <div class="result-card__footer">
+            <button @click="resetSearch" class="btn btn--secondary">
+              Track another order
+            </button>
+            <NuxtLink to="/shop-coffee" class="btn btn--primary">
+              Shop Again
+            </NuxtLink>
           </div>
         </div>
+      </section>
 
-        <!-- Order Details -->
-        <div class="order-details">
-          <h3>Order Details</h3>
-
-          <!-- Order Items -->
-          <div class="order-items">
-            <div v-for="(item, idx) in order.items" :key="idx" class="order-item">
-              <div class="item-info">
-                <h4>{{ item.name }}</h4>
-                <p class="item-quantity">Quantity: {{ item.quantity }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Order Totals -->
-          <div class="order-totals">
-            <div class="total-row total-row-final">
-              <span>Total:</span>
-              <span>{{ order.currency }}{{ order.total.toFixed(2) }}</span>
-            </div>
-          </div>
-
-          <!-- Shipping Address -->
-          <div v-if="order.shippingAddress" class="shipping-address">
-            <h4>Shipping Address</h4>
-            <address>
-              {{ order.shippingAddress.city }}<br>
-              {{ order.shippingAddress.postcode }}
-            </address>
-          </div>
-
-          <!-- Contact Support -->
-          <div class="order-support">
-            <p>
-              Need help with your order? 
-              <NuxtLink to="/contact">Contact our support team</NuxtLink>
-            </p>
-          </div>
-
-          <!-- Review Product (if delivered) -->
-          <div v-if="canReview" class="review-prompt">
-            <div class="review-card">
-              <i class="fas fa-star"></i>
-              <div>
-                <h4>Order Delivered!</h4>
-                <p>How was your experience? Leave a review for the products you received.</p>
-              </div>
-              <NuxtLink to="/account/orders" class="btn btn-primary">
-                Write Review
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -178,554 +187,459 @@
 <script setup lang="ts">
 import { useOrderTracking } from '~/composables/useOrderTracking';
 
-// Composables
-const route = useRoute();
-const {
-  order,
-  getStatusTimeline,
-  getCarrierTrackingUrl,
-  estimatedDeliveryDate,
-  canReview,
-  formatDate,
-  trackOrder,
-} = useOrderTracking();
-
-// Local state
-const orderNumber = ref('');
-const email = ref('');
-const error = ref('');
-const isLoading = ref(false);
-
-// Check URL params for auto-tracking (from email links)
-onMounted(() => {
-  const urlOrderNumber = route.query.order as string;
-  const urlToken = route.query.token as string;
-  const urlEmail = route.query.email as string;
-
-  if (urlOrderNumber && (urlToken || urlEmail)) {
-    orderNumber.value = urlOrderNumber;
-    if (urlEmail) {
-      email.value = urlEmail;
-    }
-    handleTrackOrder(urlToken);
-  }
+useHead({
+  title: 'Track Your Order | Carafe Coffee',
+  meta: [{ name: 'description', content: 'Track your Carafe Coffee order status.' }]
 });
 
-// Methods
-const handleTrackOrder = async (token?: string) => {
-  try {
-    error.value = '';
-    isLoading.value = true;
+const route = useRoute();
+const { order, loading, error: trackError, trackOrder, formatDate } = useOrderTracking();
 
-    const result = await trackOrder(
-      orderNumber.value,
-      token,
-      email.value
-    );
+const orderNumber   = ref('');
+const email         = ref('');
+const trackingError = ref('');
 
-    if (!result) {
-      error.value = 'Order not found. Please check your order number and email address.';
-    }
-  } catch (err: any) {
-    console.error('Track order error:', err);
-    error.value = err.message || 'Failed to track order. Please try again.';
-  } finally {
-    isLoading.value = false;
+onMounted(() => {
+  const q = route.query;
+  if (q.orderNumber) orderNumber.value = String(q.orderNumber);
+  if (q.email) email.value = String(q.email);
+  if (q.token && orderNumber.value) doTrack();
+});
+
+const statusMeta = computed(() => {
+  const map: Record<string, { label: string; color: string; icon: string; step: number }> = {
+    order_received: { label: 'Order Received', color: 'blue',   icon: '⏳', step: 0 },
+    packed:         { label: 'Packed',         color: 'purple', icon: '📦', step: 1 },
+    shipped:        { label: 'Shipped',         color: 'indigo', icon: '🚚', step: 2 },
+    in_transit:     { label: 'In Transit',      color: 'indigo', icon: '🚚', step: 2 },
+    delivered:      { label: 'Delivered',       color: 'green',  icon: '✅', step: 3 },
+    cancelled:      { label: 'Cancelled',       color: 'red',    icon: '❌', step: -1 },
+    refunded:       { label: 'Refunded',        color: 'orange', icon: '💰', step: -1 },
+  };
+  return map[order.value?.status ?? ''] ?? map.order_received;
+});
+
+const progressSteps = computed(() => {
+  const step = statusMeta.value.step;
+  if (step === -1) return [];
+  return [
+    { key: 'received',  label: 'Received',  done: step > 0,  active: step === 0 },
+    { key: 'packed',    label: 'Packed',    done: step > 1,  active: step === 1 },
+    { key: 'shipped',   label: 'Shipped',   done: step > 2,  active: step === 2 },
+    { key: 'delivered', label: 'Delivered', done: step >= 3, active: step === 3 },
+  ];
+});
+
+const doTrack = async () => {
+  trackingError.value = '';
+  const result = await trackOrder(orderNumber.value.trim(), undefined, email.value.trim());
+  if (!result) {
+    trackingError.value = (trackError.value as string) || 'Order not found. Please check your details and try again.';
   }
 };
 
-const resetTracking = () => {
+const resetSearch = () => {
   order.value = null;
   orderNumber.value = '';
   email.value = '';
-  error.value = '';
+  trackingError.value = '';
 };
 
-// SEO
-useHead({
-  title: 'Track Your Order - Carafe Coffee',
-  meta: [
-    { name: 'description', content: 'Track your Carafe Coffee order and view delivery status' },
-    { name: 'robots', content: 'noindex, nofollow' },
-  ],
-});
+const formatPrice = (amount: number, currency = 'EUR') => {
+  const sym = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€';
+  return `${sym}${parseFloat(String(amount)).toFixed(2)}`;
+};
 </script>
 
-<style scoped lang="scss">
-.track-order-page {
-  padding: 4rem 0;
-  min-height: 80vh;
-  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 50%);
+<style lang="scss" scoped>
+.page-hero {
+  background: linear-gradient(135deg, $color-primary 0%, darken($color-primary, 12%) 100%);
+  color: white;
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+
+  &__title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+  }
+
+  &__subtitle {
+    font-size: 1.1rem;
+    opacity: 0.85;
+    margin: 0;
+  }
 }
 
 .container {
-  max-width: 900px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 3rem 1.5rem 5rem;
 }
 
-.page-title {
-  font-size: 2.5rem;
-  text-align: center;
-  margin-bottom: 3rem;
-  color: #333;
-}
-
-// Tracking Form
-.tracking-form-section {
-  display: flex;
-  justify-content: center;
-}
-
-.tracking-form-card {
+.track-card {
   background: white;
-  padding: 3rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 100%;
-}
-
-.form-description {
+  border-radius: 1.5rem;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 4px 32px rgba(0,0,0,.08);
   text-align: center;
-  color: #666;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
 
-.tracking-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-group {
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #333;
-
-    .required {
-      color: #c33;
-    }
+  &__icon {
+    width: 80px;
+    height: 80px;
+    background: rgba($color-primary, .08);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: $color-primary;
   }
 
-  input {
+  h2 { font-size: 1.6rem; margin: 0 0 0.35rem; color: $color-text; }
+  > p { color: $color-text-light; margin: 0 0 2rem; font-size: 0.95rem; }
+}
+
+.track-form {
+  text-align: left;
+
+  .form-group { margin-bottom: 1.5rem; }
+
+  .form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+    color: $color-text;
+    font-size: 0.875rem;
+  }
+
+  .form-input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 0.875rem 1rem;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 0.75rem;
     font-size: 1rem;
-    transition: border-color 0.2s;
+    background: #fafafa;
+    box-sizing: border-box;
+    transition: border-color .2s, box-shadow .2s;
 
     &:focus {
       outline: none;
-      border-color: #8B4513;
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba($color-primary, .1);
+      background: white;
     }
   }
 
-  .help-text {
+  .form-hint {
+    font-size: 0.78rem;
+    color: $color-text-light;
     display: block;
-    margin-top: 0.25rem;
+    margin-top: 0.3rem;
+  }
+
+  .form-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.75rem;
+    color: #dc2626;
     font-size: 0.875rem;
-    color: #999;
+    margin-bottom: 1rem;
   }
 }
 
-.alert {
+.btn--track {
+  width: 100%;
   padding: 1rem;
-  border-radius: 6px;
+  background: $color-primary;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background .2s, transform .1s;
 
-  &.alert-error {
-    background-color: #fee;
-    border: 1px solid #fcc;
-    color: #c33;
+  &:hover:not(:disabled) { background: darken($color-primary, 8%); transform: translateY(-1px); }
+  &:disabled { opacity: .65; cursor: not-allowed; }
+}
+
+.btn-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.track-help {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: $color-text-light;
+
+  a {
+    color: $color-primary;
+    font-weight: 600;
+    text-decoration: none;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.result-card {
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 32px rgba(0,0,0,.08);
+  overflow: hidden;
+
+  &__header {
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.result-header-info { display: flex; flex-direction: column; gap: .2rem; }
+
+.order-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: $color-text-light;
+  font-weight: 600;
+}
+
+.order-number { font-size: 1.2rem; font-weight: 700; margin: 0; color: $color-text; font-family: monospace; }
+.order-date   { font-size: 0.83rem; color: $color-text-light; }
+
+.order-badge {
+  padding: .45rem .9rem;
+  border-radius: 2rem;
+  font-size: .83rem;
+  font-weight: 600;
+  white-space: nowrap;
+  align-self: flex-start;
+
+  &--green  { background: #dcfce7; color: #166534; }
+  &--blue   { background: #dbeafe; color: #1e40af; }
+  &--purple { background: #ede9fe; color: #6b21a8; }
+  &--indigo { background: #e0e7ff; color: #3730a3; }
+  &--red    { background: #fee2e2; color: #991b1b; }
+  &--orange { background: #ffedd5; color: #9a3412; }
+}
+
+.progress-tracker {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 2.5rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+
+  &__dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  &__line {
+    position: absolute;
+    top: 15px;
+    left: calc(50% + 16px);
+    right: calc(-50% + 16px);
+    height: 2px;
+    background: #e0e0e0;
+    &.is-done { background: $color-primary; }
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    color: $color-text-light;
+    margin-top: .45rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  &.is-done {
+    .progress-step__dot { background: $color-primary; border-color: $color-primary; color: white; }
+    .progress-step__label { color: $color-primary; font-weight: 600; }
+  }
+
+  &.is-active {
+    .progress-step__dot { border-color: $color-primary; background: rgba($color-primary, .08); }
+    .progress-step__label { color: $color-primary; font-weight: 700; }
+  }
+}
+
+.active-pulse {
+  width: 10px;
+  height: 10px;
+  background: $color-primary;
+  border-radius: 50%;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: .55; }
+}
+
+.status-banner {
+  padding: 1rem 2.5rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: .95rem;
+  border-bottom: 1px solid #f0f0f0;
+
+  &--red    { background: #fef2f2; color: #991b1b; }
+  &--orange { background: #fff7ed; color: #9a3412; }
+}
+
+.result-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  @media (max-width: 580px) { grid-template-columns: 1fr; }
+}
+
+.info-block {
+  padding: 2rem 2.5rem;
+
+  &:first-child {
+    border-right: 1px solid #f0f0f0;
+    @media (max-width: 580px) { border-right: none; border-bottom: 1px solid #f0f0f0; }
+  }
+
+  &__title {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: $color-text-light;
+    font-weight: 600;
+    margin: 0 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+}
+
+.info-rows { display: flex; flex-direction: column; gap: .85rem; }
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+
+  &__label { font-size: .7rem; color: $color-text-light; text-transform: uppercase; letter-spacing: .05em; }
+  &__value {
+    font-size: .9rem; color: $color-text; font-weight: 500;
+    &--success { color: #166534; font-weight: 600; }
+  }
+}
+
+.tracking-code {
+  font-family: monospace;
+  background: #f3f4f6;
+  padding: .15rem .5rem;
+  border-radius: .3rem;
+  font-size: .82rem;
+}
+
+.items-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.25rem; }
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .45rem 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: .88rem;
+
+  &:last-child { border-bottom: none; }
+}
+
+.item-name { color: $color-text; font-weight: 500; }
+.item-qty  { color: $color-text-light; }
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  padding: .75rem 0 0;
+  border-top: 2px solid #f0f0f0;
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+.total-amount { color: $color-primary; font-size: 1.1rem; }
+
+.result-card__footer {
+  padding: 1.5rem 2.5rem;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    .btn { text-align: center; }
   }
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
-
-  &.btn-primary {
-    background: #8B4513;
-    color: white;
-
-    &:hover:not(:disabled) {
-      background: #6d3410;
-    }
-
-    &:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-  }
-
-  &.btn-secondary {
-    background: #6c757d;
-    color: white;
-
-    &:hover {
-      background: #5a6268;
-    }
-  }
-
-  &.btn-outline {
-    background: white;
-    border: 2px solid #8B4513;
-    color: #8B4513;
-
-    &:hover {
-      background: #8B4513;
-      color: white;
-    }
-
-    i {
-      margin-right: 0.5rem;
-    }
-  }
-
-  &.btn-block {
-    width: 100%;
-    display: block;
-  }
-}
-
-.auth-notice {
-  text-align: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-
-  p {
-    margin: 0;
-    color: #666;
-  }
-
-  a {
-    color: #8B4513;
-    font-weight: 600;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-// Tracking Results
-.tracking-results {
-  background: white;
-  padding: 3rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.tracking-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  margin-bottom: 3rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid #eee;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 1rem;
-  }
-}
-
-.order-info {
-  h2 {
-    margin: 0 0 0.5rem 0;
-    color: #333;
-  }
-
-  .order-date {
-    margin: 0;
-    color: #666;
-  }
-}
-
-// Status Timeline
-.status-timeline {
-  margin-bottom: 3rem;
-
-  h3 {
-    margin-bottom: 2rem;
-    color: #333;
-  }
-}
-
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.timeline-step {
-  display: flex;
-  align-items: start;
-  gap: 1rem;
-  position: relative;
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 14px;
-    top: 35px;
-    width: 2px;
-    height: calc(100% + 1.5rem);
-    background: #ddd;
-  }
-
-  &.completed::after {
-    background: #28a745;
-  }
-
-  &.active::after {
-    background: linear-gradient(to bottom, #8B4513 0%, #ddd 100%);
-  }
-}
-
-.timeline-icon {
-  font-size: 1.75rem;
-  width: 30px;
-  height: 30px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  .completed & {
-    color: #28a745;
-  }
-
-  .active & {
-    color: #8B4513;
-  }
-
-  .pending & {
-    color: #ddd;
-  }
-}
-
-.timeline-content {
-  flex: 1;
-
-  h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.125rem;
-  }
-
-  .completed & h4 {
-    color: #28a745;
-  }
-
-  .active & h4 {
-    color: #8B4513;
-  }
-
-  .pending & h4 {
-    color: #999;
-  }
-}
-
-.timeline-date {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #666;
-}
-
-.timeline-status {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #8B4513;
+  gap: .5rem;
+  padding: .75rem 1.5rem;
+  border-radius: .75rem;
+  font-size: .9rem;
   font-weight: 600;
-}
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+  border: none;
 
-.carrier-tracking {
-  margin: 2rem 0;
-  text-align: center;
-}
-
-.delivery-estimate {
-  background: #e7f5ff;
-  padding: 1rem;
-  border-radius: 6px;
-  text-align: center;
-  color: #0c5896;
-
-  i {
-    margin-right: 0.5rem;
+  &--primary {
+    background: $color-primary;
+    color: white;
+    &:hover { background: darken($color-primary, 8%); }
   }
 
-  strong {
-    color: #0a4275;
-  }
-}
-
-// Order Details
-.order-details {
-  h3 {
-    margin-bottom: 1.5rem;
-    color: #333;
-  }
-}
-
-.order-items {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-}
-
-.order-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.item-info {
-  h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
-    color: #333;
-  }
-
-  .item-variant {
-    margin: 0;
-    font-size: 0.875rem;
-    color: #666;
-  }
-
-  .item-quantity {
-    margin: 0;
-    font-size: 0.875rem;
-    color: #999;
-  }
-}
-
-.item-price {
-  font-weight: 700;
-  color: #8B4513;
-  white-space: nowrap;
-}
-
-.order-totals {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-}
-
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &.total-row-final {
-    padding-top: 0.75rem;
-    border-top: 2px solid #dee2e6;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #8B4513;
-  }
-}
-
-.shipping-address {
-  background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-
-  h4 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    color: #333;
-  }
-
-  address {
-    font-style: normal;
-    line-height: 1.6;
-    color: #666;
-  }
-}
-
-.order-support {
-  text-align: center;
-  padding: 1.5rem;
-  border-top: 1px solid #eee;
-
-  p {
-    margin: 0;
-    color: #666;
-  }
-
-  a {
-    color: #8B4513;
-    font-weight: 600;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
-.review-prompt {
-  margin-top: 2rem;
-}
-
-.review-card {
-  background: linear-gradient(135deg, #fef9f5 0%, #f8f4f0 100%);
-  border: 2px solid #8B4513;
-  border-radius: 8px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  > i {
-    font-size: 3rem;
-    color: #ffc107;
-  }
-
-  > div {
-    flex: 1;
-
-    h4 {
-      margin: 0 0 0.5rem 0;
-      color: #333;
-    }
-
-    p {
-      margin: 0;
-      color: #666;
-    }
+  &--secondary {
+    background: transparent;
+    color: $color-primary;
+    border: 1.5px solid $color-primary;
+    &:hover { background: rgba($color-primary, .06); }
   }
 }
 </style>

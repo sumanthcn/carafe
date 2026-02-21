@@ -1,21 +1,41 @@
 <template>
   <div class="addresses-page">
-    <div class="container">
-      <!-- Header -->
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">My Addresses</h1>
-          <p class="page-subtitle">Manage your saved shipping addresses</p>
+    <!-- Hero Section -->
+    <div class="addresses-hero">
+      <div class="addresses-hero__background"></div>
+      <div class="container">
+        <div class="addresses-hero__content">
+          <!-- Breadcrumb -->
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <NuxtLink to="/">Home</NuxtLink>
+            <span class="breadcrumb__separator">/</span>
+            <NuxtLink to="/account">Account</NuxtLink>
+            <span class="breadcrumb__separator">/</span>
+            <span class="breadcrumb__current">Addresses</span>
+          </nav>
+
+          <!-- Hero Title -->
+          <div class="addresses-hero__header">
+            <div>
+              <h1 class="addresses-hero__title">My Addresses</h1>
+              <p class="addresses-hero__subtitle">Manage your saved shipping addresses</p>
+            </div>
+            <button
+              v-if="!showForm && addresses.length > 0"
+              @click="handleAdd"
+              class="btn-hero"
+            >
+              <span class="btn-icon">+</span>
+              Add New Address
+            </button>
+          </div>
         </div>
-        <button
-          v-if="!showForm && addresses.length > 0"
-          @click="handleAdd"
-          class="btn btn--primary"
-        >
-          <span class="btn-icon">+</span>
-          Add New Address
-        </button>
       </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+      <div class="addresses-page__wrapper">
 
       <!-- Success Message -->
       <div v-if="successMessage" class="alert alert--success">
@@ -45,6 +65,7 @@
           @set-default="handleSetDefault"
           @retry="fetchAddresses"
         />
+      </div>
       </div>
     </div>
   </div>
@@ -167,39 +188,148 @@ useHead({
 @import "~/assets/scss/variables";
 
 .addresses-page {
-  min-height: calc(100vh - 200px);
-  padding: 3rem 0;
-  background: #f9fafb;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);
+  padding-bottom: $spacing-16;
+}
+
+// Hero Section
+.addresses-hero {
+  position: relative;
+  padding: 140px 0 120px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: 120px 0 100px;
+  }
+
+  &__background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    opacity: 0.6;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: $spacing-4;
+    gap: $spacing-4;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: $spacing-3;
+    }
+  }
+
+  &__title {
+    font-family: $font-family-heading;
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 $spacing-3;
+    line-height: 1.2;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Breadcrumb
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: $spacing-2;
+
+  a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: white;
+    }
+  }
+
+  &__separator {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &__current {
+    color: white;
+    font-weight: 500;
+  }
+}
+
+// Hero Button
+.btn-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: #1e3a5f;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-icon {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+}
+
+// Wrapper
+.addresses-page__wrapper {
+  max-width: 1200px;
+  margin: -80px auto 0;
+  padding: 0 $spacing-4;
+  position: relative;
+  z-index: 2;
+
+  @media (max-width: 768px) {
+    margin-top: -60px;
+  }
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: $color-dark;
-  margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-  color: #6b7280;
-  font-size: 1rem;
 }
 
 .btn {

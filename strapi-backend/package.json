@@ -8,7 +8,10 @@
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi",
-    "deploy": "strapi deploy"
+    "deploy": "strapi deploy",
+    "seed:orders": "node scripts/seed-orders-quick.js",
+    "seed:orders:api": "node scripts/seed-orders-api.js",
+    "create:orders": "node scripts/create-sample-orders.js"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.33.0",

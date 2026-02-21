@@ -225,17 +225,17 @@ function isNavActive(item: NavItem): boolean {
                 {{ cartStore.itemCount }}
               </span>
             </button>
-            <div v-if="isAuthenticated" class="header__user-menu">
+          </li>
+
+          <!-- User menu in nav -->
+          <li v-if="isAuthenticated" class="header__nav-item header__nav-item--user" role="none">
+            <div class="header__user-menu">
               <button
                 class="header__user-btn"
                 aria-label="User menu"
                 @click.stop="isUserMenuOpen = !isUserMenuOpen"
               >
                 <FontAwesomeIcon icon="user" />
-                <!-- <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="8" r="4"/>
-                  <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-                </svg> -->
               </button>
 
               <div v-if="isUserMenuOpen" class="header__user-dropdown">
@@ -245,12 +245,12 @@ function isNavActive(item: NavItem): boolean {
                 </div>
                 <ul class="header__user-links">
                   <li>
-                    <NuxtLink to="/account/profile" @click="isUserMenuOpen = false">
+                    <NuxtLink to="/account" @click="isUserMenuOpen = false">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="8" r="4"/>
-                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M3 9h18M9 21V9"/>
                       </svg>
-                      View Profile
+                      Dashboard
                     </NuxtLink>
                   </li>
                   <li>
@@ -271,6 +271,45 @@ function isNavActive(item: NavItem): boolean {
                       </svg>
                       Logout
                     </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+
+          <!-- Guest user menu (not authenticated) -->
+          <li v-else class="header__nav-item header__nav-item--user" role="none">
+            <div class="header__user-menu">
+              <button
+                class="header__user-btn"
+                aria-label="Account menu"
+                @click.stop="isUserMenuOpen = !isUserMenuOpen"
+              >
+                <FontAwesomeIcon icon="user" />
+              </button>
+
+              <div v-if="isUserMenuOpen" class="header__user-dropdown">
+                <ul class="header__user-links">
+                  <li>
+                    <NuxtLink to="/login" @click="isUserMenuOpen = false">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                      </svg>
+                      Login
+                    </NuxtLink>
+                  </li>
+                  <li>
+                    <NuxtLink to="/track-order" @click="isUserMenuOpen = false">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13" rx="1"/>
+                        <path d="M16 8h4l3 3v5h-7V8z"/>
+                        <circle cx="5.5" cy="18.5" r="2.5"/>
+                        <circle cx="18.5" cy="18.5" r="2.5"/>
+                      </svg>
+                      Track Order
+                    </NuxtLink>
                   </li>
                 </ul>
               </div>
@@ -389,8 +428,10 @@ function isNavActive(item: NavItem): boolean {
   left: 0;
   right: 0;
   z-index: 100;
-  background: transparent;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 
   &--scrolled {
     background: white;
@@ -531,6 +572,16 @@ function isNavActive(item: NavItem): boolean {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+  }
+
+  &__nav-item--user {
+    display: flex;
+    align-items: center;
+    margin-left: -1rem;
+  }
+
+  &__nav-item--login {
+    margin-left: -1rem;
   }
 
   &__actions {
@@ -765,6 +816,38 @@ function isNavActive(item: NavItem): boolean {
 
     &:hover {
       color: $color-primary;
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &__login-btn {
+    position: relative;
+    background: #ccd0d1;
+    border: none;
+    cursor: pointer;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      background-color: #c0c0c0;
+      transform: scale(1.05);
+      color: $color-primary;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
     }
 
     svg {

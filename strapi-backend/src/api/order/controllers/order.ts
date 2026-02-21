@@ -90,7 +90,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         paymentMethod: data.paymentMethod || 'worldpay',
         paymentStatus: 'pending',
         notes: data.notes || null,
-        user: user ? user.id : null,
+        user: user ? { connect: [{ id: user.id }] } : null,
         orderTrackingToken,
         isGuestOrder,
       };

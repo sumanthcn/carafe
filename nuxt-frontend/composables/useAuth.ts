@@ -46,6 +46,7 @@ export function useAuth() {
    */
   async function login(identifier: string, password: string) {
     try {
+      console.log('Login attempt with:', { identifier, strapiUrl });
       const response = await $fetch<AuthResponse>(`${strapiUrl}/api/auth/local`, {
         method: 'POST',
         body: {
@@ -67,9 +68,15 @@ export function useAuth() {
       return { success: true, user: response.user };
     } catch (error: any) {
       console.error('Login error:', error);
+      console.error('Error details:', {
+        status: error?.status,
+        statusText: error?.statusText,
+        data: error?.data,
+        message: error?.message,
+      });
       return {
         success: false,
-        error: error?.data?.error?.message || 'Login failed. Please check your credentials.',
+        error: error?.data?.error?.message || error?.data?.message?.[0]?.messages?.[0]?.message || 'Login failed. Please check your credentials.',
       };
     }
   }
