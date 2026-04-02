@@ -158,22 +158,31 @@ export default defineEventHandler(async (event): Promise<PaymentInitiationRespon
     merchant: {
       entity: worldpayMerchantEntity,
     },
-    narrative: {
-      line1: narrativeLine1,
+    instruction: {
+      narrative: {
+        line1: narrativeLine1,
+      },
+      value: {
+        currency: body.currency || 'GBP',
+        amount: amountInMinorUnits,
+      },
     },
-    value: {
-      currency: body.currency || 'GBP',
-      amount: amountInMinorUnits,
-    },
-    description: `${body.customer.firstName} ${body.customer.lastName}`,
-    billingAddress: {
-      firstName: body.customer.firstName,
-      lastName: body.customer.lastName,
-      address1: body.customer.address.line1,
-      ...(body.customer.address.line2 && { address2: body.customer.address.line2 }),
-      city: body.customer.address.city,
-      postalCode: body.customer.address.postcode,
-      countryCode: countryCode,
+    customer: {
+      customerIdentifiers: {
+        customerReference: body.orderNumber,
+      },
+      email: body.customer.email,
+      name: {
+        givenName: body.customer.firstName,
+        familyName: body.customer.lastName,
+      },
+      address: {
+        address1: body.customer.address.line1,
+        ...(body.customer.address.line2 && { address2: body.customer.address.line2 }),
+        city: body.customer.address.city,
+        postalCode: body.customer.address.postcode,
+        countryCode: countryCode,
+      },
     },
     resultURLs,
   };
@@ -243,8 +252,8 @@ export default defineEventHandler(async (event): Promise<PaymentInitiationRespon
     // 10. EXTRACT REDIRECT URL
     // ============================================
     
-    // HPP API returns the redirect URL in the 'url' field
-    const redirectUrl = response.url;
+    // HPP API returns the redirect URL in HAL _links format
+    const redirectUrl = response._links?.['payments:redirect']?.href;
 
     if (!redirectUrl) {
       console.error('No redirect URL in Worldpay response:', response);
