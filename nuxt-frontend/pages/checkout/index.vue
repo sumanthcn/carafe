@@ -210,14 +210,12 @@
           <section class="checkout-section">
             <h2>Payment</h2>
             <p class="checkout-section__note">
-              You will be redirected to Worldpay to complete your payment
-              securely.
+              You will be redirected to Stripe's secure checkout page to complete your payment. We never store your card details.
             </p>
 
             <div class="payment-icons">
               <FontAwesomeIcon :icon="['fab', 'cc-visa']" />
               <FontAwesomeIcon :icon="['fab', 'cc-mastercard']" />
-              <FontAwesomeIcon :icon="['fab', 'cc-paypal']" />
               <FontAwesomeIcon :icon="['fab', 'apple-pay']" />
             </div>
           </section>
@@ -381,7 +379,7 @@
                   stroke-linejoin="round"
                 />
               </svg>
-              Secure checkout powered by Worldpay
+              Secure checkout powered by Stripe
             </p>
           </div>
         </aside>
@@ -771,43 +769,24 @@ const processPayment = async () => {
       }
     }
 
-    // Step 2: Initiate Worldpay payment using REST API
-    const paymentResponse = await $fetch("/api/worldpay/create-payment", {
-      method: "POST",
-      body: {
-        orderId: orderResult.order.id,
-        orderNumber: orderResult.order.orderNumber,
-        amount: orderTotal.value,
-        currency: 'GBP',
-        customer: {
-          email: form.email,
-          phone: form.phone,
-          firstName: form.firstName,
-          lastName: form.lastName,
-          address: {
-            line1: form.address1,
-            line2: form.address2,
-            city: form.city,
-            postcode: form.postcode,
-            country: form.country,
-          },
-        },
-      },
-    });
+    // Step 2: Create Stripe checkout session and redirect
+    const config = useRuntimeConfig();
+    const stripeResponse = await $fetch<{ url: string }>(
+      `${config.public.strapiUrl}/api/stripe/create-checkout-session`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: { orderId: orderResult.order.id },
+      }
+    );
 
-    // Step 3: Redirect to Worldpay hosted payment page
-    if (paymentResponse?.success && paymentResponse?.redirectUrl) {
-      console.log('Redirecting to Worldpay:', paymentResponse.redirectUrl);
-      console.log('Transaction reference:', paymentResponse.transactionReference);
-      
-      // Clear cart before redirecting
-      cartStore.clearCart();
-      
-      // Redirect to Worldpay's hosted payment page
-      window.location.href = paymentResponse.redirectUrl;
-    } else {
-      throw new Error(paymentResponse?.error || 'No payment redirect URL received');
+    if (!stripeResponse?.url) {
+      throw new Error('No checkout URL returned from payment service');
     }
+
+    // Do NOT clear the cart here — clear it on the success page after confirmed payment.
+    // This preserves the cart if the customer cancels on Stripe and returns.
+    window.location.href = stripeResponse.url;
   } catch (err: any) {
     console.error('Checkout error:', err);
     error.value =

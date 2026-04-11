@@ -6,29 +6,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // Private keys (server-side only) - NEVER exposed to client
     strapiApiToken: process.env.STRAPI_API_TOKEN,
-    
-    // Worldpay REST API Credentials (NEW - for Hosted Payment Pages)
-    worldpayUsername: process.env.WORLDPAY_USERNAME,
-    worldpayPassword: process.env.WORLDPAY_PASSWORD,
-    worldpayMerchantEntity: process.env.WORLDPAY_MERCHANT_ENTITY,
-    worldpayBaseUrl: process.env.WORLDPAY_BASE_URL || 'https://try.access.worldpay.com',
-    
-    // Legacy Worldpay credentials (kept for reference, not used in REST API)
-    worldpayMerchantCode: process.env.WORLDPAY_MERCHANT_CODE,
-    worldpayInstallationId: process.env.WORLDPAY_INSTALLATION_ID,
-    worldpayXmlUsername: process.env.WORLDPAY_XML_USERNAME,
-    worldpayXmlPassword: process.env.WORLDPAY_XML_PASSWORD,
-    worldpayMacSecret: process.env.WORLDPAY_MAC_SECRET,
-    worldpayTestMode: process.env.WORLDPAY_TEST_MODE || 'true',
-    worldpaySuccessUrl: process.env.WORLDPAY_SUCCESS_URL,
-    worldpayCancelUrl: process.env.WORLDPAY_CANCEL_URL,
-    worldpayPendingUrl: process.env.WORLDPAY_PENDING_URL,
-    worldpayFailureUrl: process.env.WORLDPAY_FAILURE_URL,
 
     // Public keys (exposed to client)
     public: {
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || "https://carafe.coffee",
       strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || "http://localhost:1337",
+      stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
       siteName: "Carafe Coffee House & Roasters",
       siteDescription:
         "Artisan coffee roasted in the heart of Lewes. Shop our small-batch beans online or visit our café to experience the craft in person.",

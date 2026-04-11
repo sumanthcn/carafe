@@ -10,6 +10,16 @@ export default {
         policies: [],
       },
     },
+    // Authenticated user's own orders
+    {
+      method: 'GET',
+      path: '/orders/my-orders',
+      handler: 'order.myOrders',
+      config: {
+        auth: false,
+        policies: [],
+      },
+    },
     // Standard CRUD routes
     {
       method: 'GET',

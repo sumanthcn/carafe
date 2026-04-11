@@ -528,6 +528,7 @@ useHead({
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
+  margin-top: 40px;
 }
 
 .order-item {

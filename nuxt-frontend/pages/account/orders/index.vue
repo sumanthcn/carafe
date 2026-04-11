@@ -236,82 +236,106 @@
             </button>
           </div>
 
-          <div v-show="expandedOrders.has(order.id)" class="order-card__body">
-            <!-- Order Items -->
-            <div class="order-items">
+          <template v-if="expandedOrders.has(order.id)">
+            <!-- Progress Tracker -->
+            <div v-if="getProgressSteps(order.status).length" class="progress-tracker">
               <div
-                v-for="item in order.items"
-                :key="item.id"
-                class="order-item"
+                v-for="(step, index) in getProgressSteps(order.status)"
+                :key="step.key"
+                :class="['progress-step', { 'is-done': step.done, 'is-active': step.active && step.key !== 'delivered'  }]"
               >
-                <div class="order-item__image">
-                  <img
-                    v-if="item.imageUrl"
-                    :src="item.imageUrl"
-                    :alt="item.productName"
-                  />
-                  <div v-else class="placeholder">☕</div>
+                <div class="progress-step__dot">
+                  <svg v-if="step.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span v-else-if="step.active" class="active-pulse"></span>
                 </div>
-                <div class="order-item__details">
-                  <h4>{{ item.productName }}</h4>
-                  <p v-if="item.variant" class="variant">{{ item.variant }}</p>
-                  <p class="quantity">Qty: {{ item.quantity }}</p>
+                <div v-if="index < getProgressSteps(order.status).length - 1" :class="['progress-step__line', { 'is-done': step.done }]"></div>
+                <span class="progress-step__label">{{ step.label }}</span>
+              </div>
+            </div>
+            <div v-else class="status-banner" :class="`status-banner--${getStatusMeta(order.status).color}`">
+              {{ getStatusMeta(order.status).icon }} This order has been {{ getStatusMeta(order.status).label.toLowerCase() }}
+            </div>
+
+            <!-- Two-column body -->
+            <div class="order-expand-body">
+              <div class="info-block">
+                <h3 class="info-block__title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13" rx="1"/>
+                    <path d="M16 8h4l3 3v5h-7V8z"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                  Shipping
+                </h3>
+                <div class="info-rows">
+                  <div class="info-row">
+                    <span class="info-row__label">Method</span>
+                    <span class="info-row__value">{{ order.shippingMethod || '—' }}</span>
+                  </div>
+                  <div v-if="order.carrier" class="info-row">
+                    <span class="info-row__label">Carrier</span>
+                    <span class="info-row__value">{{ order.carrier }}</span>
+                  </div>
+                  <div v-if="order.trackingNumber" class="info-row">
+                    <span class="info-row__label">Tracking No.</span>
+                    <span class="info-row__value"><code class="tracking-code">{{ order.trackingNumber }}</code></span>
+                  </div>
+                  <div v-if="order.shippingAddress?.city" class="info-row">
+                    <span class="info-row__label">Delivering to</span>
+                    <span class="info-row__value">{{ order.shippingAddress.city }}{{ order.shippingAddress.postalCode ? ', ' + order.shippingAddress.postalCode : '' }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row__label">Subtotal</span>
+                    <span class="info-row__value">{{ orderManagement.formatPrice(order.subtotal) }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-row__label">Shipping cost</span>
+                    <span class="info-row__value">{{ order.shippingCost === 0 ? 'FREE' : orderManagement.formatPrice(order.shippingCost) }}</span>
+                  </div>
                 </div>
-                <div class="order-item__price">
-                  {{ orderManagement.formatPrice(item.price) }}
+              </div>
+
+              <div class="info-block">
+                <h3 class="info-block__title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                  </svg>
+                  Items ({{ order.items.length }})
+                </h3>
+                <div class="items-list">
+                  <div v-for="(item, i) in order.items" :key="i" class="item-row">
+                    <span class="item-name">{{ item.productName }}</span>
+                    <span class="item-qty">x{{ item.quantity }}</span>
+                  </div>
+                </div>
+                <div class="order-total-row">
+                  <span>Total</span>
+                  <span class="total-amount">{{ orderManagement.formatPrice(order.total) }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- Order Summary -->
-            <div class="order-summary">
-              <div class="summary-row">
-                <span>Subtotal:</span>
-                <span>{{ orderManagement.formatPrice(order.subtotal) }}</span>
-              </div>
-              <div class="summary-row">
-                <span>Shipping ({{ order.shippingMethod }}):</span>
-                <span>{{ order.shippingCost === 0 ? 'FREE' : orderManagement.formatPrice(order.shippingCost) }}</span>
-              </div>
-              <div class="summary-row summary-row--total">
-                <span>Total:</span>
-                <span>{{ orderManagement.formatPrice(order.total) }}</span>
-              </div>
-            </div>
-
-            <!-- Tracking Info -->
-            <div v-if="order.trackingNumber" class="tracking-info">
-              <span class="tracking-info__icon">🚚</span>
-              <div class="tracking-info__details">
-                <strong>Tracking Number:</strong>
-                <span>{{ order.trackingNumber }}</span>
-              </div>
-              <a
-                :href="`https://track.royalmail.com/track/${order.trackingNumber}`"
-                target="_blank"
-                rel="noopener"
-                class="tracking-info__link"
+            <!-- Footer -->
+            <div class="order-card__footer">
+              <NuxtLink
+                :to="`/account/orders/${order.id}`"
+                class="btn btn--secondary btn--sm"
               >
-                Track Package →
-              </a>
+                View Details
+              </NuxtLink>
+              <button
+                v-if="order.status === 'delivered'"
+                class="btn btn--primary btn--sm"
+                @click.stop="reorder(order.id)"
+              >
+                Reorder
+              </button>
             </div>
-          </div>
-
-          <div v-show="expandedOrders.has(order.id)" class="order-card__footer">
-            <NuxtLink
-              :to="`/account/orders/${order.id}`"
-              class="btn btn--secondary btn--sm"
-            >
-              View Details
-            </NuxtLink>
-            <button
-              v-if="order.status === 'delivered'"
-              class="btn btn--primary btn--sm"
-              @click.stop="reorder(order.id)"
-            >
-              Reorder
-            </button>
-          </div>
+          </template>
         </div>
       </div>
       </div>
@@ -477,6 +501,30 @@ const reorder = (orderId: number) => {
   // TODO: Implement reorder functionality
   console.log('Reorder:', orderId);
   alert('Reorder functionality coming soon!');
+};
+
+const getStatusMeta = (status: string) => {
+  const map: Record<string, { label: string; color: string; icon: string; step: number }> = {
+    order_received: { label: 'Order Received', color: 'blue',   icon: '⏳', step: 0 },
+    packed:         { label: 'Packed',         color: 'purple', icon: '📦', step: 1 },
+    shipped:        { label: 'Shipped',        color: 'indigo', icon: '🚚', step: 2 },
+    in_transit:     { label: 'In Transit',     color: 'indigo', icon: '🚚', step: 2 },
+    delivered:      { label: 'Delivered',      color: 'green',  icon: '✅', step: 3 },
+    cancelled:      { label: 'Cancelled',      color: 'red',    icon: '❌', step: -1 },
+    refunded:       { label: 'Refunded',       color: 'orange', icon: '💰', step: -1 },
+  };
+  return map[status] ?? map['order_received'];
+};
+
+const getProgressSteps = (status: string) => {
+  const step = getStatusMeta(status).step;
+  if (step === -1) return [];
+  return [
+    { key: 'received',  label: 'Received',  done: step > 0,  active: step === 0 },
+    { key: 'packed',    label: 'Packed',    done: step > 1,  active: step === 1 },
+    { key: 'shipped',   label: 'Shipped',   done: step > 2,  active: step === 2 },
+    { key: 'delivered', label: 'Delivered', done: step >= 3, active: step === 3 },
+  ];
 };
 
 // SEO
@@ -834,7 +882,7 @@ useHead({
 
       &::after {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1) translate(-50%, -50%);
       }
     }
   }
@@ -968,6 +1016,7 @@ useHead({
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
+  margin-top: 40px;
 }
 
 .order-card {
@@ -1001,7 +1050,6 @@ useHead({
 
   &__title {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: $spacing-2;
     flex-wrap: wrap;
@@ -1276,4 +1324,177 @@ useHead({
   margin: 0 auto;
   padding: 0 $spacing-4;
 }
+
+// ── Track-order style expanded body ──────────────────────────
+
+.progress-tracker {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.75rem 2rem 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 60px;
+
+  &__dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  &__line {
+    position: absolute;
+    top: 15px;
+    left: calc(50% + 16px);
+    right: calc(-50% + 16px);
+    height: 2px;
+    background: #e0e0e0;
+    &.is-done { background: $color-primary; }
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    color: $color-text-light;
+    margin-top: 0.45rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  &.is-done {
+    .progress-step__dot { background: $color-primary; border-color: $color-primary; color: white; }
+    .progress-step__label { color: $color-primary; font-weight: 600; }
+  }
+
+  &.is-active {
+    .progress-step__dot { border-color: $color-primary; background: rgba($color-primary, 0.08); }
+    .progress-step__label { color: $color-primary; font-weight: 700; }
+  }
+}
+
+.active-pulse {
+  width: 10px;
+  height: 10px;
+  background: $color-primary;
+  border-radius: 50%;
+  animation: expand-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes expand-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.55; }
+}
+
+.status-banner {
+  padding: 1rem 2rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #f0f0f0;
+  &--red    { background: #fef2f2; color: #991b1b; }
+  &--orange { background: #fff7ed; color: #9a3412; }
+}
+
+.order-expand-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #f0f0f0;
+
+  @media (max-width: 580px) { grid-template-columns: 1fr; }
+}
+
+.info-block {
+  padding: 1.5rem 1.75rem;
+
+  &:first-child {
+    border-right: 1px solid #f0f0f0;
+    @media (max-width: 580px) { border-right: none; border-bottom: 1px solid #f0f0f0; }
+  }
+
+  &__title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $color-text-light;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+}
+
+.info-rows { display: flex; flex-direction: column; gap: 0.8rem; }
+
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  &__label {
+    font-size: 0.7rem;
+    color: $color-text-light;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__value {
+    font-size: 0.9rem;
+    color: $color-text;
+    font-weight: 500;
+  }
+}
+
+.tracking-code {
+  font-family: monospace;
+  background: #f3f4f6;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.82rem;
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 0.88rem;
+  &:last-child { border-bottom: none; }
+}
+
+.item-name { color: $color-text; font-weight: 500; }
+.item-qty  { color: $color-text-light; }
+
+.order-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0 0;
+  border-top: 2px solid #f0f0f0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.total-amount { color: $color-primary; font-size: 1.05rem; }
 </style>

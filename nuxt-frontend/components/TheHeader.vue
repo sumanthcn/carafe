@@ -320,6 +320,81 @@ function isNavActive(item: NavItem): boolean {
 
       <!-- Actions -->
       <div class="header__actions">
+        <!-- Mobile user icon -->
+        <div class="header__user-menu">
+          <button
+            class="header__user-btn"
+            aria-label="User menu"
+            @click.stop="isUserMenuOpen = !isUserMenuOpen"
+          >
+            <FontAwesomeIcon icon="user" />
+          </button>
+
+          <div v-if="isUserMenuOpen" class="header__user-dropdown">
+            <template v-if="isAuthenticated">
+              <div class="header__user-info">
+                <p class="header__user-name">{{ user?.username }}</p>
+                <p class="header__user-email">{{ user?.email }}</p>
+              </div>
+              <ul class="header__user-links">
+                <li>
+                  <NuxtLink to="/account" @click="isUserMenuOpen = false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <path d="M3 9h18M9 21V9"/>
+                    </svg>
+                    Dashboard
+                  </NuxtLink>
+                </li>
+                <li>
+                  <NuxtLink to="/account/orders" @click="isUserMenuOpen = false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <path d="M9 12h6M9 16h6"/>
+                    </svg>
+                    My Orders
+                  </NuxtLink>
+                </li>
+                <li>
+                  <button @click="logout(); isUserMenuOpen = false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                      <polyline points="16 17 21 12 16 7"/>
+                      <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Logout
+                  </button>
+                </li>
+              </ul>
+            </template>
+            <template v-else>
+              <ul class="header__user-links">
+                <li>
+                  <NuxtLink to="/login" @click="isUserMenuOpen = false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                      <polyline points="10 17 15 12 10 7"/>
+                      <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    Login
+                  </NuxtLink>
+                </li>
+                <li>
+                  <NuxtLink to="/track-order" @click="isUserMenuOpen = false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="1" y="3" width="15" height="13" rx="1"/>
+                      <path d="M16 8h4l3 3v5h-7V8z"/>
+                      <circle cx="5.5" cy="18.5" r="2.5"/>
+                      <circle cx="18.5" cy="18.5" r="2.5"/>
+                    </svg>
+                    Track Order
+                  </NuxtLink>
+                </li>
+              </ul>
+            </template>
+          </div>
+        </div>
+
         <!-- Mobile menu toggle -->
         <button
           class="header__menu-toggle"

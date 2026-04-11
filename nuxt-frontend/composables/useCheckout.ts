@@ -229,7 +229,7 @@ export const useCheckout = () => {
           discount: 0,
           total: orderSummary.value.total,
           currency: 'GBP',
-          paymentMethod: 'worldpay',
+          paymentMethod: 'stripe',
         },
       };
 

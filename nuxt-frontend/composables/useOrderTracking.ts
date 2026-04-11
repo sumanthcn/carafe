@@ -1,6 +1,7 @@
 export interface TrackedOrder {
   orderNumber: string;
-  status: string;
+  orderStatus: string;
+  status?: string; // kept for backwards compat
   customerName: string;
   items: Array<{
     name: string;
@@ -37,19 +38,20 @@ export const useOrderTracking = () => {
    * Track order by order number and token/email
    */
   const trackOrder = async (
-    orderNumber: string, 
+    orderNumber?: string, 
     token?: string, 
-    email?: string
+    email?: string,
+    trackingNumber?: string
   ): Promise<TrackedOrder | null> => {
     loading.value = true;
     error.value = null;
 
     try {
-      const params = new URLSearchParams({
-        orderNumber,
-        ...(token && { token }),
-        ...(email && { email }),
-      });
+      const params = new URLSearchParams();
+      if (orderNumber) params.set('orderNumber', orderNumber);
+      if (token) params.set('token', token);
+      if (email) params.set('email', email);
+      if (trackingNumber) params.set('trackingNumber', trackingNumber);
 
       const response = await $fetch<{ data: TrackedOrder }>(
         `${config.public.strapiUrl}/api/orders/track?${params.toString()}`
@@ -81,7 +83,7 @@ export const useOrderTracking = () => {
       { key: 'delivered', label: 'Delivered', completed: false, current: false },
     ];
 
-    const currentIndex = statuses.findIndex(s => s.key === order.value?.status);
+    const currentIndex = statuses.findIndex(s => s.key === (order.value?.orderStatus || order.value?.status));
     
     if (currentIndex === -1) {
       // Handle cancelled or refunded status
@@ -154,7 +156,7 @@ export const useOrderTracking = () => {
    * Check if order can be reviewed
    */
   const canReview = computed<boolean>(() => {
-    return order.value?.status === 'delivered';
+    return (order.value?.orderStatus || order.value?.status) === 'delivered';
   });
 
   return {

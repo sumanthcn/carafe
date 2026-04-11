@@ -11,7 +11,7 @@
             <span>🔄</span>
             Refresh
           </button>
-          <NuxtLink to="/admin" class="btn btn--secondary">
+          <NuxtLink to="/store-admin" class="btn btn--secondary">
             Dashboard
           </NuxtLink>
         </div>
@@ -105,11 +105,12 @@
                 <select
                   v-model="order.status"
                   :class="['status-select', `status-select--${getStatusColor(order.status)}`]"
-                  @change="updateStatus(order.id, order.status)"
+                  @change="updateStatus(order.documentId, order.status)"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
+                  <option value="order_received">Order Received</option>
+                  <option value="packed">Packed</option>
                   <option value="shipped">Shipped</option>
+                  <option value="in_transit">In Transit</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                   <option value="refunded">Refunded</option>
@@ -122,7 +123,7 @@
               </td>
               <td>
                 <div class="action-buttons">
-                  <NuxtLink :to="`/admin/orders/${order.id}`" class="btn-icon" title="View Details">
+                  <NuxtLink :to="`/store-admin/orders/${order.documentId}`" class="btn-icon" title="View Details">
                     👁️
                   </NuxtLink>
                 </div>
@@ -142,8 +143,8 @@
 <script setup lang="ts">
 // Admin access only
 definePageMeta({
-  middleware: 'auth',
-  // TODO: Add admin role check
+  layout: 'admin',
+  middleware: 'admin',
 });
 
 const orderManagement = useOrderManagement();
@@ -153,10 +154,13 @@ const searchQuery = ref('');
 
 const filterOptions = [
   { label: 'All', value: 'all' },
-  { label: 'Pending', value: 'pending' },
-  { label: 'Processing', value: 'processing' },
+  { label: 'Order Received', value: 'order_received' },
+  { label: 'Packed', value: 'packed' },
   { label: 'Shipped', value: 'shipped' },
+  { label: 'In Transit', value: 'in_transit' },
   { label: 'Delivered', value: 'delivered' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Refunded', value: 'refunded' },
 ];
 
 onMounted(async () => {
@@ -192,8 +196,8 @@ const stats = computed(() => {
   const allOrders = orderManagement.orders.value;
   return {
     total: allOrders.length,
-    processing: allOrders.filter(o => o.status === 'processing').length,
-    shipped: allOrders.filter(o => o.status === 'shipped').length,
+    processing: allOrders.filter(o => ['order_received', 'packed'].includes(o.status)).length,
+    shipped: allOrders.filter(o => ['shipped', 'in_transit'].includes(o.status)).length,
     revenue: allOrders.reduce((sum, o) => sum + o.total, 0),
   };
 });
@@ -205,9 +209,10 @@ const getFilterCount = (status: string) => {
 
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
-    pending: 'gray',
-    processing: 'blue',
-    shipped: 'purple',
+    order_received: 'blue',
+    packed: 'purple',
+    shipped: 'indigo',
+    in_transit: 'indigo',
     delivered: 'green',
     cancelled: 'red',
     refunded: 'orange',
@@ -215,8 +220,8 @@ const getStatusColor = (status: string) => {
   return colors[status] || 'gray';
 };
 
-const updateStatus = async (orderId: number, newStatus: any) => {
-  const success = await orderManagement.updateOrderStatus(orderId, newStatus);
+const updateStatus = async (documentId: string, newStatus: any) => {
+  const success = await orderManagement.updateOrderStatus(documentId, newStatus);
   if (success) {
     // Show success notification
     console.log('Order status updated');

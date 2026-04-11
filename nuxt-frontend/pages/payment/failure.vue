@@ -38,7 +38,7 @@
       </div>
 
       <div class="payment-result__actions">
-        <NuxtLink :to="`/checkout?orderId=${orderId}`" class="btn btn--primary">
+        <NuxtLink to="/checkout" class="btn btn--primary">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="1 4 1 10 7 10"></polyline>
             <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
@@ -108,6 +108,7 @@ useHead({
     width: 100%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
+    margin-top: 80px;
   }
 
   &__icon {
@@ -268,6 +269,7 @@ useHead({
   .payment-result {
     &__container {
       padding: $spacing-8 $spacing-6;
+      margin-top: 80px;
     }
 
     &__title {

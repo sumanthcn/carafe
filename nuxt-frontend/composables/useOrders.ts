@@ -55,7 +55,7 @@ export interface Order {
   currency: 'EUR' | 'GBP' | 'USD';
   paymentMethod?: string;
   paymentId?: string;
-  worldpayOrderCode?: string;
+  stripeSessionId?: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;

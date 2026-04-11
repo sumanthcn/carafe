@@ -23,31 +23,59 @@
           <h2>Order Lookup</h2>
           <p>Track any Carafe Coffee order — no account required</p>
 
-          <form class="track-form" @submit.prevent="doTrack">
-            <div class="form-group">
-              <label class="form-label" for="orderNum">Order Number</label>
-              <input
-                id="orderNum"
-                v-model="orderNumber"
-                type="text"
-                class="form-input"
-                placeholder="e.g. ORD-1771661478431-F5C672"
-                required
-              />
-              <span class="form-hint">Found in your order confirmation email</span>
-            </div>
+          <!-- Mode tabs -->
+          <div class="track-tabs">
+            <button :class="['track-tab', { active: trackMode === 'order' }]" @click="trackMode = 'order'; trackingError = ''">
+              📋 Order Number
+            </button>
+            <button :class="['track-tab', { active: trackMode === 'tracking' }]" @click="trackMode = 'tracking'; trackingError = ''">
+              🚚 Tracking Number
+            </button>
+          </div>
 
-            <div class="form-group">
-              <label class="form-label" for="emailInput">Email Address</label>
-              <input
-                id="emailInput"
-                v-model="email"
-                type="email"
-                class="form-input"
-                placeholder="The email used at checkout"
-                required
-              />
-            </div>
+          <form class="track-form" @submit.prevent="doTrack">
+            <!-- Order number mode -->
+            <template v-if="trackMode === 'order'">
+              <div class="form-group">
+                <label class="form-label" for="orderNum">Order Number</label>
+                <input
+                  id="orderNum"
+                  v-model="orderNumber"
+                  type="text"
+                  class="form-input"
+                  placeholder="e.g. ORD-1771661478431-F5C672"
+                  :required="trackMode === 'order'"
+                />
+                <span class="form-hint">Found in your order confirmation email</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="emailInput">Email Address</label>
+                <input
+                  id="emailInput"
+                  v-model="email"
+                  type="email"
+                  class="form-input"
+                  placeholder="The email used at checkout"
+                  :required="trackMode === 'order'"
+                />
+              </div>
+            </template>
+
+            <!-- Tracking number mode -->
+            <template v-else>
+              <div class="form-group">
+                <label class="form-label" for="trackingInput">Carrier Tracking Number</label>
+                <input
+                  id="trackingInput"
+                  v-model="trackingNumber"
+                  type="text"
+                  class="form-input"
+                  placeholder="e.g. JD000012345678"
+                  :required="trackMode === 'tracking'"
+                />
+                <span class="form-hint">Found in your dispatch confirmation email</span>
+              </div>
+            </template>
 
             <div v-if="trackingError" class="form-error">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -88,21 +116,8 @@
             </div>
           </div>
 
-          <div v-if="progressSteps.length" class="progress-tracker">
-            <div
-              v-for="(step, index) in progressSteps"
-              :key="step.key"
-              :class="['progress-step', { 'is-done': step.done, 'is-active': step.active }]"
-            >
-              <div class="progress-step__dot">
-                <svg v-if="step.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <span v-else-if="step.active" class="active-pulse"></span>
-              </div>
-              <div v-if="index < progressSteps.length - 1" :class="['progress-step__line', { 'is-done': step.done }]"></div>
-              <span class="progress-step__label">{{ step.label }}</span>
-            </div>
+          <div v-if="!isOffPathStatus" class="progress-tracker">
+            <OrderStatusStepper :status="order.orderStatus || order.status || ''" />
           </div>
 
           <div v-else class="status-banner" :class="`status-banner--${statusMeta.color}`">
@@ -195,44 +210,46 @@ useHead({
 const route = useRoute();
 const { order, loading, error: trackError, trackOrder, formatDate } = useOrderTracking();
 
-const orderNumber   = ref('');
-const email         = ref('');
-const trackingError = ref('');
+const orderNumber    = ref('');
+const email          = ref('');
+const trackingNumber = ref('');
+const trackMode      = ref<'order' | 'tracking'>('order');
+const trackingError  = ref('');
 
 onMounted(() => {
   const q = route.query;
   if (q.orderNumber) orderNumber.value = String(q.orderNumber);
   if (q.email) email.value = String(q.email);
-  if (q.token && orderNumber.value) doTrack();
+  // Auto-submit if both fields are pre-filled (e.g. redirected from success page)
+  if ((q.token && orderNumber.value) || (q.orderNumber && q.email)) doTrack();
 });
 
 const statusMeta = computed(() => {
-  const map: Record<string, { label: string; color: string; icon: string; step: number }> = {
-    order_received: { label: 'Order Received', color: 'blue',   icon: '⏳', step: 0 },
-    packed:         { label: 'Packed',         color: 'purple', icon: '📦', step: 1 },
-    shipped:        { label: 'Shipped',         color: 'indigo', icon: '🚚', step: 2 },
-    in_transit:     { label: 'In Transit',      color: 'indigo', icon: '🚚', step: 2 },
-    delivered:      { label: 'Delivered',       color: 'green',  icon: '✅', step: 3 },
-    cancelled:      { label: 'Cancelled',       color: 'red',    icon: '❌', step: -1 },
-    refunded:       { label: 'Refunded',        color: 'orange', icon: '💰', step: -1 },
+  const map: Record<string, { label: string; color: string; icon: string }> = {
+    order_received: { label: 'Order Received', color: 'blue',   icon: '⏳' },
+    packed:         { label: 'Packed',         color: 'purple', icon: '📦' },
+    shipped:        { label: 'Shipped',        color: 'indigo', icon: '🚚' },
+    in_transit:     { label: 'In Transit',     color: 'indigo', icon: '🚚' },
+    delivered:      { label: 'Delivered',      color: 'green',  icon: '✅' },
+    cancelled:      { label: 'Cancelled',      color: 'red',    icon: '❌' },
+    refunded:       { label: 'Refunded',       color: 'orange', icon: '💰' },
   };
-  return map[order.value?.status ?? ''] ?? map.order_received;
+  return map[(order.value?.orderStatus ?? order.value?.status) ?? ''] ?? map.order_received;
 });
 
-const progressSteps = computed(() => {
-  const step = statusMeta.value.step;
-  if (step === -1) return [];
-  return [
-    { key: 'received',  label: 'Received',  done: step > 0,  active: step === 0 },
-    { key: 'packed',    label: 'Packed',    done: step > 1,  active: step === 1 },
-    { key: 'shipped',   label: 'Shipped',   done: step > 2,  active: step === 2 },
-    { key: 'delivered', label: 'Delivered', done: step >= 3, active: step === 3 },
-  ];
+const isOffPathStatus = computed(() => {
+  const s = order.value?.orderStatus ?? order.value?.status ?? '';
+  return s === 'cancelled' || s === 'refunded';
 });
 
 const doTrack = async () => {
   trackingError.value = '';
-  const result = await trackOrder(orderNumber.value.trim(), undefined, email.value.trim());
+  let result;
+  if (trackMode.value === 'tracking') {
+    result = await trackOrder(undefined, undefined, undefined, trackingNumber.value.trim());
+  } else {
+    result = await trackOrder(orderNumber.value.trim(), undefined, email.value.trim());
+  }
   if (!result) {
     trackingError.value = (trackError.value as string) || 'Order not found. Please check your details and try again.';
   }
@@ -242,6 +259,7 @@ const resetSearch = () => {
   order.value = null;
   orderNumber.value = '';
   email.value = '';
+  trackingNumber.value = '';
   trackingError.value = '';
 };
 
@@ -275,6 +293,34 @@ const formatPrice = (amount: number, currency = 'EUR') => {
   max-width: 760px;
   margin: 0 auto;
   padding: 3rem 1.5rem 5rem;
+}
+
+.track-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+  background: #f3f4f6;
+  border-radius: 0.75rem;
+  padding: 0.3rem;
+}
+
+.track-tab {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+
+  &.active {
+    background: white;
+    color: $color-primary;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  }
 }
 
 .track-card {
@@ -443,75 +489,12 @@ const formatPrice = (amount: number, currency = 'EUR') => {
 }
 
 .progress-tracker {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   padding: 2rem 2.5rem 1.5rem;
   border-bottom: 1px solid #f0f0f0;
-}
 
-.progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  flex: 1;
-  min-width: 60px;
-
-  &__dot {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid #ddd;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem 1.25rem;
   }
-
-  &__line {
-    position: absolute;
-    top: 15px;
-    left: calc(50% + 16px);
-    right: calc(-50% + 16px);
-    height: 2px;
-    background: #e0e0e0;
-    &.is-done { background: $color-primary; }
-  }
-
-  &__label {
-    font-size: 0.72rem;
-    color: $color-text-light;
-    margin-top: .45rem;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  &.is-done {
-    .progress-step__dot { background: $color-primary; border-color: $color-primary; color: white; }
-    .progress-step__label { color: $color-primary; font-weight: 600; }
-  }
-
-  &.is-active {
-    .progress-step__dot { border-color: $color-primary; background: rgba($color-primary, .08); }
-    .progress-step__label { color: $color-primary; font-weight: 700; }
-  }
-}
-
-.active-pulse {
-  width: 10px;
-  height: 10px;
-  background: $color-primary;
-  border-radius: 50%;
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: .55; }
 }
 
 .status-banner {

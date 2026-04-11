@@ -15,7 +15,7 @@
 
       <div v-if="orderId" class="payment-result__details">
         <div class="payment-result__detail">
-          <span class="label">Order ID:</span>
+          <span class="label">Order Reference:</span>
           <span class="value">{{ orderId }}</span>
         </div>
       </div>
@@ -25,7 +25,7 @@
       </div>
 
       <div class="payment-result__actions">
-        <NuxtLink to="/checkout" class="btn btn--primary">
+        <NuxtLink :to="`/checkout`" class="btn btn--primary">
           Complete Payment
         </NuxtLink>
         <NuxtLink to="/shop" class="btn btn--secondary">
@@ -39,8 +39,8 @@
 <script setup lang="ts">
 const route = useRoute();
 
-// Extract query parameters
-const orderId = computed(() => route.query.orderId as string);
+// Stripe cancel URL: /payment/cancelled?order_id=123
+const orderId = computed(() => route.query.order_id as string);
 
 // SEO
 useHead({
@@ -74,6 +74,7 @@ useHead({
     width: 100%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
+    margin-top: 80px;
   }
 
   &__icon {
@@ -192,6 +193,7 @@ useHead({
   .payment-result {
     &__container {
       padding: $spacing-8 $spacing-6;
+      margin-top: 80px;
     }
 
     &__title {

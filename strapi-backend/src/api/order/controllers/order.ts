@@ -9,7 +9,31 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     try {
       // Accept data from body directly or from body.data
       const data = ctx.request.body.data || ctx.request.body;
-      const user = ctx.state.user;
+
+      // The POST /orders route has auth: false so guests can checkout.
+      // But if a JWT is present we still want to link the order to the user.
+      // ctx.state.user is only populated by Strapi when auth is required,
+      // so we decode the token manually here.
+      let user = ctx.state.user;
+      if (!user) {
+        const authHeader = ctx.request.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.slice(7);
+          try {
+            const jwtService = strapi.plugins['users-permissions'].services.jwt;
+            const payload: any = await jwtService.verify(token);
+            if (payload?.id) {
+              user = await strapi.entityService.findOne(
+                'plugin::users-permissions.user',
+                payload.id,
+                {}
+              );
+            }
+          } catch {
+            // Invalid token – treat as guest
+          }
+        }
+      }
 
       // Validate required fields
       if (!data.customerEmail || !data.customerName) {
@@ -73,7 +97,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       // Prepare order data
       const orderData: any = {
         orderNumber,
-        status: 'order_received' as const,
+        orderStatus: 'order_received' as const,
         customerEmail: data.customerEmail,
         customerName: data.customerName,
         customerPhone: data.customerPhone || null,
@@ -87,7 +111,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         discount,
         total,
         currency: data.currency || 'GBP',
-        paymentMethod: data.paymentMethod || 'worldpay',
+        paymentMethod: data.paymentMethod || 'stripe',
         paymentStatus: 'pending',
         notes: data.notes || null,
         user: user ? { connect: [{ id: user.id }] } : null,
@@ -121,25 +145,29 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
    */
   async track(ctx) {
     try {
-      const { orderNumber, token, email } = ctx.query;
+      const { orderNumber, token, email, trackingNumber } = ctx.query;
 
-      if (!orderNumber) {
-        return ctx.badRequest('Order number is required');
+      if (!orderNumber && !trackingNumber) {
+        return ctx.badRequest('Order number or tracking number is required');
       }
 
-      if (!token && !email) {
-        return ctx.badRequest('Tracking token or email is required');
+      if (orderNumber && !token && !email) {
+        return ctx.badRequest('Tracking token or email is required when looking up by order number');
       }
 
       // Build filters
-      const filters: any = {
-        orderNumber: orderNumber,
-      };
+      const filters: any = {};
 
-      if (token) {
-        filters.orderTrackingToken = token;
-      } else if (email) {
-        filters.customerEmail = email;
+      if (trackingNumber) {
+        // Lookup by carrier tracking number (no auth required)
+        filters.trackingNumber = trackingNumber;
+      } else {
+        filters.orderNumber = orderNumber;
+        if (token) {
+          filters.orderTrackingToken = token;
+        } else if (email) {
+          filters.customerEmail = email;
+        }
       }
 
       // Find order
@@ -158,7 +186,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return {
         data: {
           orderNumber: order.orderNumber,
-          status: order.status,
+          orderStatus: order.orderStatus,
           customerName: order.customerName,
           items: order.items.map((item: any) => ({
             name: item.productName,
@@ -190,7 +218,21 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
    */
   async myOrders(ctx) {
     try {
-      const user = ctx.state.user;
+      let user = ctx.state.user;
+
+      if (!user) {
+        const authHeader = ctx.request.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.slice(7);
+          try {
+            const jwtService = strapi.plugins['users-permissions'].services.jwt;
+            const payload: any = await jwtService.verify(token);
+            if (payload?.id) {
+              user = await strapi.entityService.findOne('plugin::users-permissions.user', payload.id, {});
+            }
+          } catch { /* invalid token */ }
+        }
+      }
 
       if (!user) {
         return ctx.unauthorized('Authentication required');
@@ -209,18 +251,29 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return {
         data: orders.map((order: any) => ({
           id: order.id,
-          documentId: order.documentId,
           orderNumber: order.orderNumber,
-          status: order.status,
+          orderStatus: order.orderStatus,
+          paymentStatus: order.paymentStatus,
+          paymentMethod: order.paymentMethod,
           items: order.items,
+          subtotal: order.subtotal,
+          shippingCost: order.shippingCost,
           total: order.total,
           currency: order.currency,
-          createdAt: order.createdAt,
+          customerEmail: order.customerEmail,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
           shippingAddress: order.shippingAddress,
+          shippingMethod: order.shippingMethod,
           carrier: order.carrier,
           trackingNumber: order.trackingNumber,
+          stripeSessionId: order.stripeSessionId,
+          paymentId: order.paymentId,
+          notes: order.notes,
           dispatchedAt: order.dispatchedAt,
           deliveredAt: order.deliveredAt,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
         })),
       };
 
@@ -238,41 +291,49 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
    */
   async updateStatus(ctx) {
     try {
-      const user = ctx.state.user;
-      const { id } = ctx.params;
-      const { status, carrier, trackingNumber } = ctx.request.body;
+      let user = ctx.state.user;
 
-      // Check authentication
+      if (!user) {
+        const authHeader = ctx.request.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.slice(7);
+          try {
+            const jwtService = strapi.plugins['users-permissions'].services.jwt;
+            const payload: any = await jwtService.verify(token);
+            if (payload?.id) {
+              user = await strapi.entityService.findOne(
+                'plugin::users-permissions.user', payload.id,
+                { populate: ['role'] }
+              );
+            }
+          } catch { /* invalid token */ }
+        }
+      }
+
       if (!user) {
         return ctx.unauthorized('Authentication required');
       }
 
-      // Check if user is admin
-      if (user.role?.type !== 'admin' && user.role?.type !== 'administrator') {
-        return ctx.forbidden('Admin access required');
-      }
-
-      if (!status) {
-        return ctx.badRequest('Status is required');
-      }
+      const { id } = ctx.params;
+      const { status, carrier, trackingNumber, notes } = ctx.request.body;
 
       const validStatuses = ['order_received', 'packed', 'shipped', 'in_transit', 'delivered', 'cancelled', 'refunded'];
-      if (!validStatuses.includes(status)) {
+      if (status && !validStatuses.includes(status)) {
         return ctx.badRequest('Invalid status');
       }
 
-      const updateData: any = {
-        status,
-      };
+      const updateData: any = {};
+
+      if (status) updateData.orderStatus = status;
+      if (notes) updateData.notes = notes;
+      if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
+      if (carrier !== undefined) updateData.carrier = carrier;
 
       // If status is shipped, require carrier and tracking number
       if (status === 'shipped' || status === 'in_transit') {
         if (!carrier || !trackingNumber) {
           return ctx.badRequest('Carrier and tracking number are required for shipped orders');
         }
-        updateData.carrier = carrier;
-        updateData.trackingNumber = trackingNumber;
-        
         if (!updateData.dispatchedAt) {
           updateData.dispatchedAt = new Date();
         }
@@ -283,10 +344,25 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         updateData.deliveredAt = new Date();
       }
 
-      const order = await strapi.entityService.update('api::order.order', id, {
-        data: updateData,
-        populate: ['items', 'shippingAddress', 'user'],
-      });
+      if (Object.keys(updateData).length === 0) {
+        return ctx.badRequest('Nothing to update');
+      }
+
+      // id may be a numeric database id OR a Strapi v5 documentId (string)
+      const isDocumentId = isNaN(Number(id));
+      let order: any;
+      if (isDocumentId) {
+        order = await (strapi.db as any).query('api::order.order').update({
+          where: { documentId: id },
+          data: updateData,
+          populate: { items: true, shippingAddress: true, user: true },
+        });
+      } else {
+        order = await strapi.entityService.update('api::order.order', Number(id), {
+          data: updateData,
+          populate: ['items', 'shippingAddress', 'user'],
+        });
+      }
 
       // Send dispatch notification if status changed to shipped
       if (status === 'shipped' || status === 'in_transit') {
@@ -381,22 +457,36 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
 
     try {
-      const order: any = await strapi.entityService.findOne('api::order.order', ctx.params.id, {
-        populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
-      });
+      // Populate user with role so we can check admin status
+      const userWithRole: any = await strapi.entityService.findOne(
+        'plugin::users-permissions.user', user.id, { populate: ['role'] }
+      );
+      const isAdmin = ['admin', 'superadmin', 'administrator'].includes(userWithRole?.role?.type);
+
+      // id may be a numeric database id OR a Strapi v5 documentId (string)
+      const isDocumentId = isNaN(Number(id));
+      let order: any;
+      if (isDocumentId) {
+        order = await (strapi.db as any).query('api::order.order').findOne({
+          where: { documentId: id },
+          populate: { items: true, shippingAddress: true, billingAddress: true, user: { populate: ['role'] } },
+        });
+      } else {
+        order = await strapi.entityService.findOne('api::order.order', Number(id), {
+          populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
+        });
+      }
 
       if (!order) {
         return ctx.notFound('Order not found');
       }
 
-      // Check if the order belongs to the user (unless admin)
-      if (user.role?.type !== 'admin' && order.user?.id !== user.id) {
+      // Non-admin users may only view their own orders
+      if (!isAdmin && order.user?.id !== user.id) {
         return ctx.forbidden("You don't have permission to access this order");
       }
 
-      return ctx.send({
-        data: order,
-      });
+      return ctx.send({ data: order });
     } catch (error) {
       strapi.log.error('Error fetching order:', error);
       return ctx.internalServerError('Failed to fetch order');

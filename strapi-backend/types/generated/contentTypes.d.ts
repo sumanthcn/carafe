@@ -740,7 +740,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     currency: Schema.Attribute.Enumeration<['EUR', 'GBP', 'USD']> &
-      Schema.Attribute.DefaultTo<'EUR'>;
+      Schema.Attribute.DefaultTo<'GBP'>;
     customerEmail: Schema.Attribute.Email & Schema.Attribute.Required;
     customerName: Schema.Attribute.String & Schema.Attribute.Required;
     customerPhone: Schema.Attribute.String;
@@ -756,6 +756,19 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     orderNumber: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    orderStatus: Schema.Attribute.Enumeration<
+      [
+        'order_received',
+        'packed',
+        'shipped',
+        'in_transit',
+        'delivered',
+        'cancelled',
+        'refunded',
+      ]
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'order_received'>;
     orderTrackingToken: Schema.Attribute.String &
       Schema.Attribute.Private &
       Schema.Attribute.Unique;
@@ -769,19 +782,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     shippingAddress: Schema.Attribute.Component<'elements.address', false>;
     shippingCost: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     shippingMethod: Schema.Attribute.String;
-    status: Schema.Attribute.Enumeration<
-      [
-        'order_received',
-        'packed',
-        'shipped',
-        'in_transit',
-        'delivered',
-        'cancelled',
-        'refunded',
-      ]
-    > &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'order_received'>;
+    stripeSessionId: Schema.Attribute.String;
     subtotal: Schema.Attribute.Decimal & Schema.Attribute.Required;
     tax: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     total: Schema.Attribute.Decimal & Schema.Attribute.Required;
@@ -793,7 +794,6 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    worldpayOrderCode: Schema.Attribute.String;
   };
 }
 

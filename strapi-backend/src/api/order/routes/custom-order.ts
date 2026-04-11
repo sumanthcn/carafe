@@ -32,7 +32,8 @@ export default {
       path: '/orders/:id/status',
       handler: 'order.updateStatus',
       config: {
-        policies: [], // Admin check handled in controller
+        auth: false,
+        policies: [],
       },
     },
     {

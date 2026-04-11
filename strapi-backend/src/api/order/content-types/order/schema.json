@@ -17,7 +17,7 @@
       "required": true,
       "unique": true
     },
-    "status": {
+    "orderStatus": {
       "type": "enumeration",
       "enum": [
         "order_received",
@@ -80,7 +80,7 @@
     "currency": {
       "type": "enumeration",
       "enum": ["EUR", "GBP", "USD"],
-      "default": "EUR"
+      "default": "GBP"
     },
     "paymentMethod": {
       "type": "string"
@@ -93,7 +93,7 @@
       "enum": ["pending", "authorized", "captured", "failed", "refunded"],
       "default": "pending"
     },
-    "worldpayOrderCode": {
+    "stripeSessionId": {
       "type": "string"
     },
     "notes": {

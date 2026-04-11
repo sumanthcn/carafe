@@ -4,6 +4,7 @@ export interface User {
   email: string;
   confirmed: boolean;
   blocked: boolean;
+  role?: { id: number; name: string; type: string };
 }
 
 export interface AuthResponse {
@@ -20,6 +21,10 @@ export function useAuth() {
   const user = useState<User | null>('auth-user', () => null);
   const token = useState<string | null>('auth-token', () => null);
   const isAuthenticated = computed(() => !!user.value && !!token.value);
+  const isAdmin = computed(() => {
+    const roleType = user.value?.role?.type;
+    return roleType === 'admin' || roleType === 'administrator' || roleType === 'superadmin';
+  });
 
   /**
    * Initialize auth state from localStorage
@@ -59,13 +64,21 @@ export function useAuth() {
       token.value = response.jwt;
       user.value = response.user;
 
+      // Fetch role info so isAdmin works immediately
+      try {
+        const me = await $fetch<any>(`${strapiUrl}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${response.jwt}` },
+        });
+        if (me?.role) user.value = { ...response.user, role: me.role };
+      } catch { /* role info optional */ }
+
       // Persist to localStorage
       if (import.meta.client) {
         localStorage.setItem('carafe-auth-token', response.jwt);
-        localStorage.setItem('carafe-auth-user', JSON.stringify(response.user));
+        localStorage.setItem('carafe-auth-user', JSON.stringify(user.value));
       }
 
-      return { success: true, user: response.user };
+      return { success: true, user: user.value };
     } catch (error: any) {
       console.error('Login error:', error);
       console.error('Error details:', {
@@ -189,10 +202,11 @@ export function useAuth() {
    */
   function handlePostLoginRedirect() {
     const redirect = route.query.redirect as string;
-    
-    if (redirect && redirect !== '/login' && redirect !== '/signup') {
+
+    // Only follow relative paths to prevent open-redirect attacks
+    // (e.g. someone crafting ?redirect=http://evil.com)
+    if (redirect && redirect.startsWith('/') && redirect !== '/login' && redirect !== '/signup') {
       console.log('Redirecting to:', redirect);
-      // Use window.location for full page reload to avoid dynamic import issues
       if (import.meta.client) {
         window.location.href = redirect;
       }
@@ -208,6 +222,7 @@ export function useAuth() {
     user: readonly(user),
     token: readonly(token),
     isAuthenticated,
+    isAdmin,
     initAuth,
     login,
     register,

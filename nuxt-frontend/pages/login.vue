@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart';
 
-const { login, handlePostLoginRedirect } = useAuth();
+const { login, handlePostLoginRedirect, isAdmin } = useAuth();
 const cartStore = useCartStore();
 const route = useRoute();
 
@@ -124,6 +124,11 @@ async function handleLogin() {
 
     if (result.success) {
       console.log('Login successful, redirect query:', route.query.redirect);
+      // Admin users go to the admin panel
+      if (isAdmin.value) {
+        window.location.href = '/store-admin';
+        return;
+      }
       // Cart persists automatically via localStorage
       // Redirect to intended page (checkout) or home
       handlePostLoginRedirect();
@@ -168,6 +173,7 @@ useHead({
   border-radius: 12px;
   padding: 3rem 2rem;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
 }
 
 .auth-header {

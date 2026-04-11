@@ -19,25 +19,55 @@
           <span class="value">{{ orderDetails.orderNumber }}</span>
         </div>
         <div class="payment-result__detail">
-          <span class="label">Transaction Reference:</span>
-          <span class="value">{{ transactionReference }}</span>
+          <span class="label">Amount Paid:</span>
+          <span class="value">£{{ formatAmount(orderDetails.total) }}</span>
         </div>
         <div class="payment-result__detail">
-          <span class="label">Amount:</span>
-          <span class="value">£{{ formatAmount(orderDetails.total) }}</span>
+          <span class="label">Email:</span>
+          <span class="value">{{ orderDetails.customerEmail }}</span>
         </div>
       </div>
 
       <div class="payment-result__info">
         <p>✅ A confirmation email has been sent to your email address.</p>
-        <p>✅ You can track your order status in your account.</p>
+        <p>✅ Use your order number to track your order at any time.</p>
+      </div>
+
+      <!-- Order number copy box -->
+      <div v-if="orderDetails" class="payment-result__order-box">
+        <p class="order-box__label">Your Order Number</p>
+        <div class="order-box__row">
+          <span class="order-box__number">{{ orderDetails.orderNumber }}</span>
+          <button class="order-box__copy" @click="copyOrderNumber">
+            <svg v-if="!copied" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            {{ copied ? 'Copied!' : 'Copy' }}
+          </button>
+        </div>
       </div>
 
       <div class="payment-result__actions">
-        <NuxtLink to="/account/orders" class="btn btn--primary">
-          View Order Details
+        <!-- Guest users → track-order page pre-filled; logged-in → account/orders -->
+        <NuxtLink
+          v-if="isAuthenticated"
+          to="/account/orders"
+          class="btn btn--primary"
+        >
+          View My Orders
         </NuxtLink>
-        <NuxtLink to="/shop" class="btn btn--secondary">
+        <NuxtLink
+          v-else
+          :to="trackOrderUrl"
+          class="btn btn--primary"
+        >
+          Track Your Order
+        </NuxtLink>
+        <NuxtLink to="/shop-coffee" class="btn btn--secondary">
           Continue Shopping
         </NuxtLink>
       </div>
@@ -47,64 +77,85 @@
 
 <script setup lang="ts">
 const route = useRoute();
-const router = useRouter();
 const config = useRuntimeConfig();
+const { isAuthenticated } = useAuth();
+const cartStore = useCartStore();
 
-// Extract query parameters
-const orderId = computed(() => route.query.orderId as string);
-const transactionReference = computed(() => route.query.ref as string);
+// Stripe redirects to: /payment/success?session_id=cs_xxx&order_id=123
+const sessionId = computed(() => route.query.session_id as string);
+const orderId = computed(() => route.query.order_id as string);
 
-// Order details
 const orderDetails = ref<any>(null);
 const loading = ref(true);
-const error = ref('');
+const copied = ref(false);
 
-// Fetch order details
+// Build the track-order URL pre-filled with order number + email
+const trackOrderUrl = computed(() => {
+  if (!orderDetails.value) return '/track-order';
+  const params = new URLSearchParams({
+    orderNumber: orderDetails.value.orderNumber || '',
+    email: orderDetails.value.customerEmail || '',
+  });
+  return `/track-order?${params.toString()}`;
+});
+
 onMounted(async () => {
-  if (!orderId.value) {
-    error.value = 'No order ID provided';
+  // Clear the cart now that payment is confirmed
+  cartStore.clearCart();
+
+  if (!sessionId.value) {
     loading.value = false;
     return;
   }
 
   try {
-    // Fetch order details from Strapi
-    const response = await $fetch<any>(`${config.public.strapiUrl}/api/orders/${orderId.value}`, {
-      headers: {
-        Authorization: `Bearer ${config.public.strapiApiToken}`,
-      },
-    });
+    // Use the public confirmation endpoint (validated by Stripe session_id, no auth needed)
+    const response = await $fetch<any>(
+      `${config.public.strapiUrl}/api/stripe/order-confirmation`,
+      { query: { session_id: sessionId.value } }
+    );
 
     if (response?.data) {
+      const d = response.data;
       orderDetails.value = {
-        id: response.data.id,
-        orderNumber: response.data.attributes?.orderNumber || response.data.orderNumber,
-        total: response.data.attributes?.total || response.data.total,
-        status: response.data.attributes?.status || response.data.status,
+        orderNumber: d.orderNumber,
+        total: d.total,
+        status: d.orderStatus || d.status,
+        customerEmail: d.customerEmail,
+        customerName: d.customerName,
       };
     }
-  } catch (err: any) {
-    console.error('Failed to fetch order details:', err);
-    // Don't show error to user - success page should still display
+  } catch (err) {
+    console.error('Failed to fetch order confirmation:', err);
   } finally {
     loading.value = false;
   }
 });
 
-// Format amount
-const formatAmount = (amount: number) => {
-  return amount ? amount.toFixed(2) : '0.00';
+const formatAmount = (amount: number) => (amount ? amount.toFixed(2) : '0.00');
+
+const copyOrderNumber = async () => {
+  if (!orderDetails.value?.orderNumber) return;
+  try {
+    await navigator.clipboard.writeText(orderDetails.value.orderNumber);
+    copied.value = true;
+    setTimeout(() => { copied.value = false; }, 2000);
+  } catch {
+    // Fallback for older browsers
+    const el = document.createElement('textarea');
+    el.value = orderDetails.value.orderNumber;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    copied.value = true;
+    setTimeout(() => { copied.value = false; }, 2000);
+  }
 };
 
-// SEO
 useHead({
   title: 'Payment Successful - Carafe Coffee',
-  meta: [
-    {
-      name: 'robots',
-      content: 'noindex, nofollow',
-    },
-  ],
+  meta: [{ name: 'robots', content: 'noindex, nofollow' }],
 });
 </script>
 
@@ -128,6 +179,7 @@ useHead({
     width: 100%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
+    margin-top: 80px;
   }
 
   &__icon {
@@ -208,6 +260,58 @@ useHead({
     }
   }
 
+  &__order-box {
+    background: #f0fdf4;
+    border: 2px dashed #10b981;
+    border-radius: 8px;
+    padding: $spacing-4 $spacing-5;
+    margin-bottom: $spacing-6;
+    text-align: left;
+
+    .order-box__label {
+      font-size: $font-size-sm;
+      color: $color-gray-600;
+      margin-bottom: $spacing-2;
+      font-weight: 500;
+    }
+
+    .order-box__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: $spacing-3;
+    }
+
+    .order-box__number {
+      font-family: 'Courier New', monospace;
+      font-size: $font-size-lg;
+      font-weight: 700;
+      color: $color-dark;
+      letter-spacing: 0.05em;
+    }
+
+    .order-box__copy {
+      display: inline-flex;
+      align-items: center;
+      gap: $spacing-1;
+      padding: $spacing-1 $spacing-3;
+      border: 1px solid #10b981;
+      border-radius: 6px;
+      background: white;
+      color: #10b981;
+      font-size: $font-size-sm;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+
+      &:hover {
+        background: #10b981;
+        color: white;
+      }
+    }
+  }
+
   &__actions {
     display: flex;
     gap: $spacing-4;
@@ -251,6 +355,7 @@ useHead({
   .payment-result {
     &__container {
       padding: $spacing-8 $spacing-6;
+      margin-top: 80px;
     }
 
     &__title {

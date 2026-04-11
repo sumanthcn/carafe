@@ -392,7 +392,7 @@ export interface Order {
   paymentMethod?: string;
   paymentId?: string;
   paymentStatus: "pending" | "authorized" | "captured" | "failed" | "refunded";
-  worldpayOrderCode?: string;
+  stripeSessionId?: string;
   notes?: string;
 }
 

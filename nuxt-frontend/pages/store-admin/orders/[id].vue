@@ -1,9 +1,10 @@
 <template>
   <div class="admin-order-detail-page">
+    <div v-if="actionFeedback" :class="['action-toast', actionOk ? 'action-toast--ok' : 'action-toast--err']">{{ actionFeedback }}</div>
     <div class="container-fluid">
       <!-- Header -->
       <div class="page-header">
-        <NuxtLink to="/admin/orders" class="btn-back">← Back to Orders</NuxtLink>
+        <NuxtLink to="/store-admin/orders" class="btn-back">← Back to Orders</NuxtLink>
         <div class="header-content">
           <h1>Order {{ order?.orderNumber }}</h1>
           <span :class="`status-badge status-badge--${getStatusColor(order?.status)}`">
@@ -15,69 +16,73 @@
       <div v-if="order" class="order-detail-grid">
         <!-- Left Column -->
         <div class="detail-column">
-          <!-- Status Update Card -->
+          <!-- Status Update Card (merged with Tracking) -->
           <div class="card">
             <h2>Update Order Status</h2>
             <form @submit.prevent="handleStatusUpdate" class="status-form">
               <div class="form-group">
-                <label>Current Status</label>
+                <label>Status</label>
                 <select v-model="statusForm.status" class="form-control">
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
+                  <option value="order_received">Order Received</option>
+                  <option value="packed">Packed</option>
                   <option value="shipped">Shipped</option>
+                  <option value="in_transit">In Transit</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                   <option value="refunded">Refunded</option>
                 </select>
               </div>
+
+              <!-- Carrier + Tracking shown when status requires it -->
+              <template v-if="statusForm.status === 'shipped' || statusForm.status === 'in_transit'">
+                <div class="form-group">
+                  <label>Carrier <span class="req">*</span></label>
+                  <select v-model="statusForm.carrier" class="form-control">
+                    <option value="royal-mail">Royal Mail</option>
+                    <option value="dhl">DHL</option>
+                    <option value="ups">UPS</option>
+                    <option value="fedex">FedEx</option>
+                    <option value="dpd">DPD</option>
+                    <option value="evri">Evri</option>
+                    <option value="parcelforce">Parcelforce</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Tracking Number <span class="req">*</span></label>
+                  <input
+                    v-model="statusForm.trackingNumber"
+                    type="text"
+                    class="form-control"
+                    placeholder="e.g. RM123456789GB"
+                  />
+                </div>
+              </template>
+
               <div class="form-group">
-                <label>Status Notes</label>
+                <label>Notes</label>
                 <textarea
                   v-model="statusForm.notes"
                   class="form-control"
-                  rows="3"
-                  placeholder="Add notes about this status change..."
+                  rows="2"
+                  placeholder="Optional notes about this status change..."
                 ></textarea>
               </div>
-              <button type="submit" class="btn btn--primary">Update Status</button>
+              <button type="submit" class="btn btn--primary" :disabled="orderManagement.loading.value">
+                {{ orderManagement.loading.value ? 'Saving...' : 'Update Status' }}
+              </button>
             </form>
           </div>
 
-          <!-- Tracking Card -->
-          <div class="card">
-            <h2>Shipping & Tracking</h2>
-            <form @submit.prevent="handleTrackingUpdate" class="tracking-form">
-              <div class="form-group">
-                <label>Tracking Number</label>
-                <input
-                  v-model="trackingForm.trackingNumber"
-                  type="text"
-                  class="form-control"
-                  :placeholder="order.trackingNumber || 'Enter tracking number'"
-                />
-              </div>
-              <div class="form-group">
-                <label>Carrier</label>
-                <select v-model="trackingForm.carrier" class="form-control">
-                  <option value="royal-mail">Royal Mail</option>
-                  <option value="dhl">DHL</option>
-                  <option value="ups">UPS</option>
-                  <option value="fedex">FedEx</option>
-                  <option value="dpd">DPD</option>
-                </select>
-              </div>
-              <button type="submit" class="btn btn--primary">Update Tracking</button>
-            </form>
-
-            <div v-if="order.trackingNumber" class="current-tracking">
-              <strong>Current Tracking:</strong>
-              <p>{{ order.trackingNumber }}</p>
-              <a :href="`https://www3.royalmail.com/track-your-item#/tracking-results/${order.trackingNumber}`"
-                 target="_blank"
-                 class="btn btn--secondary btn--small">
-                Track Package →
-              </a>
-            </div>
+          <!-- Current Tracking Info -->
+          <div v-if="order.trackingNumber" class="card">
+            <h2>Current Tracking</h2>
+            <div class="info-group"><strong>Carrier:</strong><p>{{ order.carrier || '-' }}</p></div>
+            <div class="info-group"><strong>Tracking Number:</strong><p class="transaction-id">{{ order.trackingNumber }}</p></div>
+            <a :href="trackingLink(order.carrier, order.trackingNumber)"
+               target="_blank" rel="noopener noreferrer"
+               class="btn btn--secondary btn--small">
+              Track Package →
+            </a>
           </div>
 
           <!-- Order Items -->
@@ -85,7 +90,7 @@
             <h2>Order Items ({{ order.items.length }})</h2>
             <div class="items-list">
               <div v-for="item in order.items" :key="item.id" class="item-row">
-                <img :src="item.imageUrl || '/images/placeholder.jpg'" :alt="item.productName" class="item-image" />
+                <div class="item-icon">☕</div>
                 <div class="item-details">
                   <strong>{{ item.productName }}</strong>
                   <p class="item-variant">{{ item.variant }}</p>
@@ -105,6 +110,14 @@
               <div class="summary-row">
                 <span>Shipping</span>
                 <span>{{ formatPrice(order.shippingCost) }}</span>
+              </div>
+              <div v-if="order.tax" class="summary-row">
+                <span>Tax</span>
+                <span>{{ formatPrice(order.tax) }}</span>
+              </div>
+              <div v-if="order.discount" class="summary-row summary-row--discount">
+                <span>Discount</span>
+                <span>-{{ formatPrice(order.discount) }}</span>
               </div>
               <div class="summary-row summary-row--total">
                 <strong>Total</strong>
@@ -137,12 +150,24 @@
           <div class="card">
             <h2>Shipping Address</h2>
             <address>
-              {{ order.shippingAddress.firstName }} {{ order.shippingAddress.lastName }}<br />
               {{ order.shippingAddress.line1 }}<br />
               <span v-if="order.shippingAddress.line2">{{ order.shippingAddress.line2 }}<br /></span>
               {{ order.shippingAddress.city }}, {{ order.shippingAddress.postalCode }}<br />
               {{ order.shippingAddress.country }}
+              <span v-if="order.shippingAddress.phone"><br />{{ order.shippingAddress.phone }}</span>
             </address>
+          </div>
+
+          <!-- Billing Address -->
+          <div class="card">
+            <h2>Billing Address</h2>
+            <address v-if="order.billingAddress">
+              {{ order.billingAddress.line1 }}<br />
+              <span v-if="order.billingAddress.line2">{{ order.billingAddress.line2 }}<br /></span>
+              {{ order.billingAddress.city }}, {{ order.billingAddress.postalCode }}<br />
+              {{ order.billingAddress.country }}
+            </address>
+            <p v-else class="same-as-shipping">Same as shipping address</p>
           </div>
 
           <!-- Payment Info -->
@@ -158,9 +183,20 @@
                 {{ order.paymentStatus }}
               </span>
             </div>
+            <div v-if="order.stripeSessionId" class="info-group">
+              <strong>Stripe Session:</strong>
+              <p class="transaction-id">{{ order.stripeSessionId }}</p>
+            </div>
+            <div v-if="order.paymentId" class="info-group">
+              <strong>Payment ID:</strong>
+              <p class="transaction-id">{{ order.paymentId }}</p>
+            </div>
             <div class="info-group">
               <strong>Order ID:</strong>
               <p class="transaction-id">#{{ order.id }}</p>
+            </div>
+            <div v-if="order.isGuestOrder" class="info-group">
+              <span class="guest-badge">Guest Order</span>
             </div>
           </div>
 
@@ -175,26 +211,39 @@
                   <p>{{ formatDate(order.createdAt) }}</p>
                 </div>
               </div>
-              <div v-if="order.status !== 'pending'" class="timeline-item">
+              <div v-if="order.status !== 'order_received'" class="timeline-item">
                 <div class="timeline-dot"></div>
                 <div class="timeline-content">
-                  <strong>Processing Started</strong>
-                  <p>{{ formatDate(order.createdAt) }}</p>
+                  <strong>Packed &amp; Processing</strong>
+                  <p>{{ formatDate(order.updatedAt) }}</p>
                 </div>
               </div>
-              <div v-if="order.status === 'shipped' || order.status === 'delivered'" class="timeline-item">
+              <div v-if="['shipped','in_transit','delivered'].includes(order.status)" class="timeline-item">
                 <div class="timeline-dot"></div>
                 <div class="timeline-content">
-                  <strong>Shipped</strong>
-                  <p>{{ formatDate(order.createdAt) }}</p>
+                  <strong>Dispatched{{ order.carrier ? ` via ${order.carrier}` : '' }}</strong>
+                  <p>{{ order.dispatchedAt ? formatDate(order.dispatchedAt) : formatDate(order.updatedAt) }}</p>
+                  <p v-if="order.trackingNumber" class="tracking-inline">Tracking: {{ order.trackingNumber }}</p>
                 </div>
               </div>
-              <div v-if="order.status === 'delivered'" class="timeline-item">
+              <div v-if="order.status === 'in_transit'" class="timeline-item">
                 <div class="timeline-dot"></div>
+                <div class="timeline-content"><strong>In Transit</strong></div>
+              </div>
+              <div v-if="order.status === 'delivered'" class="timeline-item timeline-item--done">
+                <div class="timeline-dot timeline-dot--green"></div>
                 <div class="timeline-content">
                   <strong>Delivered</strong>
-                  <p>{{ formatDate(order.createdAt) }}</p>
+                  <p>{{ order.deliveredAt ? formatDate(order.deliveredAt) : '' }}</p>
                 </div>
+              </div>
+              <div v-if="order.status === 'cancelled'" class="timeline-item timeline-item--cancelled">
+                <div class="timeline-dot timeline-dot--red"></div>
+                <div class="timeline-content"><strong>Cancelled</strong></div>
+              </div>
+              <div v-if="order.status === 'refunded'" class="timeline-item">
+                <div class="timeline-dot timeline-dot--orange"></div>
+                <div class="timeline-content"><strong>Refunded</strong></div>
               </div>
             </div>
           </div>
@@ -217,8 +266,21 @@
         </div>
       </div>
 
-      <div v-else class="loading">
+      <div v-if="orderLoading" class="state-box">
+        <div class="spinner"></div>
         <p>Loading order details...</p>
+      </div>
+
+      <div v-else-if="orderError && !order" class="state-box state-box--error">
+        <p class="state-icon">!</p>
+        <p class="state-title">Could not load order</p>
+        <p class="state-msg">{{ orderError }}</p>
+        <button class="btn btn--secondary" @click="reloadOrder">Try Again</button>
+      </div>
+
+      <div v-else-if="!order" class="state-box">
+        <p>Order not found.</p>
+        <NuxtLink to="/store-admin/orders" class="btn btn--secondary">Back to Orders</NuxtLink>
       </div>
     </div>
   </div>
@@ -227,58 +289,74 @@
 <script setup lang="ts">
 // Admin access only
 definePageMeta({
-  middleware: 'auth',
-  // TODO: Add admin role check
+  layout: 'admin',
+  middleware: 'admin',
 });
 
 const route = useRoute();
-const orderId = computed(() => parseInt(route.params.id as string));
+const orderDocumentId = computed(() => route.params.id as string);
 
 const orderManagement = useOrderManagement();
 const order = computed(() => orderManagement.currentOrder.value);
+const orderLoading = orderManagement.loading;
+const orderError   = orderManagement.error;
+
+async function reloadOrder() {
+  await orderManagement.fetchOrder(orderDocumentId.value);
+  if (order.value) {
+    statusForm.status = order.value.status;
+    statusForm.trackingNumber = order.value.trackingNumber || '';
+    statusForm.carrier = order.value.carrier || 'royal-mail';
+  }
+}
 
 const statusForm = reactive({
   status: '',
   notes: '',
-});
-
-const trackingForm = reactive({
   trackingNumber: '',
   carrier: 'royal-mail',
 });
 
-onMounted(async () => {
-  await orderManagement.fetchOrder(orderId.value);
-  if (order.value) {
-    statusForm.status = order.value.status;
-    trackingForm.trackingNumber = order.value.trackingNumber || '';
-  }
-});
+onMounted(reloadOrder);
+
+const actionFeedback = ref('');
+const actionOk       = ref(true);
+function showFeedback(msg: string, ok: boolean) {
+  actionFeedback.value = msg; actionOk.value = ok;
+  setTimeout(() => actionFeedback.value = '', 4000);
+}
 
 const handleStatusUpdate = async () => {
-  const success = await orderManagement.updateOrderStatus(orderId.value, statusForm.status as any, statusForm.notes);
-  if (success) {
-    alert('Order status updated successfully!');
-    statusForm.notes = '';
-  }
+  const success = await orderManagement.updateOrderStatus(
+    orderDocumentId.value,
+    statusForm.status as any,
+    statusForm.notes,
+    statusForm.carrier,
+    statusForm.trackingNumber,
+  );
+  if (success) { showFeedback('Order updated successfully', true); statusForm.notes = ''; }
+  else { showFeedback(orderManagement.error.value || 'Update failed', false); }
 };
 
-const handleTrackingUpdate = async () => {
-  const success = await orderManagement.addTrackingNumber(
-    orderId.value,
-    trackingForm.trackingNumber,
-    trackingForm.carrier
-  );
-  if (success) {
-    alert('Tracking information updated!');
-  }
+function trackingLink(carrier: string | undefined, trackingNumber: string) {
+  const carriers: Record<string, string> = {
+    'royal-mail': `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`,
+    'dhl': `https://www.dhl.com/gb-en/home/tracking/tracking-ecommerce.html?submit=1&tracking-id=${trackingNumber}`,
+    'ups': `https://www.ups.com/track?tracknum=${trackingNumber}`,
+    'fedex': `https://www.fedex.com/fedextrack/?tracknumbers=${trackingNumber}`,
+    'dpd': `https://www.dpd.co.uk/apps/tracking/?reference=${trackingNumber}`,
+    'evri': `https://www.evri.com/track-a-parcel/parcel/${trackingNumber}`,
+    'parcelforce': `https://www.parcelforce.com/track-trace?trackNumber=${trackingNumber}`,
+  };
+  return carriers[carrier || 'royal-mail'] || `https://www.royalmail.com/track-your-item#/tracking-results/${trackingNumber}`;
 };
 
 const getStatusColor = (status: string = '') => {
   const colors: Record<string, string> = {
-    pending: 'gray',
-    processing: 'blue',
+    order_received: 'blue',
+    packed: 'purple',
     shipped: 'purple',
+    in_transit: 'purple',
     delivered: 'green',
     cancelled: 'red',
     refunded: 'orange',
@@ -297,7 +375,7 @@ const sendEmail = () => {
 
 const initiateRefund = () => {
   if (confirm('Are you sure you want to initiate a refund for this order?')) {
-    alert('Refund functionality coming soon. This would integrate with Worldpay refund API.');
+    alert('Refund functionality coming soon. This would integrate with the Stripe refund API.');
   }
 };
 
@@ -385,30 +463,30 @@ useHead({
 .tracking-form {
   .form-group {
     margin-bottom: $spacing-4;
-    
+
     label {
       display: block;
       font-weight: 600;
       margin-bottom: $spacing-2;
       color: $color-gray-700;
+
+      .req { color: #dc2626; margin-left: 2px; }
     }
-    
+
     .form-control {
       width: 100%;
       padding: $spacing-3;
       border: 2px solid $color-gray-300;
       border-radius: 8px;
       font-size: $font-size-base;
-      
+
       &:focus {
         outline: none;
         border-color: $color-primary;
       }
     }
-    
-    textarea {
-      resize: vertical;
-    }
+
+    textarea { resize: vertical; }
   }
 }
 
@@ -438,11 +516,16 @@ useHead({
   border-radius: 8px;
   margin-bottom: $spacing-3;
   
-  .item-image {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
+  .item-icon {
+    width: 48px;
+    height: 48px;
     border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
   }
   
   .item-details {
@@ -538,8 +621,37 @@ address {
   
   &--pending { background: #fef3c7; color: #92400e; }
   &--paid { background: #d1fae5; color: #065f46; }
+  &--authorized { background: #dbeafe; color: #1e40af; }
+  &--captured { background: #d1fae5; color: #065f46; }
   &--failed { background: #fee2e2; color: #991b1b; }
   &--refunded { background: #ffedd5; color: #9a3412; }
+}
+
+.guest-badge {
+  display: inline-block;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.same-as-shipping {
+  color: $color-gray-600;
+  font-style: italic;
+}
+
+.summary-row--discount {
+  color: #16a34a;
+}
+
+.tracking-inline {
+  font-size: $font-size-xs;
+  font-family: 'Courier New', monospace;
+  color: $color-gray-600;
+  margin-top: 2px;
 }
 
 .transaction-id {
@@ -584,6 +696,10 @@ address {
   background: $color-primary;
   border: 3px solid white;
   box-shadow: 0 0 0 2px $color-primary;
+
+  &--green  { background: #16a34a; box-shadow: 0 0 0 2px #16a34a; }
+  &--red    { background: #dc2626; box-shadow: 0 0 0 2px #dc2626; }
+  &--orange { background: #ea580c; box-shadow: 0 0 0 2px #ea580c; }
 }
 
 .timeline-content {
@@ -615,13 +731,81 @@ address {
   color: $color-gray-500;
 }
 
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-4;
+  padding: $spacing-16;
+  text-align: center;
+  color: $color-gray-600;
+
+  &--error { color: #991b1b; }
+}
+
+.state-icon {
+  font-size: 3rem;
+  font-weight: 700;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.state-title {
+  font-size: $font-size-xl;
+  font-weight: 700;
+  margin: 0;
+}
+
+.state-msg {
+  margin: 0;
+  max-width: 400px;
+  font-size: $font-size-sm;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: $color-primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.action-toast {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 300;
+  padding: .75rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: .9rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+
+  &--ok  { background: #dcfce7; color: #166534; }
+  &--err { background: #fee2e2; color: #991b1b; }
+}
+
 @media print {
-  .page-header,
-  .card h2,
+  .page-header .btn-back,
   .status-form,
   .tracking-form,
-  .action-buttons {
-    display: none;
-  }
+  .action-buttons,
+  .btn,
+  .action-toast { display: none !important; }
+
+  .card { box-shadow: none !important; border: 1px solid #e2e8f0; page-break-inside: avoid; }
+  .order-detail-grid { display: block !important; }
+  .detail-column { width: 100% !important; margin-bottom: 1rem; }
 }
 </style>

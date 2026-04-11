@@ -229,6 +229,7 @@ useHead({
   border-radius: 12px;
   padding: 3rem 2rem;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
 }
 
 .auth-header {

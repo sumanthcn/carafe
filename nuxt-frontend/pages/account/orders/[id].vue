@@ -59,21 +59,7 @@
           <div class="detail-card detail-card--wide">
             <h2>Order Status</h2>
             <div class="order-progress">
-              <div
-                v-for="(step, index) in orderSteps"
-                :key="index"
-                :class="['progress-step', { active: step.active, completed: step.completed }]"
-              >
-                <div class="step-icon">
-                  <span v-if="step.completed">✓</span>
-                  <span v-else>{{ index + 1 }}</span>
-                </div>
-                <div class="step-content">
-                  <div class="step-label">{{ step.label }}</div>
-                  <div v-if="step.date" class="step-date">{{ step.date }}</div>
-                </div>
-                <div v-if="index < orderSteps.length - 1" class="step-line"></div>
-              </div>
+              <OrderStatusStepper :status="order.status" />
             </div>
 
             <!-- Tracking Info -->
@@ -240,59 +226,6 @@ const order = computed(() => orderManagement.currentOrder.value);
 const statusInfo = computed(() => {
   if (!order.value) return { label: '', color: 'gray', icon: '' };
   return orderManagement.getStatusInfo(order.value.status);
-});
-
-// Order progress steps
-const orderSteps = computed(() => {
-  if (!order.value) return [];
-  
-  const status = order.value.status;
-  const steps = [
-    {
-      label: 'Order Placed',
-      completed: true,
-      active: status === 'pending',
-      date: orderManagement.formatDate(order.value.createdAt),
-    },
-    {
-      label: 'Processing',
-      completed: ['shipped', 'delivered'].includes(status),
-      active: status === 'processing',
-      date: status === 'processing' ? orderManagement.formatDate(order.value.updatedAt) : null,
-    },
-    {
-      label: 'Shipped',
-      completed: status === 'delivered',
-      active: status === 'shipped',
-      date: status === 'shipped' || status === 'delivered' ? orderManagement.formatDate(order.value.updatedAt) : null,
-    },
-    {
-      label: 'Delivered',
-      completed: status === 'delivered',
-      active: status === 'delivered',
-      date: status === 'delivered' ? orderManagement.formatDate(order.value.updatedAt) : null,
-    },
-  ];
-  
-  // Handle cancelled/refunded status
-  if (['cancelled', 'refunded'].includes(status)) {
-    return [
-      {
-        label: 'Order Placed',
-        completed: true,
-        active: false,
-        date: orderManagement.formatDate(order.value.createdAt),
-      },
-      {
-        label: status === 'cancelled' ? 'Cancelled' : 'Refunded',
-        completed: true,
-        active: true,
-        date: orderManagement.formatDate(order.value.updatedAt),
-      },
-    ];
-  }
-  
-  return steps;
 });
 
 const reorder = () => {
@@ -555,78 +488,6 @@ useHead({
   flex-direction: column;
   gap: $spacing-4;
   margin-bottom: $spacing-6;
-}
-
-.progress-step {
-  display: grid;
-  grid-template-columns: 40px 1fr;
-  gap: $spacing-4;
-  position: relative;
-  
-  .step-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: $color-gray-200;
-    color: $color-gray-600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    flex-shrink: 0;
-    z-index: 1;
-  }
-  
-  .step-content {
-    padding-top: 8px;
-  }
-  
-  .step-label {
-    font-weight: 600;
-    color: $color-gray-600;
-    margin-bottom: $spacing-1;
-  }
-  
-  .step-date {
-    font-size: $font-size-sm;
-    color: $color-gray-500;
-  }
-  
-  .step-line {
-    position: absolute;
-    left: 19px;
-    top: 50px;
-    width: 2px;
-    height: calc(100% + 16px);
-    background: $color-gray-200;
-  }
-  
-  &.completed {
-    .step-icon {
-      background: $color-primary;
-      color: white;
-    }
-    
-    .step-label {
-      color: $color-dark;
-    }
-    
-    .step-line {
-      background: $color-primary;
-    }
-  }
-  
-  &.active {
-    .step-icon {
-      background: $color-primary;
-      color: white;
-      box-shadow: 0 0 0 4px rgba($color-primary, 0.2);
-    }
-    
-    .step-label {
-      color: $color-primary;
-    }
-  }
 }
 
 .tracking-box {
