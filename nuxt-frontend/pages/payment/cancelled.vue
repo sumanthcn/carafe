@@ -20,15 +20,15 @@
         </div>
       </div>
 
-      <div class="payment-result__info">
+      <!-- <div class="payment-result__info">
         <p>Your order has been saved. You can complete the payment at any time.</p>
-      </div>
+      </div> -->
 
       <div class="payment-result__actions">
-        <NuxtLink :to="`/checkout`" class="btn btn--primary">
+        <!-- <NuxtLink :to="`/checkout`" class="btn btn--primary">
           Complete Payment
-        </NuxtLink>
-        <NuxtLink to="/shop" class="btn btn--secondary">
+        </NuxtLink> -->
+        <NuxtLink to="/shop-coffee" class="btn btn--secondary">
           Continue Shopping
         </NuxtLink>
       </div>

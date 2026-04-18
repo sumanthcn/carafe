@@ -61,16 +61,32 @@ function showToast(msg: string, ok: boolean) { toast.value = msg; toastOk.value 
 const imgBase = computed(() => strapiUrl);
 
 function normalise(i: any) {
-  const d = i.attributes || i;
+  // Strapi v5 flat format – all fields are directly on `i`.
+  // NOTE: i.attributes is the coffee-info *component*, NOT a v4 attributes wrapper.
+  // Using `i.attributes || i` would pick up the component object and lose all product fields.
   return {
-    id: i.id, documentId: i.documentId, ...d,
-    category: d.category?.data ? { id: d.category.data.id, ...(d.category.data.attributes || d.category.data) } : d.category ?? null,
-    images: (d.images?.data ?? d.images ?? []).map((img: any) => img.attributes ? { id: img.id, ...img.attributes } : img),
-    variants: d.variants ?? [],
-    attributes: d.attributes ?? {},
-    subscriptionOptions: d.subscriptionOptions ?? [],
-    relatedProducts: (d.relatedProducts?.data ?? d.relatedProducts ?? []).map((r: any) => r.id ?? r),
-    seo: d.seo ?? {},
+    id:                  i.id,
+    documentId:          i.documentId,
+    name:                i.name,
+    slug:                i.slug,
+    subtitle:            i.subtitle,
+    description:         i.description,
+    shortDescription:    i.shortDescription,
+    currency:            i.currency,
+    isTopSeller:         i.isTopSeller,
+    isLimitedEdition:    i.isLimitedEdition,
+    isWhatsNew:          i.isWhatsNew,
+    displayOrder:        i.displayOrder,
+    createdAt:           i.createdAt,
+    updatedAt:           i.updatedAt,
+    category:            i.category ?? null,
+    images:              (i.images ?? []).map((img: any) =>
+                           img.attributes ? { id: img.id, ...img.attributes } : img),
+    variants:            i.variants ?? [],
+    attributes:          i.attributes ?? {},
+    subscriptionOptions: i.subscriptionOptions ?? [],
+    relatedProducts:     (i.relatedProducts ?? []).map((r: any) => r.id ?? r),
+    seo:                 i.seo ?? {},
   };
 }
 

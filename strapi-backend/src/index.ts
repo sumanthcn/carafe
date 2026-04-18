@@ -1,3 +1,6 @@
+import { verifySmtpConnection } from './api/order/services/emailService';
+import { seedEmailTemplates } from '../scripts/seed-email-templates';
+
 export default {
   /**
    * An asynchronous register function that runs before
@@ -8,11 +11,15 @@ export default {
   register(/* { strapi } */) {},
 
   /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
+   * Bootstrap: runs once the application is ready.
+   * - Verifies SMTP connection so email errors surface early.
+   * - Seeds default email templates if they don't exist yet.
    */
-  bootstrap(/* { strapi } */) {},
+  async bootstrap({ strapi }: { strapi: any }) {
+    // Verify SMTP connection
+    await verifySmtpConnection(strapi.log);
+
+    // Seed default email templates (idempotent – skips existing)
+    await seedEmailTemplates(strapi);
+  },
 };

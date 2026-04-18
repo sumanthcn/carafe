@@ -237,25 +237,9 @@
           </div>
 
           <template v-if="expandedOrders.has(order.id)">
-            <!-- Progress Tracker -->
-            <div v-if="getProgressSteps(order.status).length" class="progress-tracker">
-              <div
-                v-for="(step, index) in getProgressSteps(order.status)"
-                :key="step.key"
-                :class="['progress-step', { 'is-done': step.done, 'is-active': step.active && step.key !== 'delivered'  }]"
-              >
-                <div class="progress-step__dot">
-                  <svg v-if="step.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span v-else-if="step.active" class="active-pulse"></span>
-                </div>
-                <div v-if="index < getProgressSteps(order.status).length - 1" :class="['progress-step__line', { 'is-done': step.done }]"></div>
-                <span class="progress-step__label">{{ step.label }}</span>
-              </div>
-            </div>
-            <div v-else class="status-banner" :class="`status-banner--${getStatusMeta(order.status).color}`">
-              {{ getStatusMeta(order.status).icon }} This order has been {{ getStatusMeta(order.status).label.toLowerCase() }}
+            <!-- Status stepper (matches account/orders/[id] detail page) -->
+            <div class="order-stepper">
+              <OrderStatusStepper :status="order.status" />
             </div>
 
             <!-- Two-column body -->
@@ -1327,86 +1311,9 @@ useHead({
 
 // ── Track-order style expanded body ──────────────────────────
 
-.progress-tracker {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 1.75rem 2rem 1.25rem;
+.order-stepper {
+  padding: 1.5rem 2rem 1.25rem;
   border-bottom: 1px solid #f0f0f0;
-}
-
-.progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  flex: 1;
-  min-width: 60px;
-
-  &__dot {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid #ddd;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-    flex-shrink: 0;
-  }
-
-  &__line {
-    position: absolute;
-    top: 15px;
-    left: calc(50% + 16px);
-    right: calc(-50% + 16px);
-    height: 2px;
-    background: #e0e0e0;
-    &.is-done { background: $color-primary; }
-  }
-
-  &__label {
-    font-size: 0.72rem;
-    color: $color-text-light;
-    margin-top: 0.45rem;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  &.is-done {
-    .progress-step__dot { background: $color-primary; border-color: $color-primary; color: white; }
-    .progress-step__label { color: $color-primary; font-weight: 600; }
-  }
-
-  &.is-active {
-    .progress-step__dot { border-color: $color-primary; background: rgba($color-primary, 0.08); }
-    .progress-step__label { color: $color-primary; font-weight: 700; }
-  }
-}
-
-.active-pulse {
-  width: 10px;
-  height: 10px;
-  background: $color-primary;
-  border-radius: 50%;
-  animation: expand-pulse 1.4s ease-in-out infinite;
-}
-
-@keyframes expand-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.55; }
-}
-
-.status-banner {
-  padding: 1rem 2rem;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.95rem;
-  border-bottom: 1px solid #f0f0f0;
-  &--red    { background: #fef2f2; color: #991b1b; }
-  &--orange { background: #fff7ed; color: #9a3412; }
 }
 
 .order-expand-body {

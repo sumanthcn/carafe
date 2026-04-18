@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "email_logs",
+  "info": {
+    "singularName": "email-log",
+    "pluralName": "email-logs",
+    "displayName": "Email Logs",
+    "description": "Audit trail of every email send attempt"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "orderNumber": {
+      "type": "string",
+      "description": "Human-readable order number"
+    },
+    "orderDocumentId": {
+      "type": "string",
+      "description": "Strapi documentId of the related order"
+    },
+    "emailType": {
+      "type": "enumeration",
+      "enum": [
+        "order_received",
+        "packed",
+        "shipped",
+        "in_transit",
+        "delivered",
+        "cancelled",
+        "refunded",
+        "custom"
+      ],
+      "description": "Template type / trigger event"
+    },
+    "recipient": {
+      "type": "email",
+      "description": "Email address the message was sent to"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Resolved subject line (after placeholder substitution)"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["success", "failed", "skipped"],
+      "required": true,
+      "default": "success"
+    },
+    "errorMessage": {
+      "type": "text",
+      "description": "Full error message when status = failed"
+    },
+    "templateUsed": {
+      "type": "string",
+      "description": "Name of the template used (or 'fallback' / 'none')"
+    },
+    "hasPdfAttachment": {
+      "type": "boolean",
+      "default": false
+    },
+    "sentAt": {
+      "type": "datetime"
+    }
+  }
+}

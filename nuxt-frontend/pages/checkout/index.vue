@@ -149,7 +149,7 @@
               </div>
 
               <!-- Save Address Checkbox for Authenticated Users -->
-              <div v-if="isAuthenticated" class="form-group form-group--full form-group--checkbox">
+              <!-- <div v-if="isAuthenticated" class="form-group form-group--full form-group--checkbox">
                 <label class="checkbox-label">
                   <input
                     v-model="saveAddress"
@@ -158,7 +158,7 @@
                   />
                   <span>Save this address for future orders</span>
                 </label>
-              </div>
+              </div> -->
             </div>
           </section>
 

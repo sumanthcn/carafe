@@ -67,6 +67,7 @@ export interface Order {
   // Admin Notes
   notes?: string;
   isGuestOrder?: boolean;
+  emailSentLogs?: Array<{ type: string; sentAt: string; to: string }>;
 }
 
 // Dummy data for testing
@@ -339,6 +340,7 @@ export const useOrderManagement = () => {
             transactionReference: order.stripeSessionId || order.paymentId || undefined,
             notes: order.notes || undefined,
             isGuestOrder: order.isGuestOrder || false,
+            emailSentLogs: order.emailSentLogs || undefined,
           };
         });
 
@@ -414,6 +416,7 @@ export const useOrderManagement = () => {
             transactionReference: order.stripeSessionId || order.paymentId || undefined,
             notes: order.notes || undefined,
             isGuestOrder: order.isGuestOrder || false,
+            emailSentLogs: order.emailSentLogs || undefined,
           };
         });
       } else {
@@ -482,6 +485,7 @@ export const useOrderManagement = () => {
           stripeSessionId: order.stripeSessionId || undefined,
           transactionReference: order.stripeSessionId || order.paymentId || undefined,
           notes: order.notes || undefined,
+          emailSentLogs: order.emailSentLogs || undefined,
         };
       } else {
         throw new Error('Order not found');

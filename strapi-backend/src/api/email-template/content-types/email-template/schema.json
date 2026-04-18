@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "email_templates",
+  "info": {
+    "singularName": "email-template",
+    "pluralName": "email-templates",
+    "displayName": "Email Templates",
+    "description": "Editable email templates for order lifecycle notifications"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "description": "Human-readable name, e.g. 'Order Received'"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "order_received",
+        "packed",
+        "shipped",
+        "in_transit",
+        "delivered",
+        "cancelled",
+        "refunded",
+        "custom"
+      ],
+      "required": true,
+      "description": "Must match an order status value"
+    },
+    "subject": {
+      "type": "string",
+      "required": true,
+      "description": "Email subject line — supports {{placeholders}}"
+    },
+    "body": {
+      "type": "richtext",
+      "required": true,
+      "description": "HTML email body — supports {{placeholders}}"
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true,
+      "description": "Only active templates are sent"
+    }
+  }
+}

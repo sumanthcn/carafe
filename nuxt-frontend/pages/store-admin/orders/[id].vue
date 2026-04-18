@@ -20,6 +20,10 @@
           <div class="card">
             <h2>Update Order Status</h2>
             <form @submit.prevent="handleStatusUpdate" class="status-form">
+              <div v-if="order.status === 'delivered'" class="delivered-notice">
+                ✅ This order has been delivered. The status is locked.
+              </div>
+              <template v-else>
               <div class="form-group">
                 <label>Status</label>
                 <select v-model="statusForm.status" class="form-control">
@@ -33,18 +37,12 @@
                 </select>
               </div>
 
-              <!-- Carrier + Tracking shown when status requires it -->
               <template v-if="statusForm.status === 'shipped' || statusForm.status === 'in_transit'">
                 <div class="form-group">
                   <label>Carrier <span class="req">*</span></label>
                   <select v-model="statusForm.carrier" class="form-control">
-                    <option value="royal-mail">Royal Mail</option>
-                    <option value="dhl">DHL</option>
-                    <option value="ups">UPS</option>
-                    <option value="fedex">FedEx</option>
-                    <option value="dpd">DPD</option>
-                    <option value="evri">Evri</option>
-                    <option value="parcelforce">Parcelforce</option>
+                    <option value="royal-mail">Royal Mail - Tracked 24</option>
+                    <option value="dhl">DPD - DPD Next Day (Standard)</option>
                   </select>
                 </div>
                 <div class="form-group">
@@ -70,6 +68,7 @@
               <button type="submit" class="btn btn--primary" :disabled="orderManagement.loading.value">
                 {{ orderManagement.loading.value ? 'Saving...' : 'Update Status' }}
               </button>
+              </template>
             </form>
           </div>
 
@@ -122,6 +121,67 @@
               <div class="summary-row summary-row--total">
                 <strong>Total</strong>
                 <strong>{{ formatPrice(order.total) }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Actions -->
+          <div class="card">
+            <h2>Admin Actions</h2>
+
+            <!-- Resend Email -->
+            <div class="action-section">
+              <h3 class="action-section__title">📧 Resend Email</h3>
+              <p class="action-section__desc">Manually send a notification email to the customer.</p>
+              <div class="form-group">
+                <label>Email Type</label>
+                <select v-model="resendEmailType" class="form-control">
+                  <option value="order_received">Order Received (with Invoice)</option>
+                  <option value="packed">Packed</option>
+                  <option value="shipped">Shipped / Dispatched</option>
+                  <option value="in_transit">In Transit</option>
+                  <option value="delivered">Delivered (with Invoice)</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="refunded">Refunded</option>
+                </select>
+              </div>
+              <button
+                class="btn btn--primary btn--full"
+                :disabled="resendLoading"
+                @click="handleResendEmail"
+              >
+                {{ resendLoading ? 'Sending...' : '📤 Send Email' }}
+              </button>
+            </div>
+
+            <div class="action-divider"></div>
+
+            <!-- Invoice Actions -->
+            <div class="action-section">
+              <h3 class="action-section__title">🧾 Invoice</h3>
+              <div class="action-buttons">
+                <button class="btn btn--secondary btn--full" @click="downloadInvoice" :disabled="invoiceLoading">
+                  {{ invoiceLoading ? 'Generating...' : '⬇️ Download Invoice PDF' }}
+                </button>
+                <button class="btn btn--ghost btn--full" @click="printInvoice">
+                  🖨️ Print Page
+                </button>
+              </div>
+            </div>
+
+            <div class="action-divider"></div>
+
+            <!-- Other admin actions -->
+            <div class="action-section">
+              <h3 class="action-section__title">⚙️ Other</h3>
+              <div class="action-buttons">
+                <a :href="`mailto:${order?.customerEmail}?subject=Regarding Order ${order?.orderNumber}`"
+                   class="btn btn--ghost btn--full">
+                  ✉️ Open in Mail Client
+                </a>
+                <button v-if="order?.paymentStatus === 'paid'" class="btn btn--warning btn--full" @click="initiateRefund">
+                  💸 Issue Refund
+                </button>
               </div>
             </div>
           </div>
@@ -248,19 +308,15 @@
             </div>
           </div>
 
-          <!-- Admin Actions -->
-          <div class="card">
-            <h2>Admin Actions</h2>
-            <div class="action-buttons">
-              <button class="btn btn--secondary" @click="printInvoice">
-                🖨️ Print Invoice
-              </button>
-              <button class="btn btn--secondary" @click="sendEmail">
-                ✉️ Email Customer
-              </button>
-              <button v-if="order.paymentStatus === 'paid'" class="btn btn--warning" @click="initiateRefund">
-                💸 Issue Refund
-              </button>
+          <!-- Email Log -->
+          <div v-if="order?.emailSentLogs?.length" class="card">
+            <h2>Email Log</h2>
+            <div class="email-log">
+              <div v-for="(log, i) in [...(order.emailSentLogs)].reverse()" :key="i" class="email-log__item">
+                <span class="email-log__badge">{{ log.type }}</span>
+                <span class="email-log__to">→ {{ log.to }}</span>
+                <span class="email-log__date">{{ formatDate(log.sentAt) }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -368,9 +424,58 @@ const printInvoice = () => {
   window.print();
 };
 
-const sendEmail = () => {
-  const email = order.value?.customerEmail;
-  window.location.href = `mailto:${email}?subject=Regarding Order ${order.value?.orderNumber}`;
+// ── Resend Email ────────────────────────────────────────────────
+const resendEmailType = ref('');
+const resendLoading   = ref(false);
+
+// Default the email type selector to the current order status
+watch(order, (o) => {
+  if (o) resendEmailType.value = o.status || 'order_received';
+}, { immediate: true });
+
+const handleResendEmail = async () => {
+  if (!order.value) return;
+  resendLoading.value = true;
+  try {
+    const config = useRuntimeConfig();
+    const { getAuthHeaders } = useAuth();
+    await $fetch(`${config.public.strapiUrl}/api/orders/${orderDocumentId.value}/resend-email`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: { emailType: resendEmailType.value },
+    });
+    showFeedback(`Email (${resendEmailType.value}) sent to ${order.value.customerEmail}`, true);
+  } catch (err: any) {
+    showFeedback(err?.data?.error?.message || 'Failed to send email', false);
+  } finally {
+    resendLoading.value = false;
+  }
+};
+
+// ── Invoice Download ────────────────────────────────────────────
+const invoiceLoading = ref(false);
+
+const downloadInvoice = async () => {
+  if (!order.value) return;
+  invoiceLoading.value = true;
+  try {
+    const config = useRuntimeConfig();
+    const { getAuthHeaders } = useAuth();
+    const blob = await $fetch<Blob>(
+      `${config.public.strapiUrl}/api/orders/${orderDocumentId.value}/invoice`,
+      { method: 'GET', headers: getAuthHeaders(), responseType: 'blob' }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${order.value.orderNumber}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err: any) {
+    showFeedback('Failed to download invoice', false);
+  } finally {
+    invoiceLoading.value = false;
+  }
 };
 
 const initiateRefund = () => {
@@ -459,10 +564,18 @@ useHead({
   }
 }
 
+.delivered-notice {
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 8px;
+  padding: $spacing-4;
+  font-weight: 600;
+  font-size: $font-size-sm;
+}
+
 .status-form,
 .tracking-form {
   .form-group {
-    margin-bottom: $spacing-4;
 
     label {
       display: block;
@@ -796,11 +909,91 @@ address {
   &--err { background: #fee2e2; color: #991b1b; }
 }
 
+// ── Admin action sections ───────────────────────────────────────
+.action-section {
+  margin-bottom: 0;
+
+  &__title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0 0 .3rem;
+  }
+
+  &__desc {
+    font-size: .8rem;
+    color: $color-text-light;
+    margin: 0 0 .85rem;
+  }
+}
+
+.action-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 1.25rem 0;
+}
+
+// Utility modifiers for buttons inside action sections
+.btn {
+  &--full  { width: 100%; margin-bottom: .5rem; }
+  &--ghost {
+    background: transparent;
+    border: 1.5px solid #e0e0e0;
+    color: $color-text-light;
+    &:hover { background: #f9f9f9; color: $color-text; }
+  }
+  &--warning {
+    background: #fff7ed;
+    border: 1.5px solid #fed7aa;
+    color: #9a3412;
+    &:hover { background: #ffedd5; }
+  }
+}
+
+// ── Email log ───────────────────────────────────────────────────
+.email-log {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .4rem;
+    font-size: .8rem;
+  }
+
+  &__badge {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: .15rem .5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: .72rem;
+    white-space: nowrap;
+  }
+
+  &__to {
+    color: $color-text-light;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__date {
+    color: $color-text-light;
+    white-space: nowrap;
+    font-size: .72rem;
+  }
+}
+
 @media print {
   .page-header .btn-back,
   .status-form,
   .tracking-form,
   .action-buttons,
+  .action-section,
   .btn,
   .action-toast { display: none !important; }
 

@@ -133,128 +133,25 @@ export default factories.createCoreService('api::order.order', ({ strapi }) => (
   },
 
   /**
-   * Send order confirmation email
+   * Send order confirmation email (delegates to emailService).
+   * Kept for backwards-compatibility – called from order create flow.
    */
   async sendOrderConfirmation(order: any) {
+    const { sendOrderEmail } = await import('./emailService');
+    const { generateInvoicePdf } = await import('./invoiceService');
+
+    let pdfBuffer: Buffer | undefined;
     try {
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      const trackingUrl = order.isGuestOrder 
-        ? `${frontendUrl}/track-order?orderNumber=${order.orderNumber}&token=${order.orderTrackingToken}`
-        : `${frontendUrl}/account/orders/${order.orderNumber}`;
-
-      await strapi.plugins['email'].services.email.send({
-        to: order.customerEmail,
-        subject: `Order Confirmation - ${order.orderNumber}`,
-        text: `Thank you for your order! Order Number: ${order.orderNumber}`,
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
-              .content { padding: 20px; background-color: #f9f9f9; }
-              .order-details { background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px; }
-              .button { display: inline-block; padding: 12px 24px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-              .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Order Confirmed!</h1>
-              </div>
-              <div class="content">
-                <p>Dear ${order.customerName},</p>
-                <p>Thank you for your order! We're excited to get your coffee delivered to you.</p>
-                
-                <div class="order-details">
-                  <h2>Order Details</h2>
-                  <p><strong>Order Number:</strong> ${order.orderNumber}</p>
-                  <p><strong>Total:</strong> £${order.total.toFixed(2)}</p>
-                  <p><strong>Shipping Method:</strong> ${order.shippingMethod}</p>
-                  <p><strong>Status:</strong> Order Received</p>
-                </div>
-
-                <p>Your order will be packed and dispatched within 1-2 working days (excluding weekends and UK bank holidays).</p>
-                <p>You'll receive a tracking email once your order has been dispatched.</p>
-
-                <center>
-                  <a href="${trackingUrl}" class="button">Track Your Order</a>
-                </center>
-              </div>
-              <div class="footer">
-                <p>Carafe Coffee Roasters | www.carafecoffee.co.uk</p>
-                <p>Need help? Contact us at support@carafecoffee.co.uk</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `,
-      });
-
-      strapi.log.info(`Order confirmation email sent to ${order.customerEmail}`);
-    } catch (error) {
-      strapi.log.error('Failed to send order confirmation:', error);
+      pdfBuffer = await generateInvoicePdf(order);
+    } catch (err: any) {
+      strapi.log.error('PDF generation failed in sendOrderConfirmation:', err.message);
     }
+
+    await sendOrderEmail('order_received', order, strapi, pdfBuffer);
   },
 
   /**
-   * Send dispatch notification
-   */
-  async sendDispatchNotification(order: any) {
-    try {
-      await strapi.plugins['email'].services.email.send({
-        to: order.customerEmail,
-        subject: `Your order has been dispatched - ${order.orderNumber}`,
-        html: `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-              .header { background-color: #27ae60; color: white; padding: 20px; text-align: center; }
-              .content { padding: 20px; background-color: #f9f9f9; }
-              .tracking-box { background-color: white; padding: 15px; margin: 20px 0; border-radius: 5px; border: 2px solid #27ae60; }
-              .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>📦 Order Dispatched!</h1>
-              </div>
-              <div class="content">
-                <p>Good news, ${order.customerName}!</p>
-                <p>Your order has been dispatched and is on its way to you.</p>
-                
-                <div class="tracking-box">
-                  <h2>Tracking Information</h2>
-                  <p><strong>Order Number:</strong> ${order.orderNumber}</p>
-                  <p><strong>Carrier:</strong> ${order.carrier}</p>
-                  <p><strong>Tracking Number:</strong> ${order.trackingNumber}</p>
-                  <p><strong>Dispatched:</strong> ${new Date(order.dispatchedAt).toLocaleDateString('en-GB')}</p>
-                </div>
-
-                <p>Please note: Tracking information may take up to 24 hours to become active.</p>
-              </div>
-              <div class="footer">
-                <p>Carafe Coffee Roasters | www.carafecoffee.co.uk</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `,
-      });
-
-      strapi.log.info(`Dispatch notification sent to ${order.customerEmail}`);
-    } catch (error) {
-      strapi.log.error('Failed to send dispatch notification:', error);
-    }
-  },
-
+   * Send dispatch notification email (delegates to emailService).
   /**
    * Validate order items and calculate totals
    */

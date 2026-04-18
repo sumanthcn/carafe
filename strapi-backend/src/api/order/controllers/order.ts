@@ -364,10 +364,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         });
       }
 
-      // Send dispatch notification if status changed to shipped
-      if (status === 'shipped' || status === 'in_transit') {
-        await strapi.service('api::order.order').sendDispatchNotification(order);
-      }
+      // Email is sent by the lifecycle afterUpdate hook (triggered by the update above).
 
       return {
         data: order,
@@ -490,6 +487,142 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     } catch (error) {
       strapi.log.error('Error fetching order:', error);
       return ctx.internalServerError('Failed to fetch order');
+    }
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // Email & Invoice endpoints
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * POST /api/orders/:id/resend-email
+   * Admin: manually re-send an email for any order status.
+   *
+   * Body: { emailType?: string }
+   *   emailType defaults to the current order status, but can be
+   *   overridden to any valid template type (e.g. "shipped").
+   */
+  async resendEmail(ctx) {
+    // Route has auth:false – manually verify the Bearer JWT
+    const authHeader = (ctx.request.headers.authorization || '') as string;
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) return ctx.unauthorized('Authentication required');
+    let userWithRole: any;
+    try {
+      const jwtService = strapi.plugins['users-permissions'].services.jwt;
+      const payload: any = await jwtService.verify(token);
+      if (!payload?.id) return ctx.unauthorized('Invalid token');
+      userWithRole = await strapi.entityService.findOne(
+        'plugin::users-permissions.user', payload.id, { populate: ['role'] }
+      );
+    } catch {
+      return ctx.unauthorized('Invalid or expired token');
+    }
+    if (!userWithRole) return ctx.unauthorized('User not found');
+    const isAdmin = ['admin', 'superadmin', 'administrator'].includes(userWithRole?.role?.type);
+    if (!isAdmin) return ctx.forbidden('Admin access required');
+
+    try {
+
+      const { id } = ctx.params;
+      const { emailType } = ctx.request.body ?? {};
+
+      // Resolve order
+      const isDocumentId = isNaN(Number(id));
+      let order: any;
+      if (isDocumentId) {
+        order = await (strapi.db as any).query('api::order.order').findOne({
+          where: { documentId: id },
+          populate: { items: true, shippingAddress: true, billingAddress: true },
+        });
+      } else {
+        order = await strapi.entityService.findOne('api::order.order', Number(id), {
+          populate: ['items', 'shippingAddress', 'billingAddress'],
+        });
+      }
+
+      if (!order) return ctx.notFound('Order not found');
+
+      const type = emailType ?? order.orderStatus ?? order.status;
+
+      // Generate PDF for order_received / delivered
+      const { generateInvoicePdf } = await import('../services/invoiceService');
+      const { sendOrderEmail } = await import('../services/emailService');
+
+      let pdfBuffer: Buffer | undefined;
+      if (type === 'order_received' || type === 'delivered') {
+        pdfBuffer = await generateInvoicePdf(order);
+      }
+
+      await sendOrderEmail(type, order, strapi, pdfBuffer);
+
+      return ctx.send({ message: `Email (${type}) resent to ${order.customerEmail}` });
+
+    } catch (error: any) {
+      strapi.log.error('resendEmail failed:', error.message);
+      return ctx.internalServerError('Failed to resend email');
+    }
+  },
+
+  /**
+   * GET /api/orders/:id/invoice
+   * Download a PDF invoice for an order.
+   * Accessible by the order owner or an admin.
+   */
+  async downloadInvoice(ctx) {
+    // Route has auth:false – manually verify the Bearer JWT
+    const authHeader = (ctx.request.headers.authorization || '') as string;
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) return ctx.unauthorized('Authentication required');
+    let user: any;
+    try {
+      const jwtService = strapi.plugins['users-permissions'].services.jwt;
+      const payload: any = await jwtService.verify(token);
+      if (!payload?.id) return ctx.unauthorized('Invalid token');
+      user = await strapi.entityService.findOne(
+        'plugin::users-permissions.user', payload.id, { populate: ['role'] }
+      );
+    } catch {
+      return ctx.unauthorized('Invalid or expired token');
+    }
+    if (!user) return ctx.unauthorized('User not found');
+    const isAdmin = ['admin', 'superadmin', 'administrator'].includes(user?.role?.type);
+
+    try {
+      const { id } = ctx.params;
+
+      // Resolve order
+      const isDocumentId = isNaN(Number(id));
+      let order: any;
+      if (isDocumentId) {
+        order = await (strapi.db as any).query('api::order.order').findOne({
+          where: { documentId: id },
+          populate: { items: true, shippingAddress: true, billingAddress: true, user: true },
+        });
+      } else {
+        order = await strapi.entityService.findOne('api::order.order', Number(id), {
+          populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
+        });
+      }
+
+      if (!order) return ctx.notFound('Order not found');
+
+      // Permission: owner or admin
+      if (!isAdmin && order.user?.id !== user.id) {
+        return ctx.forbidden("You don't have permission to access this invoice");
+      }
+
+      const { generateInvoicePdf } = await import('../services/invoiceService');
+      const pdfBuffer = await generateInvoicePdf(order);
+
+      ctx.set('Content-Type', 'application/pdf');
+      ctx.set('Content-Disposition', `attachment; filename="invoice-${order.orderNumber}.pdf"`);
+      ctx.set('Content-Length', String(pdfBuffer.length));
+      ctx.body = pdfBuffer;
+
+    } catch (error: any) {
+      strapi.log.error('downloadInvoice failed:', error.message);
+      return ctx.internalServerError('Failed to generate invoice');
     }
   },
 }));

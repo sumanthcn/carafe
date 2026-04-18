@@ -1,0 +1,34 @@
+export default {
+  routes: [
+    {
+      method: 'GET',
+      path: '/email-templates',
+      handler: 'email-template.find',
+      config: { policies: [] },
+    },
+    {
+      method: 'GET',
+      path: '/email-templates/:id',
+      handler: 'email-template.findOne',
+      config: { policies: [] },
+    },
+    {
+      method: 'POST',
+      path: '/email-templates',
+      handler: 'email-template.create',
+      config: { policies: [] },
+    },
+    {
+      method: 'PUT',
+      path: '/email-templates/:id',
+      handler: 'email-template.update',
+      config: { policies: [] },
+    },
+    {
+      method: 'DELETE',
+      path: '/email-templates/:id',
+      handler: 'email-template.delete',
+      config: { policies: [] },
+    },
+  ],
+};

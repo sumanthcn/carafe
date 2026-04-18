@@ -600,6 +600,58 @@ export interface ApiCustomerTestimonialCustomerTestimonial
   };
 }
 
+export interface ApiEmailLogEmailLog extends Struct.CollectionTypeSchema {
+  collectionName: 'email_logs';
+  info: {
+    description: 'Audit trail of every email send attempt';
+    displayName: 'Email Logs';
+    pluralName: 'email-logs';
+    singularName: 'email-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    emailType: Schema.Attribute.Enumeration<
+      [
+        'order_received',
+        'packed',
+        'shipped',
+        'in_transit',
+        'delivered',
+        'cancelled',
+        'refunded',
+        'custom',
+      ]
+    >;
+    errorMessage: Schema.Attribute.Text;
+    hasPdfAttachment: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::email-log.email-log'
+    > &
+      Schema.Attribute.Private;
+    orderDocumentId: Schema.Attribute.String;
+    orderNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    recipient: Schema.Attribute.Email;
+    sentAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['success', 'failed', 'skipped']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'success'>;
+    subject: Schema.Attribute.String;
+    templateUsed: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiEmailSubscriberEmailSubscriber
   extends Struct.CollectionTypeSchema {
   collectionName: 'email_subscribers';
@@ -630,6 +682,52 @@ export interface ApiEmailSubscriberEmailSubscriber
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     source: Schema.Attribute.String & Schema.Attribute.DefaultTo<'footer'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiEmailTemplateEmailTemplate
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'email_templates';
+  info: {
+    description: 'Editable email templates for order lifecycle notifications';
+    displayName: 'Email Templates';
+    pluralName: 'email-templates';
+    singularName: 'email-template';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    body: Schema.Attribute.RichText & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::email-template.email-template'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    subject: Schema.Attribute.String & Schema.Attribute.Required;
+    type: Schema.Attribute.Enumeration<
+      [
+        'order_received',
+        'packed',
+        'shipped',
+        'in_transit',
+        'delivered',
+        'cancelled',
+        'refunded',
+        'custom',
+      ]
+    > &
+      Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -747,6 +845,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     deliveredAt: Schema.Attribute.DateTime;
     discount: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
     dispatchedAt: Schema.Attribute.DateTime;
+    emailSentLogs: Schema.Attribute.JSON;
     isGuestOrder: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     items: Schema.Attribute.Component<'elements.order-item', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1757,7 +1856,9 @@ declare module '@strapi/strapi' {
       'api::art-and-culture.art-and-culture': ApiArtAndCultureArtAndCulture;
       'api::customer-review.customer-review': ApiCustomerReviewCustomerReview;
       'api::customer-testimonial.customer-testimonial': ApiCustomerTestimonialCustomerTestimonial;
+      'api::email-log.email-log': ApiEmailLogEmailLog;
       'api::email-subscriber.email-subscriber': ApiEmailSubscriberEmailSubscriber;
+      'api::email-template.email-template': ApiEmailTemplateEmailTemplate;
       'api::global-setting.global-setting': ApiGlobalSettingGlobalSetting;
       'api::homepage.homepage': ApiHomepageHomepage;
       'api::order.order': ApiOrderOrder;

@@ -195,6 +195,9 @@
             >
               Reorder
             </button>
+            <button class="btn btn--secondary" :disabled="invoiceLoading" @click="downloadInvoice">
+              {{ invoiceLoading ? 'Generating…' : '⬇️ Download Invoice' }}
+            </button>
             <NuxtLink to="/contact" class="btn btn--secondary">
               Contact Support
             </NuxtLink>
@@ -214,7 +217,7 @@ const route = useRoute();
 const router = useRouter();
 const orderManagement = useOrderManagement();
 
-const orderId = computed(() => Number(route.params.id));
+const orderId = computed(() => route.params.id as string);
 
 // Load order on mount
 onMounted(async () => {
@@ -231,6 +234,32 @@ const statusInfo = computed(() => {
 const reorder = () => {
   // TODO: Implement reorder
   alert('Reorder functionality coming soon!');
+};
+
+// ── Invoice download ──────────────────────────────────────────
+const invoiceLoading = ref(false);
+
+const downloadInvoice = async () => {
+  if (!order.value) return;
+  invoiceLoading.value = true;
+  try {
+    const config = useRuntimeConfig();
+    const { getAuthHeaders } = useAuth();
+    const blob = await $fetch<Blob>(
+      `${config.public.strapiUrl}/api/orders/${order.value.documentId}/invoice`,
+      { method: 'GET', headers: getAuthHeaders(), responseType: 'blob' }
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `invoice-${order.value.orderNumber}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    alert('Failed to download invoice. Please try again.');
+  } finally {
+    invoiceLoading.value = false;
+  }
 };
 
 // SEO

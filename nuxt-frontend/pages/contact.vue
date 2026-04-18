@@ -18,25 +18,30 @@ const form = ref({
 
 const isSubmitting = ref(false);
 const submitSuccess = ref(false);
+const submitError = ref('');
 
 async function handleSubmit() {
   isSubmitting.value = true;
-  // Simulate form submission
-  setTimeout(() => {
-    isSubmitting.value = false;
+  submitError.value = '';
+  try {
+    const config = useRuntimeConfig();
+    await $fetch(`${config.public.strapiUrl}/api/contact-form/submit`, {
+      method: 'POST',
+      body: {
+        name: form.value.name,
+        email: form.value.email,
+        subject: form.value.subject,
+        message: form.value.message,
+      },
+    });
     submitSuccess.value = true;
-    form.value = {
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    };
-
-    // Reset success message after 5 seconds
-    setTimeout(() => {
-      submitSuccess.value = false;
-    }, 5000);
-  }, 1000);
+    form.value = { name: '', email: '', subject: '', message: '' };
+    setTimeout(() => { submitSuccess.value = false; }, 6000);
+  } catch (err: any) {
+    submitError.value = err?.data?.error?.message || 'Failed to send your message. Please try again.';
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
@@ -134,6 +139,10 @@ async function handleSubmit() {
               <button type="submit" class="btn-submit" :disabled="isSubmitting">
                 {{ isSubmitting ? "Sending..." : "Send Message" }}
               </button>
+
+              <div v-if="submitError" class="error-message">
+                ⚠️ {{ submitError }}
+              </div>
             </form>
 
             <div v-else class="success-message">
@@ -290,6 +299,15 @@ async function handleSubmit() {
     opacity: 0.6;
     cursor: not-allowed;
   }
+}
+
+.error-message {
+  margin-top: 1rem;
+  padding: 0.875rem 1rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 6px;
+  font-size: 0.9rem;
 }
 
 .success-message {

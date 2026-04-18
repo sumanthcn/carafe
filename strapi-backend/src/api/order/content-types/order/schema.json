@@ -127,6 +127,10 @@
     "isGuestOrder": {
       "type": "boolean",
       "default": false
+    },
+    "emailSentLogs": {
+      "type": "json",
+      "description": "Array of {type, sentAt, to} records appended by emailService"
     }
   }
 }
