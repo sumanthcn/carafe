@@ -84,6 +84,40 @@
     "PUBLIC_URL": {
       "description": "Public URL of this Strapi instance",
       "required": true
+    },
+    "STRIPE_SECRET_KEY": {
+      "description": "Stripe secret key (sk_live_... for production, sk_test_... for sandbox). Get from https://dashboard.stripe.com/apikeys",
+      "required": true
+    },
+    "STRIPE_WEBHOOK_SECRET": {
+      "description": "Stripe webhook signing secret (whsec_...). Register endpoint in Stripe Dashboard > Developers > Webhooks",
+      "required": true
+    },
+    "SMTP_HOST": {
+      "description": "SMTP server host for transactional email (e.g. smtpout.secureserver.net for GoDaddy, smtp.office365.com for M365)",
+      "required": true
+    },
+    "SMTP_PORT": {
+      "description": "SMTP port – 587 for STARTTLS (recommended) or 465 for SSL/TLS",
+      "value": "587",
+      "required": true
+    },
+    "SMTP_USER": {
+      "description": "SMTP authentication username (typically the sender email address)",
+      "required": true
+    },
+    "SMTP_PASS": {
+      "description": "SMTP authentication password",
+      "required": true
+    },
+    "SMTP_FROM_EMAIL": {
+      "description": "From email address shown to recipients. Defaults to SMTP_USER if not set.",
+      "required": false
+    },
+    "EMAIL_FROM_NAME": {
+      "description": "Display name in the From header (e.g. Carafe Coffee)",
+      "value": "Carafe Coffee",
+      "required": false
     }
   },
   "formation": {

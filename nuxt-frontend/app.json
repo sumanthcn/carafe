@@ -32,22 +32,9 @@
       "description": "API token for Strapi authentication",
       "required": true
     },
-    "WORLDPAY_MERCHANT_CODE": {
-      "description": "Worldpay merchant code",
-      "required": false
-    },
-    "WORLDPAY_XML_PASSWORD": {
-      "description": "Worldpay XML password",
-      "required": false
-    },
-    "WORLDPAY_MAC_SECRET": {
-      "description": "Worldpay MAC secret",
-      "required": false
-    },
-    "WORLDPAY_ENV": {
-      "description": "Worldpay environment (test or live)",
-      "value": "live",
-      "required": false
+    "STRIPE_PUBLIC_KEY": {
+      "description": "Stripe publishable key (pk_live_... for production, pk_test_... for sandbox). Safe to expose to browser. Get from https://dashboard.stripe.com/apikeys",
+      "required": true
     }
   },
   "formation": {
