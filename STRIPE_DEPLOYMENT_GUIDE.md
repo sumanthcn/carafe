@@ -3,8 +3,8 @@
 > **Branch:** `cns-prepare-hosting-part2`  
 > **Updated:** April 18, 2026  
 > **Apps:**
-> - Backend (Strapi): `carafe-strapi` → `https://carafe-strapi.herokuapp.com`
-> - Frontend (Nuxt): `carafe` → `https://carafe.herokuapp.com`
+> - Backend (Strapi): `carafe-strapi` → `https://admin.carafecoffee.co.uk`
+> - Frontend (Nuxt): `carafe` → `https://www.carafecoffee.co.uk`
 > **Git remotes already configured:**
 > - `heroku-backend` → `https://git.heroku.com/carafe-strapi.git`
 > - `heroku-frontend` → `https://git.heroku.com/carafe.git`
@@ -146,7 +146,7 @@ Before deploying, complete these steps in the Stripe Dashboard.
 1. Go to **Developers → Webhooks → Add endpoint**
 2. **Endpoint URL:**
    ```
-   https://carafe-strapi.herokuapp.com/api/stripe/webhook
+   https://admin.carafecoffee.co.uk/api/stripe/webhook
    ```
 3. **Events to listen to:**
    - `checkout.session.completed`
@@ -166,7 +166,7 @@ Run these one-by-one. Replace placeholder values with your real credentials.
 ```bash
 # ── Stripe ─────────────────────────────────────────────────────────────────
 heroku config:set \
-  STRIPE_SECRET_KEY="sk_live_REPLACE_ME" \
+  STRIPE_SECRET_KEY="sk_test_REPLACE_ME" \
   STRIPE_WEBHOOK_SECRET="whsec_REPLACE_ME" \
   --app carafe-strapi
 
@@ -174,9 +174,9 @@ heroku config:set \
 heroku config:set \
   SMTP_HOST="smtpout.secureserver.net" \
   SMTP_PORT="587" \
-  SMTP_USER="info@immfoods.com" \
+  SMTP_USER="info@carafecoffee.co.uk" \
   SMTP_PASS="REPLACE_WITH_REAL_PASSWORD" \
-  SMTP_FROM_EMAIL="info@immfoods.com" \
+  SMTP_FROM_EMAIL="info@carafecoffee.co.uk" \
   EMAIL_FROM_NAME="Carafe Coffee" \
   --app carafe-strapi
 
@@ -186,14 +186,14 @@ heroku config:get PUBLIC_URL   --app carafe-strapi
 ```
 
 Expected values:
-- `FRONTEND_URL` → `https://carafe.herokuapp.com` (or your custom domain)
-- `PUBLIC_URL` → `https://carafe-strapi.herokuapp.com`
+- `FRONTEND_URL` → `https://www.carafecoffee.co.uk`
+- `PUBLIC_URL` → `https://admin.carafecoffee.co.uk`
 
 ### 3.2 Nuxt frontend app
 
 ```bash
 heroku config:set \
-  STRIPE_PUBLIC_KEY="pk_live_REPLACE_ME" \
+  STRIPE_PUBLIC_KEY="pk_test_REPLACE_ME" \
   --app carafe
 ```
 
@@ -290,17 +290,17 @@ heroku logs --tail --app carafe
 
 ```bash
 # Backend health
-curl -s https://carafe-strapi.herokuapp.com/_health
+curl -s https://admin.carafecoffee.co.uk/_health
 
 # Stripe endpoint accessible
 curl -s -o /dev/null -w "%{http_code}" \
-  "https://carafe-strapi.herokuapp.com/api/stripe/order-confirmation?session_id=cs_test_dummy"
+  "https://admin.carafecoffee.co.uk/api/stripe/order-confirmation?session_id=cs_test_dummy"
 # → 400 (expected — invalid session ID, but route is reachable)
 ```
 
 ### 5.2 Test a Stripe payment (sandbox)
 
-1. Browse to `https://carafe.herokuapp.com`
+1. Browse to `https://www.carafecoffee.co.uk`
 2. Add a product to cart and proceed to checkout
 3. Complete the checkout form and click **Pay**
 4. Use [Stripe test card](https://docs.stripe.com/testing#cards): `4242 4242 4242 4242` / any future date / any CVC
