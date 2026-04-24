@@ -180,6 +180,9 @@ export default defineNuxtConfig({
     "/checkout/**": { ssr: true, cache: false },
     "/cart": { ssr: true, cache: false },
 
+    // Payment result pages - SSR only, never cache (session_id is unique per payment)
+    "/payment/**": { ssr: true, cache: false },
+
     // API routes
     "/api/**": { cors: true },
   },

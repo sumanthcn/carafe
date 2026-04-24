@@ -76,6 +76,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+})
+
 const route = useRoute();
 const config = useRuntimeConfig();
 const { isAuthenticated } = useAuth();

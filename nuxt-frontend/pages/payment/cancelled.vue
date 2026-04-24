@@ -37,6 +37,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+})
+
 const route = useRoute();
 
 // Stripe cancel URL: /payment/cancelled?order_id=123

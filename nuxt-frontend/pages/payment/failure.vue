@@ -61,6 +61,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  layout: 'default',
+})
+
 const route = useRoute();
 
 // Extract query parameters
