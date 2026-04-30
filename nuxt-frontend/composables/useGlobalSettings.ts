@@ -58,11 +58,11 @@ export function useGlobalSettings() {
 
   /**
    * Fetch global settings from Strapi
-   * Returns cached data if already fetched
+   * Returns cached data if already fetched (re-fetches if footer data is missing)
    */
   async function fetchSettings(): Promise<GlobalSettings | null> {
-    // Return cached data if available
-    if (globalSettings.value) {
+    // Return cached data only if it includes footer data
+    if (globalSettings.value && globalSettings.value.footer !== undefined) {
       return globalSettings.value;
     }
 
@@ -153,6 +153,13 @@ export function useGlobalSettings() {
   const address = computed(() => globalSettings.value?.address);
 
   /**
+   * Get footer columns (Shop links etc.) from footer.footerLinks
+   */
+  const footerColumns = computed(
+    () => globalSettings.value?.footer?.footerLinks || []
+  );
+
+  /**
    * Get contact info
    */
   const contactInfo = computed(() => ({
@@ -184,6 +191,7 @@ export function useGlobalSettings() {
     openingHours,
     address,
     contactInfo,
+    footerColumns,
     defaultSeo,
   };
 }

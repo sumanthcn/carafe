@@ -175,12 +175,21 @@ export function useStrapi() {
    * Fetch global settings
    */
   async function getGlobalSettings(): Promise<GlobalSettings> {
-    const response = await fetchApi<{ data: GlobalSettings }>(
-      "global-setting",
-      {
-        // Use wildcard to populate all first-level relations
-        populate: "*",
-      }
+    // Use explicit URLSearchParams to guarantee correct deep-populate format,
+    // since fetchApi's flattenPopulate generates malformed keys for nested objects.
+    const params = new URLSearchParams();
+    params.append("populate[logo]", "true");
+    params.append("populate[favicon]", "true");
+    params.append("populate[defaultOgImage]", "true");
+    params.append("populate[address]", "true");
+    params.append("populate[openingHours]", "true");
+    params.append("populate[socialLinks]", "true");
+    params.append("populate[navigation][populate][children]", "true");
+    params.append("populate[footer][populate][footerLinks][populate][links]", "true");
+    params.append("populate[defaultSeo][populate][ogImage]", "true");
+
+    const response = await $fetch<{ data: GlobalSettings }>(
+      `${strapiUrl}/api/global-setting?${params.toString()}`
     );
     return response.data;
   }

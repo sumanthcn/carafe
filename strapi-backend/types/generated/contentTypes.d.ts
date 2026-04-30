@@ -1288,6 +1288,7 @@ export interface ApiVisitCafeVisitCafe extends Struct.SingleTypeSchema {
       'api::visit-cafe.visit-cafe'
     > &
       Schema.Attribute.Private;
+    menuSection: Schema.Attribute.Component<'sections.menu-section', false>;
     openingHoursSection: Schema.Attribute.Component<
       'sections.opening-hours-with-image',
       false

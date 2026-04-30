@@ -1,11 +1,23 @@
-import type { StrapiResponse } from "~/types/strapi";
+import type { StrapiResponse, StrapiMedia } from "~/types/strapi";
 
+export interface MenuItem {
+  id: number;
+  title: string;
+  file?: StrapiMedia;
+}
+
+export interface MenuSection {
+  title: string;
+  description?: string;
+  items?: MenuItem[];
+}
 
 export interface VisitCafe {
   id: number;
   documentId: string;
   bannerSection?: any;
   brandStorySection?: any;
+  menuSection?: MenuSection;
   openingHoursSection?: any;
   gettingHereSection?: any;
   seo?: {
@@ -36,6 +48,9 @@ export const useVisitCafe = () => {
       // Brand story section with images
       params.append("populate[brandStorySection][populate][image]", "true");
       params.append("populate[brandStorySection][populate][cta][populate][icon]", "true");
+      
+      // Menu section with repeatable items, each having a single file
+      params.append("populate[menuSection][populate][items][populate][file]", "true");
       
       // Opening hours section with background image
       params.append("populate[openingHoursSection][populate][backgroundImage]", "true");

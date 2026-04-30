@@ -114,6 +114,18 @@ export interface ElementsImageText extends Struct.ComponentSchema {
   };
 }
 
+export interface ElementsMenuItem extends Struct.ComponentSchema {
+  collectionName: 'components_elements_menu_items';
+  info: {
+    description: 'A single menu item with a title and one image or PDF file';
+    displayName: 'Menu Item';
+  };
+  attributes: {
+    file: Schema.Attribute.Media<'images' | 'files'>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface ElementsNavChild extends Struct.ComponentSchema {
   collectionName: 'components_elements_nav_child';
   info: {
@@ -518,6 +530,19 @@ export interface SectionsImageGallery extends Struct.ComponentSchema {
   };
 }
 
+export interface SectionsMenuSection extends Struct.ComponentSchema {
+  collectionName: 'components_sections_menu_sections';
+  info: {
+    description: 'Menu section with title, description and uploadable files (images and PDFs)';
+    displayName: 'Menu Section';
+  };
+  attributes: {
+    description: Schema.Attribute.Text;
+    items: Schema.Attribute.Component<'elements.menu-item', true>;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface SectionsOpeningHoursWithImage extends Struct.ComponentSchema {
   collectionName: 'components_sections_opening_hours_with_images';
   info: {
@@ -774,6 +799,7 @@ declare module '@strapi/strapi' {
       'elements.footer-column': ElementsFooterColumn;
       'elements.getting-here-item': ElementsGettingHereItem;
       'elements.image-text': ElementsImageText;
+      'elements.menu-item': ElementsMenuItem;
       'elements.nav-child': ElementsNavChild;
       'elements.nav-item': ElementsNavItem;
       'elements.opening-hours': ElementsOpeningHours;
@@ -794,6 +820,7 @@ declare module '@strapi/strapi' {
       'sections.hero-section': SectionsHeroSection;
       'sections.hero-slide': SectionsHeroSlide;
       'sections.image-gallery': SectionsImageGallery;
+      'sections.menu-section': SectionsMenuSection;
       'sections.opening-hours-with-image': SectionsOpeningHoursWithImage;
       'sections.product-categories': SectionsProductCategories;
       'sections.team-section': SectionsTeamSection;

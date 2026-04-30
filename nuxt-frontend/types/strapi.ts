@@ -20,6 +20,8 @@ export interface StrapiSeo {
 // Media
 export interface StrapiMedia {
   id: number;
+  name: string;
+  mime?: string;
   url: string;
   alternativeText?: string;
   caption?: string;
@@ -78,6 +80,23 @@ export interface FooterLink {
   url: string;
   displayOrder?: number;
   isActive?: boolean;
+}
+
+// Footer Column (from Strapi footer.footerLinks component)
+export interface FooterColumnLink {
+  id?: number;
+  label: string;
+  url: string;
+  linkType?: "internal" | "external";
+  order?: number;
+  isVisible?: boolean;
+  openInNewTab?: boolean;
+}
+
+export interface FooterColumn {
+  id?: number;
+  title: string;
+  links?: FooterColumnLink[];
 }
 
 // Navigation
@@ -317,6 +336,10 @@ export interface GlobalSettings {
   openingHours?: OpeningHours[];
   socialLinks?: SocialLink[];
   footerLinks?: FooterLink[];
+  footer?: {
+    copyrightText?: string;
+    footerLinks?: FooterColumn[];
+  };
   contactEmail?: string;
   contactPhone?: string;
   navigation?: NavItem[];

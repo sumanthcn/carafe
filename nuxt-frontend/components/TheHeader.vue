@@ -556,7 +556,7 @@ function isNavActive(item: NavItem): boolean {
   &__nav {
     display: none;
 
-    @include desktop {
+    @media (min-width: 1280px) {
       display: block;
     }
   }
@@ -664,7 +664,7 @@ function isNavActive(item: NavItem): boolean {
     align-items: center;
     gap: 1rem;
 
-    @include desktop {
+    @media (min-width: 1280px) {
       display: none;
     }
   }
@@ -727,7 +727,7 @@ function isNavActive(item: NavItem): boolean {
     border-radius: 4px;
     transition: background-color 0.2s ease;
 
-    @include desktop {
+    @media (min-width: 1280px) {
       display: none;
     }
 
@@ -801,7 +801,7 @@ function isNavActive(item: NavItem): boolean {
       display: block;
     }
 
-    @include desktop {
+    @media (min-width: 1280px) {
       display: none !important;
     }
   }

@@ -1,0 +1,21 @@
+{
+  "kind": "component",
+  "collectionName": "components_elements_menu_items",
+  "info": {
+    "displayName": "Menu Item",
+    "description": "A single menu item with a title and one image or PDF file"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images", "files"]
+    }
+  }
+}

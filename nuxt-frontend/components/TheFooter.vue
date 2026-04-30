@@ -9,6 +9,7 @@ const {
   openingHours,
   socialLinks,
   contactInfo,
+  footerColumns,
 } = useGlobalSettings();
 
 const currentYear = new Date().getFullYear();
@@ -70,7 +71,7 @@ const socialIcons: Record<string, string> = {
         <!-- Connect -->
         <div class="footer__column">
           <h4 class="footer__heading">CONNECT</h4>
-          <ul class="footer__links">
+          <ul class="footer__links footer__links--social">
             <li v-for="link in socialLinks" :key="link.platform">
               <a
                 :href="link.url"
@@ -78,6 +79,11 @@ const socialIcons: Record<string, string> = {
                 rel="noopener noreferrer"
                 class="footer__social-link"
               >
+                <span
+                  v-if="socialIcons[link.platform]"
+                  class="footer__social-icon"
+                  v-html="socialIcons[link.platform]"
+                />
                 {{
                   link.platform.charAt(0).toUpperCase() + link.platform.slice(1)
                 }}
@@ -89,39 +95,73 @@ const socialIcons: Record<string, string> = {
                   href="https://instagram.com/carafecoffee"
                   target="_blank"
                   rel="noopener noreferrer"
-                  >Instagram</a
+                  class="footer__social-link"
                 >
+                  <span class="footer__social-icon" v-html="socialIcons.instagram" />
+                  Instagram
+                </a>
               </li>
               <li>
                 <a
                   href="https://facebook.com/carafecoffee"
                   target="_blank"
                   rel="noopener noreferrer"
-                  >Facebook</a
+                  class="footer__social-link"
                 >
+                  <span class="footer__social-icon" v-html="socialIcons.facebook" />
+                  Facebook
+                </a>
               </li>
               <li>
                 <a
                   href="https://tripadvisor.com/carafecoffee"
                   target="_blank"
                   rel="noopener noreferrer"
-                  >TripAdvisor</a
+                  class="footer__social-link"
                 >
+                  <span class="footer__social-icon" v-html="socialIcons.tripadvisor" />
+                  TripAdvisor
+                </a>
               </li>
             </template>
           </ul>
         </div>
 
-        <!-- Shop -->
-        <div class="footer__column">
-          <h4 class="footer__heading">SHOP</h4>
+        <!-- Footer columns from CMS (e.g. Shop) -->
+        <div
+          v-for="col in footerColumns"
+          :key="col.title"
+          class="footer__column"
+        >
+          <h4 class="footer__heading">{{ col.title }}</h4>
           <ul class="footer__links">
-            <li><NuxtLink to="/shop-coffee">Fresh Coffee</NuxtLink></li>
-            <li><NuxtLink to="/subscriptions">Subscriptions</NuxtLink></li>
-            <li><NuxtLink to="/gift-vouchers">Gift Vouchers</NuxtLink></li>
-            <li><NuxtLink to="/wholesale">Wholesale</NuxtLink></li>
+            <li v-for="link in col.links" :key="link.url">
+              <NuxtLink
+                v-if="!link.linkType || link.linkType === 'internal'"
+                :to="link.url"
+              >{{ link.label }}</NuxtLink>
+              <a
+                v-else
+                :href="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >{{ link.label }}</a>
+            </li>
           </ul>
         </div>
+
+        <!-- Static Shop fallback when no CMS columns configured -->
+        <template v-if="!footerColumns?.length">
+          <div class="footer__column">
+            <h4 class="footer__heading">SHOP</h4>
+            <ul class="footer__links">
+              <li><NuxtLink to="/shop-coffee">Fresh Coffee</NuxtLink></li>
+              <li><NuxtLink to="/subscriptions">Subscriptions</NuxtLink></li>
+              <li><NuxtLink to="/gift-vouchers">Gift Vouchers</NuxtLink></li>
+              <li><NuxtLink to="/wholesale">Wholesale</NuxtLink></li>
+            </ul>
+          </div>
+        </template>
       </div>
 
       <!-- Bottom bar -->
@@ -256,6 +296,25 @@ const socialIcons: Record<string, string> = {
       &:hover {
         color: $color-primary-light;
       }
+    }
+
+    &--social {
+      a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+  }
+
+  &__social-icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    :deep(svg) {
+      width: 18px;
+      height: 18px;
     }
   }
 

@@ -14,28 +14,33 @@
   "attributes": {
     "bannerSection": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.visit-cafe-banner"
+      "component": "sections.visit-cafe-banner",
+      "repeatable": false
     },
     "brandStorySection": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.brand-story"
+      "component": "sections.brand-story",
+      "repeatable": false
+    },
+    "menuSection": {
+      "type": "component",
+      "component": "sections.menu-section",
+      "repeatable": false
     },
     "openingHoursSection": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.opening-hours-with-image"
+      "component": "sections.opening-hours-with-image",
+      "repeatable": false
     },
     "gettingHereSection": {
       "type": "component",
-      "repeatable": false,
-      "component": "sections.getting-here"
+      "component": "sections.getting-here",
+      "repeatable": false
     },
     "seo": {
       "type": "component",
-      "repeatable": false,
-      "component": "shared.seo"
+      "component": "shared.seo",
+      "repeatable": false
     }
   }
 }
