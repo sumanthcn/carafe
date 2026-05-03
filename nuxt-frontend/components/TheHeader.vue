@@ -320,6 +320,28 @@ function isNavActive(item: NavItem): boolean {
 
       <!-- Actions -->
       <div class="header__actions">
+        <!-- Mobile cart button -->
+        <button
+          class="header__cart-btn"
+          aria-label="Open shopping cart"
+          @click="emit('toggle-cart')"
+        >
+          <img
+            src="~/assets/images/shopping-cart.svg"
+            alt=""
+            width="24"
+            height="24"
+            aria-hidden="true"
+          />
+          <span
+            v-if="cartStore.itemCount > 0"
+            class="header__cart-badge"
+            aria-label="items in cart"
+          >
+            {{ cartStore.itemCount }}
+          </span>
+        </button>
+
         <!-- Mobile user icon -->
         <div class="header__user-menu">
           <button
@@ -525,6 +547,9 @@ function isNavActive(item: NavItem): boolean {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    @media (max-width: 767px) {
+        padding: 1rem;
+      }
   }
 
   &__logo {
@@ -536,6 +561,10 @@ function isNavActive(item: NavItem): boolean {
     img {
       height: 40px;
       width: auto;
+
+      @media (max-width: 767px) {
+        height: 28px;
+      }
     }
 
     &:focus-visible {
@@ -667,6 +696,9 @@ function isNavActive(item: NavItem): boolean {
     @media (min-width: 1280px) {
       display: none;
     }
+    @media (max-width: 767px) {
+      gap: 0.5rem;
+    }
   }
 
   &__cart-btn {
@@ -681,6 +713,11 @@ function isNavActive(item: NavItem): boolean {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+
+    @media (max-width: 767px) {
+        height: 48px;
+        width: 48px;
+      }
 
     img {
       width: 24px;

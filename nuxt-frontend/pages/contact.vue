@@ -20,6 +20,9 @@ const isSubmitting = ref(false);
 const submitSuccess = ref(false);
 const submitError = ref('');
 
+const { fetchSettings, address, openingHours } = useGlobalSettings();
+await fetchSettings();
+
 async function handleSubmit() {
   isSubmitting.value = true;
   submitError.value = '';
@@ -67,24 +70,30 @@ async function handleSubmit() {
             <div class="info-blocks">
               <div class="info-block">
                 <h3>📍 Location</h3>
-                <p>123 Coffee Street<br />Downtown, City 12345</p>
-              </div>
-
-              <div class="info-block">
-                <h3>📞 Phone</h3>
-                <p>(555) 123-4567</p>
+                <p v-if="address">
+                  <span v-if="address.street">{{ address.street }}<br /></span>
+                  <span v-if="address.city || address.postcode">{{ [address.city, address.postcode].filter(Boolean).join(', ') }}<span v-if="address.country">, {{ address.country }}</span></span>
+                </p>
+                <p v-else>29 Station Street<br />Lewes, BN7 2DB, UK</p>
               </div>
 
               <div class="info-block">
                 <h3>📧 Email</h3>
-                <p>hello@carafecoffee.com</p>
+                <p>info@carafecoffee.co.uk</p>
               </div>
 
               <div class="info-block">
                 <h3>⏰ Hours</h3>
-                <p>
-                  Mon-Fri: 7:00 AM - 7:00 PM<br />
-                  Sat-Sun: 8:00 AM - 6:00 PM
+                <template v-if="openingHours?.length">
+                  <p>
+                    <span v-for="(slot, i) in openingHours" :key="i">
+                      {{ slot.days }}: {{ slot.hours }}<br />
+                    </span>
+                  </p>
+                </template>
+                <p v-else>
+                  Mon-Sat: 8:00 AM - 5:00 PM<br />
+                  Sun: 9:00 AM - 4:00 PM
                 </p>
               </div>
             </div>
