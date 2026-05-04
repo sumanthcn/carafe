@@ -196,15 +196,15 @@ function getProductPrice(product: Product): string {
   const variants = product.variants || [];
   
   if (variants.length === 0) {
-    return '€0.00';
+    return '£0.00';
   }
 
   const prices = variants.map(v => v.salePrice || v.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
 
-  const currency = product.currency || 'EUR';
-  const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  const currency = product.currency || 'GBP';
+  const symbol = '£';
 
   if (minPrice === maxPrice) {
     return `${symbol}${minPrice.toFixed(2)}`;
@@ -338,7 +338,7 @@ async function handleAddToCart(product: Product) {
 .product-showcase__subtitle {
   font-size: $font-size-xl;
   font-weight: bold;
-  text-transform: uppercase;
+  // text-transform: uppercase;
   color: $color-text;
 }
 

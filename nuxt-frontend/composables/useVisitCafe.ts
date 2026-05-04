@@ -18,7 +18,17 @@ export interface VisitCafe {
   bannerSection?: any;
   brandStorySection?: any;
   menuSection?: MenuSection;
-  openingHoursSection?: any;
+  openingHoursSection?: {
+    backgroundImage?: any;
+    title?: string;
+    monday?: string;
+    tuesday?: string;
+    wednesday?: string;
+    thursday?: string;
+    friday?: string;
+    saturday?: string;
+    sunday?: string;
+  };
   gettingHereSection?: any;
   seo?: {
     metaTitle?: string;

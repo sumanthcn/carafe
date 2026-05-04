@@ -67,7 +67,7 @@
               <!-- Price Block -->
               <div v-if="!product.variants || product.variants.length === 0" class="product-pricing">
                 <div class="price-group">
-                  <span class="current-price">€0.00</span>
+                  <span class="current-price">£0.00</span>
                 </div>
                 <p class="no-variants-message">Please add product variants in admin</p>
               </div>
@@ -147,7 +147,7 @@
                     <div v-show="activeAccordion === 'shipping'" class="accordion-content">
                       <div v-if="shopSettings.shippingInfo" v-html="parseShippingInfo"></div>
                       <div v-else>
-                        <p>Free shipping on orders over €50. Standard delivery takes 3-5
+                        <p>Free shipping on orders over £50. Standard delivery takes 3-5
                           business days. Express shipping available at checkout.</p>
                       </div>
                     </div>

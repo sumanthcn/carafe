@@ -47,7 +47,7 @@
       </section>
 
       <!-- Menu Section -->
-      <section v-if="visitCafeData.menuSection" class="menu-section">
+      <section v-if="visitCafeData.menuSection" id="menu-section" class="menu-section">
         <div class="container">
           <h2 class="menu-section__title">{{ visitCafeData.menuSection.title }}</h2>
           <p v-if="visitCafeData.menuSection.description" class="menu-section__description">
@@ -113,13 +113,13 @@
         <div class="container">
           <h2 class="hours-title">{{ visitCafeData.openingHoursSection.title }}</h2>
           <div class="hours-grid">
-            <div class="hours-card">
-              <h3>MONDAY – SATURDAY</h3>
-              <p>{{ visitCafeData.openingHoursSection.mondayToSaturday }}</p>
-            </div>
-            <div class="hours-card">
-              <h3>SUNDAY</h3>
-              <p>{{ visitCafeData.openingHoursSection.sunday }}</p>
+            <div
+              v-for="group in groupedOpeningHours"
+              :key="group.label"
+              class="hours-card"
+            >
+              <h3>{{ group.label }}</h3>
+              <p>{{ group.hours }}</p>
             </div>
           </div>
         </div>
@@ -234,6 +234,41 @@ onMounted(async () => {
 const parsedBrandStoryContent = computed(() => {
   if (!visitCafeData.value?.brandStorySection?.content) return '';
   return parseMarkdown(visitCafeData.value.brandStorySection.content);
+});
+
+// Group consecutive days with identical hours for display
+const groupedOpeningHours = computed(() => {
+  const section = visitCafeData.value?.openingHoursSection;
+  if (!section) return [];
+
+  const days = [
+    { key: 'sunday',    label: 'Sunday' },
+    { key: 'monday',    label: 'Monday' },
+    { key: 'tuesday',   label: 'Tuesday' },
+    { key: 'wednesday', label: 'Wednesday' },
+    { key: 'thursday',  label: 'Thursday' },
+    { key: 'friday',    label: 'Friday' },
+    { key: 'saturday',  label: 'Saturday' },
+  ] as const;
+
+  const groups: { label: string; hours: string }[] = [];
+
+  let i = 0;
+  while (i < days.length) {
+    const hours = section[days[i].key] || 'Closed';
+    let j = i + 1;
+    while (j < days.length && (section[days[j].key] || 'Closed') === hours) {
+      j++;
+    }
+    const label =
+      j - i === 1
+        ? days[i].label
+        : `${days[i].label} – ${days[j - 1].label}`;
+    groups.push({ label: label.toUpperCase(), hours });
+    i = j;
+  }
+
+  return groups;
 });
 
 // Computed styles
@@ -611,7 +646,7 @@ useHead(() => {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 80px 60px;
+  padding: 80px 30px;
   color: white;
 
   @media (max-width: 991px) {
@@ -627,8 +662,10 @@ useHead(() => {
   .container {
     position: relative;
     z-index: 2;
-    max-width: 900px;
+    max-width: 980px;
     text-align: center;
+    padding-right: 20px;
+    padding-left: 20px;
   }
 
   .hours-title {
@@ -656,15 +693,15 @@ useHead(() => {
     gap: 30px;
 
     @media (min-width: 768px) {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 40px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
     }
   }
 
   .hours-card {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
-    padding: 32px 24px;
+    padding: 32px 16px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     transition: all 0.3s ease;

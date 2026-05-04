@@ -17,14 +17,39 @@
       "required": true,
       "default": "OPENING HOURS"
     },
-    "mondayToSaturday": {
+    "monday": {
       "type": "string",
-      "required": true,
+      "required": false,
+      "default": "7:00am – 6:00pm"
+    },
+    "tuesday": {
+      "type": "string",
+      "required": false,
+      "default": "7:00am – 6:00pm"
+    },
+    "wednesday": {
+      "type": "string",
+      "required": false,
+      "default": "7:00am – 6:00pm"
+    },
+    "thursday": {
+      "type": "string",
+      "required": false,
+      "default": "7:00am – 6:00pm"
+    },
+    "friday": {
+      "type": "string",
+      "required": false,
+      "default": "7:00am – 6:00pm"
+    },
+    "saturday": {
+      "type": "string",
+      "required": false,
       "default": "7:00am – 6:00pm"
     },
     "sunday": {
       "type": "string",
-      "required": true,
+      "required": false,
       "default": "8:00am – 4:00pm"
     }
   }

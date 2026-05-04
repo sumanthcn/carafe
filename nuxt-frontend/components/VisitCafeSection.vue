@@ -144,7 +144,7 @@ const convertToEmbedUrl = (url: string): string => {
   return url.replace(/\/maps\//, "/maps/embed/");
 };
 
-const handleCtaClick = (event: MouseEvent, cta: CtaButton) => {
+const handleCtaClick = async (event: MouseEvent, cta: CtaButton) => {
   if (!cta.url) return;
 
   // Check if it's a Google Maps URL and openInNewTab is true
@@ -170,7 +170,24 @@ const handleCtaClick = (event: MouseEvent, cta: CtaButton) => {
     }
   } else {
     // Internal URL - use router
-    navigateTo(cta.url);
+    const [path, hash] = cta.url.split('#');
+    if (hash) {
+      const router = useRouter();
+      await router.push({ path: path || '/', hash: `#${hash}` });
+      // If already on the same page, scroll manually since router won't re-trigger
+      await nextTick();
+      const tryScroll = (attempts = 0) => {
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        } else if (attempts < 10) {
+          setTimeout(() => tryScroll(attempts + 1), 150);
+        }
+      };
+      tryScroll();
+    } else {
+      navigateTo(cta.url);
+    }
   }
 };
 </script>

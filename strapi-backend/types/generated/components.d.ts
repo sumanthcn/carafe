@@ -551,15 +551,23 @@ export interface SectionsOpeningHoursWithImage extends Struct.ComponentSchema {
   };
   attributes: {
     backgroundImage: Schema.Attribute.Media<'images'>;
-    mondayToSaturday: Schema.Attribute.String &
-      Schema.Attribute.Required &
+    friday: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
+    monday: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
+    saturday: Schema.Attribute.String &
       Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
     sunday: Schema.Attribute.String &
-      Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'8:00am \u2013 4:00pm'>;
+    thursday: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
     title: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'OPENING HOURS'>;
+    tuesday: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
+    wednesday: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'7:00am \u2013 6:00pm'>;
   };
 }
 

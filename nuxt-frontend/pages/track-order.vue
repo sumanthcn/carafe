@@ -264,7 +264,7 @@ const resetSearch = () => {
 };
 
 const formatPrice = (amount: number, currency = 'EUR') => {
-  const sym = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€';
+  const sym = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '£';
   return `${sym}${parseFloat(String(amount)).toFixed(2)}`;
 };
 </script>

@@ -157,7 +157,7 @@ export const useCartStore = defineStore("cart", {
      * Calculate shipping cost based on cart contents
      */
     calculateShipping() {
-      // Free shipping over €50
+      // Free shipping over £50
       if (this.subtotal >= 50) {
         this.shippingCost = 0;
       } else {
@@ -232,9 +232,9 @@ export const useCartStore = defineStore("cart", {
      */
     formatPrice(amount: number): string {
       const symbols: Record<string, string> = {
-        EUR: "€",
+        EUR: "£",
         GBP: "£",
-        USD: "$",
+        USD: "£",
       };
       return `${symbols[this.currency]}${amount.toFixed(2)}`;
     },

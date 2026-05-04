@@ -72,7 +72,7 @@ const baseVariantPrice = computed(() => {
   const variants = props.product.variants || [];
   
   if (variants.length === 0) {
-    return '€0.00';
+    return '£0.00';
   }
 
   // Find 250g variant
@@ -80,16 +80,16 @@ const baseVariantPrice = computed(() => {
   
   if (baseVariant) {
     const price = baseVariant.salePrice || baseVariant.price;
-    const currency = props.product.currency || 'EUR';
-    const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+    const currency = props.product.currency || 'GBP';
+    const symbol = '£';
     return `${symbol}${price.toFixed(2)}`;
   }
 
   // If no 250g variant, show first variant price
   const firstVariant = variants[0];
   const price = firstVariant.salePrice || firstVariant.price;
-  const currency = props.product.currency || 'EUR';
-  const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  const currency = props.product.currency || 'GBP';
+  const symbol = '£';
   return `${symbol}${price.toFixed(2)}`;
 });
 </script>
