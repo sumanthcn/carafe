@@ -1,7 +1,7 @@
 <template>
     <section id="reviews" class="customer-reviews">
         <div class="container">
-            <div class="reviews-grid">
+            <div class="reviews-grid pb-5">
                 <!-- LEFT COLUMN: Rating Summary -->
                 <div class="left-column">
                     <div class="header-with-button">
@@ -92,7 +92,7 @@
                 </div>
             </div>
         </div>
-        <img src="../../assets/images/review_images.jpg" class="review-bg" />
+        <!-- <img src="../../assets/images/review_images.jpg" class="review-bg" /> -->
 
         <!-- Toast Notification -->
         <Transition name="toast">
