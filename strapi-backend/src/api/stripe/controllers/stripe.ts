@@ -50,7 +50,7 @@ export default {
         mode: 'payment',
         customer_email: order.customerEmail,
         success_url: frontendUrl + '/payment/success?session_id={CHECKOUT_SESSION_ID}&order_id=' + orderId,
-        cancel_url: frontendUrl + '/payment/cancelled?order_id=' + orderId,
+        cancel_url: frontendUrl + '/payment/cancelled?order_id=' + orderId + '&session_id={CHECKOUT_SESSION_ID}',
         metadata: { orderId: String(orderId), orderNumber: order.orderNumber },
         payment_intent_data: { metadata: { orderId: String(orderId), orderNumber: order.orderNumber } },
       });
@@ -64,6 +64,55 @@ export default {
     } catch (error: any) {
       strapi.log.error('Failed to create Stripe checkout session:', error);
       return ctx.internalServerError(error.message || 'Failed to create checkout session');
+    }
+  },
+
+  /**
+   * POST /api/stripe/cancel-order
+   * Called by the frontend cancel page when the user abandons Stripe checkout.
+   * Verifies the session is not paid before cancelling.
+   */
+  async cancelOrder(ctx: any) {
+    const { orderId, sessionId } = ctx.request.body;
+
+    if (!orderId) return ctx.badRequest('orderId is required');
+
+    try {
+      const order: any = await strapi.entityService.findOne(
+        'api::order.order', Number(orderId), {}
+      );
+
+      if (!order) return ctx.notFound('Order not found');
+
+      // Safety: never cancel a paid order
+      if (order.paymentStatus === 'captured') {
+        return ctx.send({ message: 'Order already paid — no action taken' });
+      }
+
+      // If sessionId provided, verify with Stripe that the session is truly unpaid
+      if (sessionId && typeof sessionId === 'string' && sessionId.startsWith('cs_')) {
+        try {
+          const stripe = getStripeClient();
+          const session = await stripe.checkout.sessions.retrieve(sessionId);
+          if (session.payment_status === 'paid') {
+            strapi.log.warn('cancelOrder: session ' + sessionId + ' is paid — refusing cancel for order ' + order.orderNumber);
+            return ctx.badRequest('Payment has been captured — cannot cancel');
+          }
+        } catch (stripeErr: any) {
+          strapi.log.warn('cancelOrder: could not verify session with Stripe:', stripeErr.message);
+        }
+      }
+
+      await strapi.entityService.update('api::order.order', order.id, {
+        data: { orderStatus: 'cancelled', paymentStatus: 'cancelled' } as any,
+      });
+
+      strapi.log.info('Order ' + order.orderNumber + ' cancelled by user (abandoned checkout)');
+      return ctx.send({ message: 'Order cancelled successfully' });
+
+    } catch (error: any) {
+      strapi.log.error('cancelOrder error:', error);
+      return ctx.internalServerError('Failed to cancel order');
     }
   },
 
@@ -185,6 +234,9 @@ export default {
         case 'checkout.session.completed':
           await handleCheckoutSessionCompleted(event.data.object);
           break;
+        case 'checkout.session.expired':
+          await handleCheckoutSessionExpired(event.data.object);
+          break;
         case 'payment_intent.payment_failed':
           await handlePaymentFailed(event.data.object);
           break;
@@ -290,6 +342,28 @@ async function handleCheckoutSessionCompleted(session: any) {
   if (order.items && order.items.length > 0) {
     await deductStock(order.items);
   }
+
+  // Send order confirmation email with invoice PDF
+  // (lifecycle skips order_received email when triggered by webhook update,
+  //  so we send it explicitly here after confirming payment)
+  try {
+    const { generateInvoicePdf } = await import('../../order/services/invoiceService');
+    const { sendOrderEmail } = await import('../../order/services/emailService');
+    const fullOrder: any = await strapi.entityService.findOne('api::order.order', order.id, {
+      populate: ['items', 'shippingAddress', 'billingAddress', 'user'],
+    });
+    if (fullOrder) {
+      let pdfBuffer: Buffer | undefined;
+      try {
+        pdfBuffer = await generateInvoicePdf(fullOrder);
+      } catch (pdfErr: any) {
+        strapi.log.error('[webhook] Invoice PDF generation failed:', pdfErr.message);
+      }
+      await sendOrderEmail('order_received', fullOrder, strapi, pdfBuffer);
+    }
+  } catch (emailErr: any) {
+    strapi.log.error('[webhook] Failed to send order confirmation email:', emailErr.message);
+  }
 }
 
 async function handlePaymentFailed(paymentIntent: any) {
@@ -309,11 +383,46 @@ async function handlePaymentFailed(paymentIntent: any) {
     return;
   }
 
+  // Don't cancel an already-captured order
+  if (order.paymentStatus === 'captured') {
+    strapi.log.warn('Order ' + order.orderNumber + ' already captured — ignoring payment_failed');
+    return;
+  }
+
   await strapi.entityService.update('api::order.order', order.id, {
-    data: { paymentStatus: 'failed', paymentId: paymentIntent.id } as any,
+    data: { paymentStatus: 'failed', orderStatus: 'cancelled', paymentId: paymentIntent.id } as any,
   });
 
-  strapi.log.warn('Order ' + order.orderNumber + ' payment failed (pi: ' + paymentIntent.id + ')');
+  strapi.log.warn('Order ' + order.orderNumber + ' payment failed — order cancelled (pi: ' + paymentIntent.id + ')');
+}
+
+async function handleCheckoutSessionExpired(session: any) {
+  const orderId = session.metadata?.orderId;
+
+  if (!orderId) {
+    strapi.log.warn('checkout.session.expired: missing orderId in metadata');
+    return;
+  }
+
+  const order: any = await strapi.entityService.findOne(
+    'api::order.order', Number(orderId), {}
+  );
+
+  if (!order) {
+    strapi.log.warn('checkout.session.expired: order ' + orderId + ' not found');
+    return;
+  }
+
+  if (order.paymentStatus === 'captured') {
+    strapi.log.info('Order ' + order.orderNumber + ' already captured — ignoring session expiry');
+    return;
+  }
+
+  await strapi.entityService.update('api::order.order', order.id, {
+    data: { paymentStatus: 'expired', orderStatus: 'cancelled' } as any,
+  });
+
+  strapi.log.info('Order ' + order.orderNumber + ' session expired — order cancelled');
 }
 
 // ---------------------------------------------------------------------------

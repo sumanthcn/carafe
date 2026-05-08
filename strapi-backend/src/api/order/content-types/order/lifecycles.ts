@@ -13,14 +13,19 @@ export default {
   async afterCreate(event: any) {
     const { result } = event;
 
+    // Do NOT send confirmation email at order creation time.
+    // Payment has not been captured yet — the webhook handler sends the
+    // email once Stripe confirms payment (checkout.session.completed).
+    if (result.paymentStatus !== 'captured') {
+      return;
+    }
+
     try {
       const strapiInstance = (global as any).strapi;
 
-      // Fetch the full order (with relations) for email / invoice
       const order = await getFullOrder(strapiInstance, result.id);
       if (!order) return;
 
-      // Generate PDF invoice for new orders
       const { generateInvoicePdf } = await import('../../services/invoiceService');
       const { sendOrderEmail } = await import('../../services/emailService');
 
@@ -31,7 +36,6 @@ export default {
         strapiInstance.log.error('[lifecycle] PDF generation failed:', pdfErr.message);
       }
 
-      // Send order_received email (with invoice attached)
       await sendOrderEmail('order_received', order, strapiInstance, pdfBuffer);
 
     } catch (err: any) {
@@ -55,6 +59,20 @@ export default {
 
       const order = await getFullOrder(strapiInstance, result.id);
       if (!order) return;
+
+      // The webhook handler sends the order_received email directly after
+      // confirming payment, so skip it here to avoid double-sending.
+      // For all other statuses (packed, shipped, cancelled, etc.) send normally.
+      if (newStatus === 'order_received') {
+        // Only send if payment is confirmed (e.g. admin manually forces this status)
+        if (order.paymentStatus !== 'captured') {
+          strapiInstance.log.info('[lifecycle] Skipping order_received email — payment not captured yet');
+          return;
+        }
+      }
+
+      // Skip emailing for internal payment-pending status
+      if (newStatus === 'payment_pending') return;
 
       const { generateInvoicePdf } = await import('../../services/invoiceService');
       const { sendOrderEmail } = await import('../../services/emailService');

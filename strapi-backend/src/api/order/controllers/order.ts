@@ -97,7 +97,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       // Prepare order data
       const orderData: any = {
         orderNumber,
-        orderStatus: 'order_received' as const,
+        orderStatus: 'payment_pending' as const,
         customerEmail: data.customerEmail,
         customerName: data.customerName,
         customerPhone: data.customerPhone || null,

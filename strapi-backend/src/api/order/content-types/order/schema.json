@@ -20,6 +20,7 @@
     "orderStatus": {
       "type": "enumeration",
       "enum": [
+        "payment_pending",
         "order_received",
         "packed",
         "shipped",
@@ -28,7 +29,7 @@
         "cancelled",
         "refunded"
       ],
-      "default": "order_received",
+      "default": "payment_pending",
       "required": true
     },
     "customerEmail": {
@@ -90,7 +91,7 @@
     },
     "paymentStatus": {
       "type": "enumeration",
-      "enum": ["pending", "authorized", "captured", "failed", "refunded"],
+      "enum": ["pending", "authorized", "captured", "failed", "cancelled", "expired", "refunded"],
       "default": "pending"
     },
     "stripeSessionId": {

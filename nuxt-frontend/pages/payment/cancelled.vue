@@ -43,8 +43,26 @@ definePageMeta({
 
 const route = useRoute();
 
-// Stripe cancel URL: /payment/cancelled?order_id=123
+// Stripe cancel URL: /payment/cancelled?order_id=123&session_id=cs_xxx
 const orderId = computed(() => route.query.order_id as string);
+const sessionId = computed(() => route.query.session_id as string);
+
+// Immediately cancel the order in Strapi so it doesn't sit as payment_pending
+onMounted(async () => {
+  if (!orderId.value) return;
+  try {
+    const strapiUrl = useRuntimeConfig().public.strapiUrl || '';
+    await $fetch(`${strapiUrl}/api/stripe/cancel-order`, {
+      method: 'POST',
+      body: {
+        orderId: Number(orderId.value),
+        sessionId: sessionId.value || undefined,
+      },
+    });
+  } catch {
+    // Silent — the order will be cleaned up by the checkout.session.expired webhook
+  }
+});
 
 // SEO
 useHead({

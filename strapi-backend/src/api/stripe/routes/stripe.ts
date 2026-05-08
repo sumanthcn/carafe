@@ -12,6 +12,16 @@ export default {
     },
     {
       method: 'POST',
+      path: '/stripe/cancel-order',
+      handler: 'stripe.cancelOrder',
+      config: {
+        auth: false,
+        policies: [],
+        middlewares: [],
+      },
+    },
+    {
+      method: 'POST',
       path: '/stripe/webhook',
       handler: 'stripe.webhook',
       config: {

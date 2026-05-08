@@ -857,6 +857,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     orderStatus: Schema.Attribute.Enumeration<
       [
+        'payment_pending',
         'order_received',
         'packed',
         'shipped',
@@ -867,14 +868,22 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
       ]
     > &
       Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'order_received'>;
+      Schema.Attribute.DefaultTo<'payment_pending'>;
     orderTrackingToken: Schema.Attribute.String &
       Schema.Attribute.Private &
       Schema.Attribute.Unique;
     paymentId: Schema.Attribute.String;
     paymentMethod: Schema.Attribute.String;
     paymentStatus: Schema.Attribute.Enumeration<
-      ['pending', 'authorized', 'captured', 'failed', 'refunded']
+      [
+        'pending',
+        'authorized',
+        'captured',
+        'failed',
+        'cancelled',
+        'expired',
+        'refunded',
+      ]
     > &
       Schema.Attribute.DefaultTo<'pending'>;
     publishedAt: Schema.Attribute.DateTime;
