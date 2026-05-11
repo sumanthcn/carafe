@@ -7,6 +7,7 @@ export const useCartStore = defineStore("cart", {
     currency: "EUR" as "EUR" | "GBP" | "USD",
     shippingCost: 0,
     taxRate: 0.2, // 20% VAT
+    isOpen: false,
   }),
 
   getters: {
@@ -104,6 +105,9 @@ export const useCartStore = defineStore("cart", {
 
       // Persist to localStorage
       this.persistCart();
+
+      // Open the cart sidebar
+      this.isOpen = true;
     },
 
     /**

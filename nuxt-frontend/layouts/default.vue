@@ -23,14 +23,13 @@ provide("globalSettings", globalSettings);
 
 // Initialize cart on client
 const cartStore = useCartStore();
-const isCartOpen = ref(false);
 
 onMounted(() => {
   cartStore.loadCart();
-});
+})
 
 function toggleCart() {
-  isCartOpen.value = !isCartOpen.value;
+  cartStore.isOpen = !cartStore.isOpen;
 }
 </script>
 
@@ -45,7 +44,7 @@ function toggleCart() {
     <TheFooter />
 
     <!-- Cart sidebar -->
-    <CartSidebar v-model:is-open="isCartOpen" />
+    <CartSidebar v-model:is-open="cartStore.isOpen" />
 
     <!-- Floating Book a Table button -->
     <NuxtLink to="/contact" class="fab-book-table" aria-label="Book a table">
