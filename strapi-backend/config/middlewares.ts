@@ -50,8 +50,12 @@ export default ({ env }) => [
   },
   "strapi::poweredBy",
   "strapi::query",
-  "global::stripe-raw-body",
-  "strapi::body",
+  {
+    name: "strapi::body",
+    config: {
+      includeUnparsed: true,
+    },
+  },
   "strapi::session",
   "strapi::favicon",
   "strapi::public",

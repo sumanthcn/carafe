@@ -212,11 +212,12 @@ export default {
     const signature = ctx.request.headers['stripe-signature'];
     if (!signature) return ctx.badRequest('Missing stripe-signature header');
 
-    const rawBody: Buffer = (ctx.request as any).rawBody;
-    if (!rawBody) {
+    const unparsed: string | undefined = (ctx.request.body as any)?.[Symbol.for('unparsedBody')];
+    if (!unparsed) {
       strapi.log.error('Raw body unavailable for Stripe webhook verification');
       return ctx.badRequest('Raw body unavailable');
     }
+    const rawBody = Buffer.from(unparsed);
 
     let event: any;
     try {
