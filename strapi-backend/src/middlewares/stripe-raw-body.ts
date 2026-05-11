@@ -22,6 +22,11 @@ export default () => {
         });
         ctx.req.on('error', reject);
       });
+
+      // We've consumed ctx.req — tell strapi::body (koa-body) not to try
+      // re-parsing the already-drained stream, which would throw
+      // "stream is not readable".
+      (ctx as any).disableBodyParser = true;
     }
 
     await next();
