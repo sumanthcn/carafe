@@ -486,6 +486,7 @@ useHead({
 }
 
 .test-panel {
+  display: none;
   margin-bottom: $spacing-4;
   border: 2px dashed #a78bfa;
   border-radius: 10px;
@@ -571,6 +572,7 @@ useHead({
   border: 1px solid #fcd34d;
   border-radius: 8px;
   padding: 0.75rem 1rem;
+  display: none;
 
   &__inner {
     display: flex;

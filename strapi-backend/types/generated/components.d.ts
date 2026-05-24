@@ -197,9 +197,6 @@ export interface ElementsOrderItem extends Struct.ComponentSchema {
     icon: 'shoppingCart';
   };
   attributes: {
-    isSubscription: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    originalUnitPrice: Schema.Attribute.Decimal;
     productId: Schema.Attribute.Integer;
     productName: Schema.Attribute.String & Schema.Attribute.Required;
     productSlug: Schema.Attribute.String;
@@ -211,19 +208,7 @@ export interface ElementsOrderItem extends Struct.ComponentSchema {
         },
         number
       >;
-    savingsPerUnit: Schema.Attribute.Decimal;
     sku: Schema.Attribute.String;
-    subscriptionDiscountPercentage: Schema.Attribute.Decimal &
-      Schema.Attribute.SetMinMax<
-        {
-          max: 100;
-          min: 0;
-        },
-        number
-      >;
-    subscriptionInterval: Schema.Attribute.Enumeration<
-      ['1_week', '2_weeks', '3_weeks', '1_month', '2_months']
-    >;
     totalPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
     unitPrice: Schema.Attribute.Decimal & Schema.Attribute.Required;
     weight: Schema.Attribute.String;

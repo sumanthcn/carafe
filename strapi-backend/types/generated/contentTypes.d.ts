@@ -552,106 +552,6 @@ export interface ApiCustomerReviewCustomerReview
   };
 }
 
-export interface ApiCustomerSubscriptionCustomerSubscription
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'customer_subscriptions';
-  info: {
-    description: 'Active recurring coffee subscriptions per customer';
-    displayName: 'Customer Subscriptions';
-    pluralName: 'customer-subscriptions';
-    singularName: 'customer-subscription';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    cancelledAt: Schema.Attribute.DateTime;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    currency: Schema.Attribute.String & Schema.Attribute.DefaultTo<'GBP'>;
-    customerEmail: Schema.Attribute.Email & Schema.Attribute.Required;
-    customerName: Schema.Attribute.String & Schema.Attribute.Required;
-    discountPercentage: Schema.Attribute.Decimal &
-      Schema.Attribute.SetMinMax<
-        {
-          max: 100;
-          min: 0;
-        },
-        number
-      >;
-    interval: Schema.Attribute.String & Schema.Attribute.Required;
-    lastBillingError: Schema.Attribute.Text;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::customer-subscription.customer-subscription'
-    > &
-      Schema.Attribute.Private;
-    nextBillingDate: Schema.Attribute.DateTime;
-    notes: Schema.Attribute.Text;
-    orderNumbers: Schema.Attribute.JSON & Schema.Attribute.DefaultTo<[]>;
-    originalUnitPrice: Schema.Attribute.Decimal &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      >;
-    parentOrderNumber: Schema.Attribute.String;
-    productId: Schema.Attribute.Integer;
-    productName: Schema.Attribute.String & Schema.Attribute.Required;
-    productSlug: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    quantity: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 1;
-        },
-        number
-      > &
-      Schema.Attribute.DefaultTo<1>;
-    shippingAddress: Schema.Attribute.Component<'elements.address', false>;
-    shippingCost: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
-    shippingMethod: Schema.Attribute.String;
-    startDate: Schema.Attribute.DateTime & Schema.Attribute.Required;
-    status: Schema.Attribute.Enumeration<
-      ['active', 'paused', 'cancelled', 'payment_failed']
-    > &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'active'>;
-    stripeCustomerId: Schema.Attribute.String;
-    stripePaymentMethodId: Schema.Attribute.String;
-    totalOrdersGenerated: Schema.Attribute.Integer &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      > &
-      Schema.Attribute.DefaultTo<1>;
-    totalRevenue: Schema.Attribute.Decimal & Schema.Attribute.DefaultTo<0>;
-    unitPrice: Schema.Attribute.Decimal &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      >;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    user: Schema.Attribute.Relation<
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    variantDetails: Schema.Attribute.JSON;
-    variantId: Schema.Attribute.Integer;
-  };
-}
-
 export interface ApiCustomerTestimonialCustomerTestimonial
   extends Struct.CollectionTypeSchema {
   collectionName: 'customer_testimonials';
@@ -1965,7 +1865,6 @@ declare module '@strapi/strapi' {
       'api::about.about': ApiAboutAbout;
       'api::art-and-culture.art-and-culture': ApiArtAndCultureArtAndCulture;
       'api::customer-review.customer-review': ApiCustomerReviewCustomerReview;
-      'api::customer-subscription.customer-subscription': ApiCustomerSubscriptionCustomerSubscription;
       'api::customer-testimonial.customer-testimonial': ApiCustomerTestimonialCustomerTestimonial;
       'api::email-log.email-log': ApiEmailLogEmailLog;
       'api::email-subscriber.email-subscriber': ApiEmailSubscriberEmailSubscriber;
