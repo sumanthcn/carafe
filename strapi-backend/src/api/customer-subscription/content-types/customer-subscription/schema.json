@@ -1,0 +1,129 @@
+{
+  "kind": "collectionType",
+  "collectionName": "customer_subscriptions",
+  "info": {
+    "singularName": "customer-subscription",
+    "pluralName": "customer-subscriptions",
+    "displayName": "Customer Subscriptions",
+    "description": "Active recurring coffee subscriptions per customer"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "status": {
+      "type": "enumeration",
+      "enum": ["active", "paused", "cancelled", "payment_failed"],
+      "default": "active",
+      "required": true
+    },
+    "interval": {
+      "type": "string",
+      "required": true
+    },
+    "startDate": {
+      "type": "datetime",
+      "required": true
+    },
+    "nextBillingDate": {
+      "type": "datetime"
+    },
+    "cancelledAt": {
+      "type": "datetime"
+    },
+    "stripeCustomerId": {
+      "type": "string"
+    },
+    "stripePaymentMethodId": {
+      "type": "string"
+    },
+    "productId": {
+      "type": "integer"
+    },
+    "productName": {
+      "type": "string",
+      "required": true
+    },
+    "productSlug": {
+      "type": "string"
+    },
+    "variantId": {
+      "type": "integer"
+    },
+    "variantDetails": {
+      "type": "json"
+    },
+    "quantity": {
+      "type": "integer",
+      "required": true,
+      "default": 1,
+      "min": 1
+    },
+    "unitPrice": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "originalUnitPrice": {
+      "type": "decimal",
+      "min": 0
+    },
+    "discountPercentage": {
+      "type": "decimal",
+      "min": 0,
+      "max": 100
+    },
+    "currency": {
+      "type": "string",
+      "default": "GBP"
+    },
+    "customerEmail": {
+      "type": "email",
+      "required": true
+    },
+    "customerName": {
+      "type": "string",
+      "required": true
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    },
+    "shippingAddress": {
+      "type": "component",
+      "repeatable": false,
+      "component": "elements.address"
+    },
+    "shippingMethod": {
+      "type": "string"
+    },
+    "shippingCost": {
+      "type": "decimal",
+      "default": 0
+    },
+    "orderNumbers": {
+      "type": "json",
+      "default": []
+    },
+    "parentOrderNumber": {
+      "type": "string"
+    },
+    "totalOrdersGenerated": {
+      "type": "integer",
+      "default": 1,
+      "min": 0
+    },
+    "totalRevenue": {
+      "type": "decimal",
+      "default": 0
+    },
+    "lastBillingError": {
+      "type": "text"
+    },
+    "notes": {
+      "type": "text"
+    }
+  }
+}

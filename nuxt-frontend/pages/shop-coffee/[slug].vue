@@ -80,6 +80,16 @@
                 @variant-selected="handleVariantSelected"
               />
 
+              <PurchaseOptions
+                v-if="product.subscriptionOptions && product.subscriptionOptions.length > 0"
+                :subscription-options="product.subscriptionOptions"
+                :base-price="selectedUnitBasePrice"
+                :currency="product.currency"
+                :is-authenticated="isAuthenticated"
+                @purchase-option-changed="handlePurchaseOptionChange"
+                @login-required="handleSubscriptionLoginRequired"
+              />
+
               <!-- CTA Buttons -->
               <div class="product-actions">
                 <button class="btn btn-outline" @click="handleAddToCart" :disabled="!canAddToCart || isAddingToCart">
@@ -176,98 +186,99 @@
 
       <VisitCafeSection v-if="shopCoffeeData?.visitCafeSection" :section="shopCoffeeData.visitCafeSection" />
       <EmailSubscribe />
-    </div>
-  </div>
 
-  <!-- Checkout Modal -->
-  <Transition name="fade">
-    <div
-      v-if="showCheckoutModal"
-      class="checkout-modal-overlay"
-      @click="closeModal"
-    >
-      <div class="checkout-modal" @click.stop>
-        <button
-          class="checkout-modal__close"
-          aria-label="Close"
+      <!-- Checkout Modal -->
+      <Transition name="fade">
+        <div
+          v-if="showCheckoutModal"
+          class="checkout-modal-overlay"
           @click="closeModal"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <div class="checkout-modal__content">
-          <h3 class="checkout-modal__title">How would you like to checkout?</h3>
-          <p class="checkout-modal__description">
-            You're not logged in. Would you like to create an account for faster checkout and order tracking, or continue as a guest?
-          </p>
-
-          <div class="checkout-modal__actions">
+          <div class="checkout-modal" @click.stop>
             <button
-              class="btn btn--primary btn--full"
-              @click="goToLogin"
+              class="checkout-modal__close"
+              aria-label="Close"
+              @click="closeModal"
             >
-              Login to Your Account
-            </button>
-            
-            <button
-              class="btn btn--secondary btn--full"
-              @click="goToSignup"
-            >
-              Create New Account
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
             </button>
 
-            <button
-              class="btn btn--outline btn--full"
-              @click="continueAsGuest"
-            >
-              Continue as Guest
-            </button>
+            <div class="checkout-modal__content">
+              <h3 class="checkout-modal__title">How would you like to checkout?</h3>
+              <p class="checkout-modal__description">
+                You're not logged in. Would you like to create an account for faster checkout and order tracking, or continue as a guest?
+              </p>
+
+              <div class="checkout-modal__actions">
+                <button
+                  class="btn btn--primary btn--full"
+                  @click="goToLogin"
+                >
+                  Login to Your Account
+                </button>
+                
+                <button
+                  class="btn btn--secondary btn--full"
+                  @click="goToSignup"
+                >
+                  Create New Account
+                </button>
+
+                <button
+                  class="btn btn--outline btn--full"
+                  @click="continueAsGuest"
+                >
+                  Continue as Guest
+                </button>
+              </div>
+
+              <p class="checkout-modal__note">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Creating an account allows you to track orders and save addresses for faster checkout.
+              </p>
+            </div>
           </div>
-
-          <p class="checkout-modal__note">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            Creating an account allows you to track orders and save addresses for faster checkout.
-          </p>
         </div>
-      </div>
+      </Transition>
     </div>
-  </Transition>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { Product, ProductVariant } from "~/types/strapi";
+import type { Product, ProductVariant, SubscriptionOption } from "~/types/strapi";
 import type { ReviewStats } from "~/composables/useProductReviews";
 import RelatedProducts from "~/components/shop/RelatedProducts.vue";
 import CustomerReviews from "~/components/product/CustomerReviews.vue";
 import VariantSelector from "~/components/product/VariantSelector.vue";
 import ProductAttributes from "~/components/product/ProductAttributes.vue";
+import PurchaseOptions from "~/components/product/PurchaseOptions.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -294,6 +305,8 @@ const isAddingToCart = ref(false);
 const isBuyingNow = ref(false);
 const selectedVariant = ref<ProductVariant | null>(null);
 const selectedQuantity = ref(1);
+const selectedPurchaseType = ref<'one-time' | 'subscription'>('one-time');
+const selectedSubscriptionOption = ref<SubscriptionOption | null>(null);
 const showCheckoutModal = ref(false);
 
 // Reviews
@@ -324,6 +337,23 @@ const selectedImage = computed(() => {
     };
   }
   return { url: '', alternativeText: '' };
+});
+
+const selectedUnitBasePrice = computed(() => {
+  // Use the actively selected variant price first
+  if (selectedVariant.value) {
+    return selectedVariant.value.salePrice || selectedVariant.value.price;
+  }
+  // Before a variant is chosen, fall back to the cheapest in-stock variant price
+  // so PurchaseOptions is visible immediately on page load
+  if (product.value?.variants?.length) {
+    const prices = product.value.variants
+      .filter(v => v.inStock && v.stockQuantity > 0)
+      .map(v => v.salePrice || v.price)
+      .filter(p => p > 0);
+    return prices.length ? Math.min(...prices) : 0;
+  }
+  return 0;
 });
 
 // Helper function to get thumbnail URL
@@ -375,6 +405,8 @@ async function loadProduct() {
     error.value = null;
     const slug = route.params.slug as string;
     product.value = await fetchProductBySlug(slug);
+    selectedPurchaseType.value = 'one-time';
+    selectedSubscriptionOption.value = null;
 
     // Fetch reviews using documentId
     if (product.value?.documentId) {
@@ -418,6 +450,15 @@ function handleVariantSelected(variant: ProductVariant | null, quantity: number)
   selectedQuantity.value = quantity;
 }
 
+function handlePurchaseOptionChange(type: 'one-time' | 'subscription', subscription?: SubscriptionOption) {
+  selectedPurchaseType.value = type;
+  selectedSubscriptionOption.value = type === 'subscription' ? subscription || null : null;
+}
+
+function handleSubscriptionLoginRequired() {
+  router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
+}
+
 async function handleAddToCart() {
   if (product.value && !isAddingToCart.value && canAddToCart.value) {
     isAddingToCart.value = true;
@@ -428,7 +469,17 @@ async function handleAddToCart() {
           alert('Please select product options');
           return;
         }
-        cartStore.addItem(product.value, selectedQuantity.value, selectedVariant.value);
+        if (selectedPurchaseType.value === 'subscription' && !isAuthenticated.value) {
+          router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
+          return;
+        }
+
+        cartStore.addItem(
+          product.value,
+          selectedQuantity.value,
+          selectedVariant.value,
+          selectedPurchaseType.value === 'subscription' ? selectedSubscriptionOption.value || undefined : undefined
+        );
       } else {
         cartStore.addItem(product.value, selectedQuantity.value);
       }
@@ -452,11 +503,25 @@ async function handleBuyNow() {
           isBuyingNow.value = false;
           return;
         }
-        cartStore.addItem(product.value, selectedQuantity.value, selectedVariant.value);
+
+        if (selectedPurchaseType.value === 'subscription' && !isAuthenticated.value) {
+          router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`);
+          return;
+        }
+
+        cartStore.addItem(
+          product.value,
+          selectedQuantity.value,
+          selectedVariant.value,
+          selectedPurchaseType.value === 'subscription' ? selectedSubscriptionOption.value || undefined : undefined
+        );
       } else {
         cartStore.addItem(product.value, selectedQuantity.value);
       }
-      
+
+      // Close cart sidebar — Buy Now goes straight to checkout, not the cart
+      cartStore.isOpen = false;
+
       // Check authentication before proceeding to checkout
       if (!isAuthenticated.value) {
         // User is not logged in, show modal

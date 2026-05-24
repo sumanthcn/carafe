@@ -137,6 +137,10 @@
                 <span class="icon">📦</span>
                 <span>My Orders</span>
               </NuxtLink>
+              <NuxtLink to="/account/subscriptions" class="quick-action">
+                <span class="icon">🔁</span>
+                <span>My Subscriptions</span>
+              </NuxtLink>
               <NuxtLink to="/account/profile" class="quick-action">
                 <span class="icon">👤</span>
                 <span>Edit Profile</span>
@@ -245,7 +249,7 @@ useHead({
 // Hero Section
 .account-hero {
   position: relative;
-  padding: 140px 0 120px;
+  padding: 7rem 0 120px;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
   overflow: hidden;
 
@@ -615,6 +619,7 @@ useHead({
   border: 1px solid $color-gray-200;
   border-radius: 8px;
   text-decoration: none;
+  text-align: center;
   color: $color-dark;
   transition: all 0.2s;
   background: white;
@@ -685,6 +690,6 @@ useHead({
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 $spacing-4;
+  padding: 0 $spacing-8;
 }
 </style>

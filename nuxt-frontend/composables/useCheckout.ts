@@ -47,6 +47,11 @@ export interface OrderItem {
   quantity: number;
   price: number;
   total: number;
+  isSubscription?: boolean;
+  subscriptionInterval?: '1_week' | '2_weeks' | '3_weeks' | '1_month' | '2_months';
+  subscriptionDiscountPercentage?: number;
+  originalUnitPrice?: number;
+  savingsPerUnit?: number;
 }
 
 export const useCheckout = () => {
@@ -208,18 +213,28 @@ export const useCheckout = () => {
             ? checkoutData.value.shippingAddress 
             : checkoutData.value.billingAddress,
           items: cart.items.map(item => {
-            // Get price from variant or product
-            const unitPrice = item.selectedVariant 
+            // Get price from variant or product (use discounted subscription price if applicable)
+            const baseUnitPrice = item.selectedVariant 
               ? (item.selectedVariant.salePrice || item.selectedVariant.price)
               : (item.product.variants?.[0]?.price || 0);
+            const unitPrice = item.isSubscription && item.subscriptionUnitPrice != null
+              ? item.subscriptionUnitPrice
+              : baseUnitPrice;
 
             return {
               productId: item.product.id,
               productName: item.product.name,
+              productSlug: item.product.slug || null,
               variantId: item.selectedVariant?.id || null,
+              sku: item.selectedVariant?.sku || null,
+              weight: item.selectedVariant?.weight || null,
               quantity: item.quantity,
               unitPrice: unitPrice,
               totalPrice: item.quantity * unitPrice,
+              isSubscription: item.isSubscription || false,
+              subscriptionInterval: item.subscriptionInterval || null,
+              subscriptionDiscountPercentage: item.subscriptionDiscountPercentage || null,
+              originalUnitPrice: item.subscriptionOriginalUnitPrice || null,
             };
           }),
           subtotal: orderSummary.value.subtotal,

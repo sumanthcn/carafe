@@ -170,7 +170,7 @@ const formatDate = (dateString?: string) => {
 // Hero Section
 .profile-hero {
   position: relative;
-  padding: 140px 0 $spacing-12;
+  padding: 7rem 0 $spacing-12;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
   overflow: hidden;
 
@@ -251,7 +251,7 @@ const formatDate = (dateString?: string) => {
 // Main Content
 .profile-page__content {
   max-width: 800px;
-  margin: -60px auto 0;
+  margin: -30px auto 0;
   padding: 0 $spacing-4;
   position: relative;
   z-index: 2;
@@ -500,6 +500,6 @@ const formatDate = (dateString?: string) => {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 $spacing-4;
+  padding: 0 $spacing-8;
 }
 </style>

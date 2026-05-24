@@ -282,3 +282,249 @@ function buildFallbackTemplate(
 
   return { subject, body };
 }
+
+// ─── Subscription helpers ─────────────────────────────────────
+
+const INTERVAL_LABELS: Record<string, string> = {
+  '5_minutes': 'every 5 minutes (test)',
+  '1_week':    'every week',
+  '2_weeks':   'every 2 weeks',
+  '3_weeks':   'every 3 weeks',
+  '1_month':   'every month',
+  '2_months':  'every 2 months',
+};
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
+
+function formatCurrency(amount: number, currency = 'GBP'): string {
+  return new Intl.NumberFormat('en-GB', {
+    style: 'currency', currency: currency.toUpperCase(),
+  }).format(amount);
+}
+
+function emailFooter(): string {
+  return `
+    <div style="padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;font-size:12px;color:#9ca3af;">
+      <p style="margin:0;">Carafe Coffee Roasters ·
+        <a href="https://www.carafecoffee.co.uk" style="color:#007ba7;">www.carafecoffee.co.uk</a></p>
+      <p style="margin:6px 0 0;">Questions? Email
+        <a href="mailto:info@carafecoffee.co.uk" style="color:#007ba7;">info@carafecoffee.co.uk</a></p>
+    </div>`;
+}
+
+// ─── Subscription confirmation email ─────────────────────────
+/**
+ * Sent immediately after a subscription is created.
+ * Tells the customer what they've subscribed to, how much they'll pay,
+ * and when their first renewal will be.
+ */
+export async function sendSubscriptionConfirmationEmail(
+  sub: any,
+  strapiInstance: any
+): Promise<void> {
+  if (!sub?.customerEmail) return;
+
+  const intervalLabel = INTERVAL_LABELS[sub.interval] ?? sub.interval ?? 'regularly';
+  const nextDate      = sub.nextBillingDate ? formatDate(sub.nextBillingDate) : 'TBC';
+  const price         = formatCurrency(Number(sub.unitPrice ?? 0) * Number(sub.quantity ?? 1), sub.currency);
+  const originalPrice = sub.originalUnitPrice
+    ? formatCurrency(Number(sub.originalUnitPrice) * Number(sub.quantity ?? 1), sub.currency)
+    : null;
+  const discountBadge = sub.discountPercentage
+    ? `<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;">
+         ${sub.discountPercentage}% subscriber discount
+       </span>`
+    : '';
+
+  const weight = sub.variantDetails?.weight ? ` · ${sub.variantDetails.weight}` : '';
+  const accountUrl = `${process.env.FRONTEND_URL ?? 'https://www.carafecoffee.co.uk'}/account/subscriptions`;
+
+  const subject = `Your Carafe Coffee subscription is active — ${sub.productName}`;
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:20px 0;background:#f3f4f6;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+
+    <div style="background:#007ba7;padding:28px 32px;">
+      <h1 style="color:white;margin:0;font-size:22px;">Carafe Coffee Roasters</h1>
+      <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:14px;">Subscription Confirmation</p>
+    </div>
+
+    <div style="padding:32px;">
+      <p style="font-size:16px;color:#111827;margin:0 0 16px;">Hi <strong>${sub.customerName ?? 'there'}</strong>,</p>
+      <p style="color:#374151;line-height:1.7;margin:0 0 24px;">
+        Great news — your coffee subscription is now active! We'll automatically prepare your order
+        <strong>${intervalLabel}</strong> and charge your saved card. No action needed from you.
+      </p>
+
+      <!-- Subscription details -->
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+        <h2 style="font-size:16px;color:#0c4a6e;margin:0 0 16px;">Your Subscription</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;width:45%;">Product</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${sub.productName}${weight}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Frequency</td>
+            <td style="padding:6px 0;color:#111827;">${intervalLabel.replace('every ', 'Every ')}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Quantity</td>
+            <td style="padding:6px 0;color:#111827;">${sub.quantity ?? 1}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Price per delivery</td>
+            <td style="padding:6px 0;color:#111827;">
+              <strong style="color:#007ba7;font-size:16px;">${price}</strong>
+              ${originalPrice ? `<span style="color:#9ca3af;text-decoration:line-through;font-size:13px;margin-left:8px;">${originalPrice}</span>` : ''}
+              ${discountBadge}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Next delivery</td>
+            <td style="padding:6px 0;font-weight:600;color:#059669;">${nextDate}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Order reference</td>
+            <td style="padding:6px 0;color:#111827;">${sub.parentOrderNumber ?? '—'}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- What happens next -->
+      <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:24px;font-size:14px;color:#374151;line-height:1.7;">
+        <strong style="display:block;margin-bottom:8px;color:#111827;">What happens next?</strong>
+        <ul style="margin:0;padding-left:20px;">
+          <li>Your card will be charged automatically on <strong>${nextDate}</strong></li>
+          <li>You'll receive a reminder email 1 day before each charge</li>
+          <li>Your coffee will be roasted fresh and dispatched the same day</li>
+          <li>You can pause or cancel anytime from your account</li>
+        </ul>
+      </div>
+
+      <div style="text-align:center;margin:28px 0;">
+        <a href="${accountUrl}"
+           style="background:#007ba7;color:white;text-decoration:none;padding:14px 32px;
+                  border-radius:6px;font-weight:600;font-size:15px;display:inline-block;">
+          Manage My Subscription
+        </a>
+      </div>
+
+      <p style="color:#6b7280;font-size:13px;text-align:center;margin:0;">
+        Your payment details are securely stored with Stripe. Carafe Coffee never stores your card number.
+      </p>
+    </div>
+
+    ${emailFooter()}
+  </div>
+</body>
+</html>`;
+
+  try {
+    await sendRawEmail(sub.customerEmail, subject, html);
+    strapiInstance.log.info(`[emailService] ✅ Subscription confirmation sent to ${sub.customerEmail}`);
+  } catch (err: any) {
+    strapiInstance.log.error(`[emailService] ❌ Failed to send subscription confirmation: ${err.message}`);
+  }
+}
+
+// ─── Subscription reminder email (1 day before billing) ──────
+/**
+ * Sent 1 day before a subscription renewal charge.
+ * Gives the customer a heads-up and a chance to cancel if needed.
+ */
+export async function sendSubscriptionReminderEmail(
+  sub: any,
+  strapiInstance: any
+): Promise<void> {
+  if (!sub?.customerEmail) return;
+
+  const intervalLabel = INTERVAL_LABELS[sub.interval] ?? sub.interval ?? 'regularly';
+  const billingDate   = sub.nextBillingDate ? formatDate(sub.nextBillingDate) : 'tomorrow';
+  const price         = formatCurrency(Number(sub.unitPrice ?? 0) * Number(sub.quantity ?? 1), sub.currency);
+  const weight        = sub.variantDetails?.weight ? ` · ${sub.variantDetails.weight}` : '';
+  const accountUrl    = `${process.env.FRONTEND_URL ?? 'https://www.carafecoffee.co.uk'}/account/subscriptions`;
+  const deliveryCount = (sub.totalOrdersGenerated ?? 1) + 1;
+
+  const subject = `Reminder: your Carafe Coffee subscription renews tomorrow — ${price}`;
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:20px 0;background:#f3f4f6;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+
+    <div style="background:#92400e;padding:28px 32px;">
+      <h1 style="color:white;margin:0;font-size:22px;">Carafe Coffee Roasters</h1>
+      <p style="color:rgba(255,255,255,.85);margin:6px 0 0;font-size:14px;">Subscription Renewal Reminder</p>
+    </div>
+
+    <div style="padding:32px;">
+      <p style="font-size:16px;color:#111827;margin:0 0 16px;">Hi <strong>${sub.customerName ?? 'there'}</strong>,</p>
+      <p style="color:#374151;line-height:1.7;margin:0 0 24px;">
+        This is a friendly reminder that your coffee subscription is due to renew tomorrow.
+        Your card will be charged automatically — nothing you need to do!
+      </p>
+
+      <!-- Charge summary -->
+      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
+        <h2 style="font-size:15px;color:#92400e;margin:0 0 16px;">Tomorrow's renewal</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;width:45%;">Product</td>
+            <td style="padding:6px 0;font-weight:600;color:#111827;">${sub.productName}${weight}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Frequency</td>
+            <td style="padding:6px 0;color:#111827;">${intervalLabel.replace('every ', 'Every ')}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Delivery #</td>
+            <td style="padding:6px 0;color:#111827;">${deliveryCount}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Charge date</td>
+            <td style="padding:6px 0;font-weight:700;color:#92400e;font-size:15px;">${billingDate}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;color:#6b7280;">Amount</td>
+            <td style="padding:6px 0;font-weight:700;color:#007ba7;font-size:16px;">${price}</td>
+          </tr>
+        </table>
+      </div>
+
+      <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 24px;">
+        Want to skip this delivery or make changes? Visit your account to pause or cancel before
+        <strong>${billingDate}</strong>.
+      </p>
+
+      <div style="text-align:center;margin:28px 0;">
+        <a href="${accountUrl}"
+           style="background:#007ba7;color:white;text-decoration:none;padding:14px 32px;
+                  border-radius:6px;font-weight:600;font-size:15px;display:inline-block;">
+          Manage My Subscription
+        </a>
+      </div>
+
+      <p style="color:#9ca3af;font-size:12px;text-align:center;margin:0;">
+        If you take no action, your order will be processed automatically on ${billingDate}.
+      </p>
+    </div>
+
+    ${emailFooter()}
+  </div>
+</body>
+</html>`;
+
+  try {
+    await sendRawEmail(sub.customerEmail, subject, html);
+    strapiInstance.log.info(`[emailService] ✅ Subscription reminder sent to ${sub.customerEmail} for ${sub.productName}`);
+  } catch (err: any) {
+    strapiInstance.log.error(`[emailService] ❌ Failed to send subscription reminder: ${err.message}`);
+  }
+}

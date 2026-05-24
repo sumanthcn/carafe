@@ -24,23 +24,28 @@
         name="purchaseType"
         value="subscription"
         v-model="purchaseType"
+        :disabled="!isAuthenticated"
         @change="handlePurchaseTypeChange"
       />
       <div class="option-content">
         <span class="option-label">Subscribe & Save</span>
         <span v-if="selectedSubscription" class="option-price">
           {{ formatCurrency(subscriptionPrice) }}
-          <span class="savings">Save {{ selectedSubscription.discountPercentage }}%</span>
+          <span class="savings">Save {{ formatCurrency(savingsAmount) }} ({{ selectedSubscription.discountPercentage }}%)</span>
         </span>
       </div>
     </label>
+
+    <p v-if="!isAuthenticated" class="subscription-login-note">
+      Please log in to subscribe and save.
+    </p>
 
     <!-- Subscription Frequency Options -->
     <div v-if="isSubscription" class="subscription-frequencies">
       <label class="frequency-label">Deliver every:</label>
       <div class="frequency-options">
         <label
-          v-for="option in subscriptionOptions"
+          v-for="option in availableSubscriptionOptions"
           :key="option.id"
           class="frequency-option"
           :class="{ active: selectedSubscription?.id === option.id }"
@@ -66,15 +71,18 @@ interface Props {
   subscriptionOptions?: SubscriptionOption[];
   basePrice: number;
   currency?: string;
+  isAuthenticated?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   subscriptionOptions: () => [],
   currency: 'EUR',
+  isAuthenticated: false,
 });
 
 const emit = defineEmits<{
   purchaseOptionChanged: [type: 'one-time' | 'subscription', subscription?: SubscriptionOption];
+  loginRequired: [];
 }>();
 
 const purchaseType = ref<'one-time' | 'subscription'>('one-time');
@@ -82,15 +90,25 @@ const selectedFrequencyId = ref<number | null>(null);
 
 const isSubscription = computed(() => purchaseType.value === 'subscription');
 
+const availableSubscriptionOptions = computed(() => {
+  const allowedIntervals = ['1_week', '2_weeks', '3_weeks', '1_month'];
+  return props.subscriptionOptions.filter(option => allowedIntervals.includes(option.deliveryInterval));
+});
+
 const selectedSubscription = computed(() => {
   if (!isSubscription.value || !selectedFrequencyId.value) return null;
-  return props.subscriptionOptions.find(opt => opt.id === selectedFrequencyId.value) || null;
+  return availableSubscriptionOptions.value.find(opt => opt.id === selectedFrequencyId.value) || null;
 });
 
 const subscriptionPrice = computed(() => {
   if (!selectedSubscription.value) return props.basePrice;
   const discount = selectedSubscription.value.discountPercentage / 100;
   return props.basePrice * (1 - discount);
+});
+
+const savingsAmount = computed(() => {
+  if (!selectedSubscription.value) return 0;
+  return props.basePrice - subscriptionPrice.value;
 });
 
 const formatCurrency = (amount: number): string => {
@@ -105,16 +123,23 @@ const formatInterval = (interval: string): string => {
     '1_week': '1 Week',
     '2_weeks': '2 Weeks',
     '3_weeks': '3 Weeks',
-    '1_month': '1 Month',
+    '1_month': '4 Weeks',
     '2_months': '2 Months',
   };
   return map[interval] || interval;
 };
 
 const handlePurchaseTypeChange = () => {
-  if (isSubscription.value && !selectedFrequencyId.value && props.subscriptionOptions.length > 0) {
+  if (isSubscription.value && !props.isAuthenticated) {
+    purchaseType.value = 'one-time';
+    emit('loginRequired');
+    emit('purchaseOptionChanged', 'one-time');
+    return;
+  }
+
+  if (isSubscription.value && !selectedFrequencyId.value && availableSubscriptionOptions.value.length > 0) {
     // Auto-select first frequency option
-    selectedFrequencyId.value = props.subscriptionOptions[0].id;
+    selectedFrequencyId.value = availableSubscriptionOptions.value[0].id;
   }
   emitChange();
 };
@@ -133,8 +158,8 @@ const emitChange = () => {
 
 // Initialize with first subscription option if available
 onMounted(() => {
-  if (props.subscriptionOptions.length > 0) {
-    selectedFrequencyId.value = props.subscriptionOptions[0].id;
+  if (availableSubscriptionOptions.value.length > 0) {
+    selectedFrequencyId.value = availableSubscriptionOptions.value[0].id;
   }
 });
 </script>
@@ -221,6 +246,12 @@ onMounted(() => {
   padding: 1rem;
   background: white;
   border-radius: 8px;
+}
+
+.subscription-login-note {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.875rem;
+  color: #b45309;
 }
 
 .frequency-label {

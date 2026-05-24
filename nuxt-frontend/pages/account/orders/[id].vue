@@ -287,7 +287,7 @@ useHead({
 // Hero Section
 .order-hero {
   position: relative;
-  padding: 140px 0 120px;
+  padding: 7rem 0 120px;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
   overflow: hidden;
 

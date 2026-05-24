@@ -36,6 +36,25 @@
     },
     "weight": {
       "type": "string"
+    },
+    "isSubscription": {
+      "type": "boolean",
+      "default": false
+    },
+    "subscriptionInterval": {
+      "type": "enumeration",
+      "enum": ["1_week", "2_weeks", "3_weeks", "1_month", "2_months"]
+    },
+    "subscriptionDiscountPercentage": {
+      "type": "decimal",
+      "min": 0,
+      "max": 100
+    },
+    "originalUnitPrice": {
+      "type": "decimal"
+    },
+    "savingsPerUnit": {
+      "type": "decimal"
     }
   }
 }

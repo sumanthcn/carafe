@@ -111,6 +111,9 @@ const statusColor: Record<string, string> = {
     </div>
 
     <div class="quick-links">
+      <NuxtLink to="/store-admin/subscriptions" class="quick-link">
+        <span>🔁</span><span>Subscription Orders</span>
+      </NuxtLink>
       <NuxtLink to="/store-admin/products" class="quick-link">
         <span>☕</span><span>Manage Products</span>
       </NuxtLink>

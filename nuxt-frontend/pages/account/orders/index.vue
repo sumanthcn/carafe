@@ -24,6 +24,30 @@
     <!-- Main Content -->
     <div class="container">
       <div class="orders-page__wrapper">
+        <div class="order-tabs">
+          <button
+            class="order-tab"
+            :class="{ 'order-tab--active': activeOrderTab === 'all' }"
+            @click="activeOrderTab = 'all'"
+          >
+            All Orders ({{ allOrders.length }})
+          </button>
+          <button
+            class="order-tab"
+            :class="{ 'order-tab--active': activeOrderTab === 'subscription' }"
+            @click="activeOrderTab = 'subscription'"
+          >
+            Subscription Orders ({{ subscriptionOrders.length }})
+          </button>
+          <button
+            class="order-tab"
+            :class="{ 'order-tab--active': activeOrderTab === 'one-time' }"
+            @click="activeOrderTab = 'one-time'"
+          >
+            One-time Orders ({{ oneTimeOrders.length }})
+          </button>
+        </div>
+
         <!-- Filters Bar -->
         <div class="filters-bar">
           <div class="filters-bar__left">
@@ -198,8 +222,20 @@
       <!-- Empty State -->
       <div v-else-if="!filteredOrders.length" class="empty-state">
         <div class="empty-state__icon">📦</div>
-        <h2>{{ activeFilterCount === 0 ? 'No orders yet' : 'No orders match your filters' }}</h2>
-        <p>{{ activeFilterCount === 0 ? 'Start shopping to see your orders here' : 'Try a different filter' }}</p>
+        <h2>
+          {{
+            activeOrderTab === 'subscription'
+              ? 'No subscription orders yet'
+              : (activeFilterCount === 0 ? 'No orders yet' : 'No orders match your filters')
+          }}
+        </h2>
+        <p>
+          {{
+            activeOrderTab === 'subscription'
+              ? 'Subscribe to coffee products and your recurring orders will appear here.'
+              : (activeFilterCount === 0 ? 'Start shopping to see your orders here' : 'Try a different filter')
+          }}
+        </p>
         <NuxtLink v-if="activeFilterCount === 0" to="/shop-coffee" class="btn btn--primary">
           Browse Coffee
         </NuxtLink>
@@ -227,6 +263,10 @@
                 <span class="date">📅 {{ orderManagement.formatDate(order.createdAt) }}</span>
                 <span class="separator">•</span>
                 <span class="items">📦 {{ order.items.length }} {{ order.items.length === 1 ? 'item' : 'items' }}</span>
+                <template v-if="hasSubscriptionItems(order)">
+                  <span class="separator">•</span>
+                  <span class="subscription-chip">Subscription</span>
+                </template>
                 <span class="separator">•</span>
                 <span class="total">💰 {{ orderManagement.formatPrice(order.total) }}</span>
               </div>
@@ -294,6 +334,9 @@
                   <div v-for="(item, i) in order.items" :key="i" class="item-row">
                     <span class="item-name">{{ item.productName }}</span>
                     <span class="item-qty">x{{ item.quantity }}</span>
+                    <span v-if="item.isSubscription" class="item-subscription-tag">
+                      {{ formatSubscriptionInterval(item.subscriptionInterval) }}
+                    </span>
                   </div>
                 </div>
                 <div class="order-total-row">
@@ -333,13 +376,14 @@ definePageMeta({
 });
 
 const orderManagement = useOrderManagement();
-const router = useRouter();
 
 // State
 const showFilters = ref(false);
 const selectedStatuses = ref<string[]>([]);
 const dateFilter = ref<'all' | 'last3' | 'month' | 'year'>('all');
 const expandedOrders = ref<Set<number>>(new Set());
+const activeOrderTab = ref<'all' | 'subscription' | 'one-time'>('all');
+const ORDER_FILTERS_STORAGE_KEY = 'carafe-account-orders-filters';
 
 // v-click-outside directive
 const vClickOutside = {
@@ -358,10 +402,50 @@ const vClickOutside = {
 
 // Load orders on mount
 onMounted(async () => {
+  restoreFiltersFromStorage();
   console.log('Orders page mounted, loading orders...');
   await loadOrders();
   console.log('Orders loaded:', orderManagement.orders.value);
 });
+
+const saveFiltersToStorage = () => {
+  if (!import.meta.client) return;
+
+  localStorage.setItem(ORDER_FILTERS_STORAGE_KEY, JSON.stringify({
+    activeOrderTab: activeOrderTab.value,
+    selectedStatuses: selectedStatuses.value,
+    dateFilter: dateFilter.value,
+  }));
+};
+
+const restoreFiltersFromStorage = () => {
+  if (!import.meta.client) return;
+
+  const raw = localStorage.getItem(ORDER_FILTERS_STORAGE_KEY);
+  if (!raw) return;
+
+  try {
+    const parsed = JSON.parse(raw);
+
+    if (parsed.activeOrderTab === 'all' || parsed.activeOrderTab === 'subscription' || parsed.activeOrderTab === 'one-time') {
+      activeOrderTab.value = parsed.activeOrderTab;
+    }
+
+    if (Array.isArray(parsed.selectedStatuses)) {
+      selectedStatuses.value = parsed.selectedStatuses.filter((status: string) => typeof status === 'string');
+    }
+
+    if (parsed.dateFilter === 'all' || parsed.dateFilter === 'last3' || parsed.dateFilter === 'month' || parsed.dateFilter === 'year') {
+      dateFilter.value = parsed.dateFilter;
+    }
+  } catch (error) {
+    console.warn('Failed to restore order filters from storage', error);
+  }
+};
+
+watch([activeOrderTab, selectedStatuses, dateFilter], () => {
+  saveFiltersToStorage();
+}, { deep: true });
 
 const loadOrders = async () => {
   console.log('Calling fetchUserOrders...');
@@ -372,8 +456,26 @@ const loadOrders = async () => {
 // Computed
 const allOrders = computed(() => orderManagement.orders.value);
 
+const hasSubscriptionItems = (order: any) => {
+  return (order.items || []).some((item: any) => item.isSubscription);
+};
+
+const subscriptionOrders = computed(() => {
+  return allOrders.value.filter(order => hasSubscriptionItems(order));
+});
+
+const oneTimeOrders = computed(() => {
+  return allOrders.value.filter(order => !hasSubscriptionItems(order));
+});
+
+const tabFilteredOrders = computed(() => {
+  if (activeOrderTab.value === 'subscription') return subscriptionOrders.value;
+  if (activeOrderTab.value === 'one-time') return oneTimeOrders.value;
+  return allOrders.value;
+});
+
 const filteredOrders = computed(() => {
-  let orders = orderManagement.orders.value;
+  let orders = tabFilteredOrders.value;
   
   // Filter by status
   if (selectedStatuses.value.length > 0) {
@@ -397,6 +499,19 @@ const filteredOrders = computed(() => {
   
   return orders;
 });
+
+const formatSubscriptionInterval = (interval?: string) => {
+  const labels: Record<string, string> = {
+    '1_week': 'Every week',
+    '2_weeks': 'Every 2 weeks',
+    '3_weeks': 'Every 3 weeks',
+    '1_month': 'Every 4 weeks',
+    '2_months': 'Every 8 weeks',
+  };
+
+  if (!interval) return 'Subscription';
+  return labels[interval] || interval;
+};
 
 // Active filter count
 const activeFilterCount = computed(() => {
@@ -479,6 +594,7 @@ const clearAllFilters = () => {
   selectedStatuses.value = [];
   dateFilter.value = 'all';
   showFilters.value = false;
+  saveFiltersToStorage();
 };
 
 const reorder = (orderId: number) => {
@@ -540,7 +656,7 @@ useHead({
 // Hero Section
 .orders-hero {
   position: relative;
-  padding: 140px 0 120px;
+  padding: 7rem 0 120px;
   background: linear-gradient(135deg, #1e3a5f 0%, #2d5a7b 100%);
   overflow: hidden;
 
@@ -631,8 +747,34 @@ useHead({
   }
 }
 
-.orders-page {
-  // Page-specific styles
+.order-tabs {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: $spacing-5;
+}
+
+.order-tab {
+  border: 1px solid $color-gray-300;
+  border-radius: 999px;
+  background: white;
+  color: $color-gray-700;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &--active {
+    background: $color-primary;
+    border-color: $color-primary;
+    color: white;
+  }
 }
 
 // Filters Bar
@@ -776,6 +918,17 @@ useHead({
   color: $color-gray-600;
   font-weight: 500;
   white-space: nowrap;
+}
+
+.subscription-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #065f46;
+  background: #d1fae5;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
 }
 
 // Filter Dropdown
@@ -1393,6 +1546,16 @@ useHead({
 
 .item-name { color: $color-text; font-weight: 500; }
 .item-qty  { color: $color-text-light; }
+
+.item-subscription-tag {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
 
 .order-total-row {
   display: flex;

@@ -241,7 +241,7 @@
             <ul class="order-summary__items">
               <li
                 v-for="item in cartStore.items"
-                :key="`${item.product.id}-${item.selectedVariant?.id || 'default'}`"
+                :key="`${item.product.id}-${item.selectedVariant?.id || 'default'}-${item.subscriptionInterval || 'one-time'}`"
                 class="order-summary__item"
               >
                 <div class="order-summary__item-image">
@@ -260,7 +260,7 @@
                     <button
                       class="order-summary__item-remove"
                       aria-label="Remove item"
-                      @click="cartStore.removeItem(item.product.id, item.selectedVariant?.id)"
+                      @click="cartStore.removeItem(item.product.id, item.selectedVariant?.id, item.subscriptionInterval)"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -283,13 +283,17 @@
                     class="order-summary__item-variant"
                     >{{ item.selectedVariant.weight }}</span
                   >
+
+                  <span v-if="item.isSubscription" class="order-summary__item-subscription-badge">
+                    Subscription{{ item.subscriptionInterval ? ` - ${formatSubscriptionInterval(item.subscriptionInterval)}` : '' }}
+                  </span>
                   
                   <div class="order-summary__item-bottom">
                     <div class="order-summary__item-quantity-control">
                       <button
                         class="quantity-btn"
                         aria-label="Decrease quantity"
-                        @click="cartStore.updateQuantity(item.product.id, item.quantity - 1, item.selectedVariant?.id)"
+                        @click="cartStore.updateQuantity(item.product.id, item.quantity - 1, item.selectedVariant?.id, item.subscriptionInterval)"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -309,7 +313,7 @@
                       <button
                         class="quantity-btn"
                         aria-label="Increase quantity"
-                        @click="cartStore.updateQuantity(item.product.id, item.quantity + 1, item.selectedVariant?.id)"
+                        @click="cartStore.updateQuantity(item.product.id, item.quantity + 1, item.selectedVariant?.id, item.subscriptionInterval)"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -328,9 +332,15 @@
                       </button>
                     </div>
                     <span class="order-summary__item-price">
-                      £{{ ((item.selectedVariant 
-                        ? (item.selectedVariant.salePrice || item.selectedVariant.price)
-                        : 0) * item.quantity).toFixed(2) }}
+                      £{{ (
+                        (
+                          item.isSubscription && item.subscriptionUnitPrice != null
+                            ? item.subscriptionUnitPrice
+                            : (item.selectedVariant
+                                ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+                                : 0)
+                        ) * item.quantity
+                      ).toFixed(2) }}
                     </span>
                   </div>
                 </div>
@@ -425,6 +435,19 @@ const form = reactive({
 });
 
 const saveAddress = ref(false);
+
+const formatSubscriptionInterval = (interval?: string) => {
+  const labels: Record<string, string> = {
+    '1_week': 'Every week',
+    '2_weeks': 'Every 2 weeks',
+    '3_weeks': 'Every 3 weeks',
+    '1_month': 'Every 4 weeks',
+    '2_months': 'Every 8 weeks',
+  };
+
+  if (!interval) return 'Subscription';
+  return labels[interval] || interval;
+};
 
 // Handle address selection from saved addresses
 function handleAddressSelected(address: any) {
@@ -698,7 +721,9 @@ const processPayment = async () => {
     // Step 1: Create order in Strapi
     const orderItems = cartStore.items.map((item) => {
       const price = item.selectedVariant 
-        ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+        ? (item.isSubscription && item.subscriptionUnitPrice != null
+            ? item.subscriptionUnitPrice
+            : (item.selectedVariant.salePrice || item.selectedVariant.price))
         : 0;
       
       return {
@@ -710,6 +735,13 @@ const processPayment = async () => {
         totalPrice: price * item.quantity,
         sku: item.selectedVariant?.sku || '',
         weight: item.selectedVariant?.weight || '',
+        isSubscription: item.isSubscription || false,
+        subscriptionInterval: item.subscriptionInterval || undefined,
+        subscriptionDiscountPercentage: item.subscriptionDiscountPercentage || undefined,
+        originalUnitPrice: item.subscriptionOriginalUnitPrice || undefined,
+        savingsPerUnit: item.subscriptionOriginalUnitPrice && item.subscriptionUnitPrice != null
+          ? Number((item.subscriptionOriginalUnitPrice - item.subscriptionUnitPrice).toFixed(2))
+          : undefined,
       };
     });
 
@@ -1179,6 +1211,19 @@ const processPayment = async () => {
     font-size: $font-size-xs;
     color: $color-gray-500;
     display: block;
+  }
+
+  &__item-subscription-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #065f46;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
   }
 
   &__item-bottom {

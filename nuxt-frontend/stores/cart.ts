@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import type { CartItem, Product, ProductVariant } from "~/types/strapi";
+import type { CartItem, Product, ProductVariant, SubscriptionOption } from "~/types/strapi";
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
@@ -23,9 +23,11 @@ export const useCartStore = defineStore("cart", {
      */
     subtotal: (state): number => {
       return state.items.reduce((total, item) => {
-        const price = item.selectedVariant 
-          ? (item.selectedVariant.salePrice || item.selectedVariant.price)
-          : (item.product.salePrice || item.product.price);
+        const price = item.isSubscription && item.subscriptionUnitPrice != null
+          ? item.subscriptionUnitPrice
+          : item.selectedVariant
+            ? (item.selectedVariant.salePrice || item.selectedVariant.price)
+            : (item.product.variants?.[0]?.salePrice || item.product.variants?.[0]?.price || 0);
         return total + price * item.quantity;
       }, 0);
     },
@@ -77,13 +79,19 @@ export const useCartStore = defineStore("cart", {
     /**
      * Add item to cart
      */
-    addItem(product: Product, quantity: number = 1, variant?: ProductVariant) {
-      // Generate unique cart item key based on product and variant
-      const cartItemKey = variant 
-        ? `${product.id}-${variant.id}`
-        : `${product.id}`;
+    addItem(
+      product: Product,
+      quantity: number = 1,
+      variant?: ProductVariant,
+      subscription?: SubscriptionOption
+    ) {
+      const isSubscription = Boolean(subscription);
+      const subscriptionKey = isSubscription ? subscription?.deliveryInterval : "one-time";
       
       const existingItem = this.items.find((item) => {
+        if (item.isSubscription !== isSubscription) return false;
+        if ((item.subscriptionInterval || "one-time") !== subscriptionKey) return false;
+
         if (variant && item.selectedVariant) {
           return item.product.id === product.id && item.selectedVariant.id === variant.id;
         }
@@ -93,10 +101,23 @@ export const useCartStore = defineStore("cart", {
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
+        const baseUnitPrice = variant
+          ? (variant.salePrice || variant.price)
+          : (product.variants?.[0]?.salePrice || product.variants?.[0]?.price || 0);
+        const discountPercentage = Number(subscription?.discountPercentage || 0);
+        const discountedUnitPrice = isSubscription
+          ? Number((baseUnitPrice * (1 - discountPercentage / 100)).toFixed(2))
+          : undefined;
+
         this.items.push({ 
           product, 
           quantity,
-          selectedVariant: variant
+          selectedVariant: variant,
+          isSubscription,
+          subscriptionInterval: subscription?.deliveryInterval,
+          subscriptionDiscountPercentage: isSubscription ? discountPercentage : undefined,
+          subscriptionOriginalUnitPrice: isSubscription ? baseUnitPrice : undefined,
+          subscriptionUnitPrice: discountedUnitPrice,
         });
       }
 
@@ -113,8 +134,11 @@ export const useCartStore = defineStore("cart", {
     /**
      * Remove item from cart
      */
-    removeItem(productId: number, variantId?: number) {
+    removeItem(productId: number, variantId?: number, subscriptionInterval?: string) {
       const index = this.items.findIndex((item) => {
+        if ((item.subscriptionInterval || "") !== (subscriptionInterval || "")) {
+          return false;
+        }
         if (variantId && item.selectedVariant) {
           return item.product.id === productId && item.selectedVariant.id === variantId;
         }
@@ -130,8 +154,11 @@ export const useCartStore = defineStore("cart", {
     /**
      * Update item quantity
      */
-    updateQuantity(productId: number, quantity: number, variantId?: number) {
+    updateQuantity(productId: number, quantity: number, variantId?: number, subscriptionInterval?: string) {
       const item = this.items.find((item) => {
+        if ((item.subscriptionInterval || "") !== (subscriptionInterval || "")) {
+          return false;
+        }
         if (variantId && item.selectedVariant) {
           return item.product.id === productId && item.selectedVariant.id === variantId;
         }
@@ -139,7 +166,7 @@ export const useCartStore = defineStore("cart", {
       });
       if (item) {
         if (quantity <= 0) {
-          this.removeItem(productId, variantId);
+          this.removeItem(productId, variantId, subscriptionInterval);
         } else {
           item.quantity = quantity;
         }
@@ -181,6 +208,11 @@ export const useCartStore = defineStore("cart", {
             productSlug: item.product.slug,
             quantity: item.quantity,
             variantId: item.selectedVariant?.id,
+            isSubscription: item.isSubscription || false,
+            subscriptionInterval: item.subscriptionInterval,
+            subscriptionDiscountPercentage: item.subscriptionDiscountPercentage,
+            subscriptionOriginalUnitPrice: item.subscriptionOriginalUnitPrice,
+            subscriptionUnitPrice: item.subscriptionUnitPrice,
           })),
           currency: this.currency,
         };
@@ -216,6 +248,11 @@ export const useCartStore = defineStore("cart", {
                   product,
                   quantity: item.quantity,
                   selectedVariant,
+                  isSubscription: Boolean(item.isSubscription),
+                  subscriptionInterval: item.subscriptionInterval,
+                  subscriptionDiscountPercentage: item.subscriptionDiscountPercentage,
+                  subscriptionOriginalUnitPrice: item.subscriptionOriginalUnitPrice,
+                  subscriptionUnitPrice: item.subscriptionUnitPrice,
                 });
               }
             }

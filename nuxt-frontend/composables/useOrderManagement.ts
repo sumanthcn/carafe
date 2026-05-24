@@ -11,6 +11,9 @@ export interface OrderItem {
   quantity: number;
   price: number;
   imageUrl?: string;
+  isSubscription?: boolean;
+  subscriptionInterval?: '1_week' | '2_weeks' | '3_weeks' | '1_month' | '2_months';
+  subscriptionDiscountPercentage?: number;
 }
 
 export interface OrderAddress {
@@ -251,10 +254,21 @@ const mapAddress = (addr: any): OrderAddress | undefined => {
 const mapItem = (i: any): OrderItem => ({
   id: i.productId || i.id,
   productName: i.productName,
-  variant: [i.weight, i.sku].filter(Boolean).join(' · ') || undefined,
+  variant: [
+    i.weight,
+    i.sku,
+    i.isSubscription && i.subscriptionInterval
+      ? `Subscription: ${String(i.subscriptionInterval).replace('_', ' ')}`
+      : null,
+  ].filter(Boolean).join(' · ') || undefined,
   quantity: i.quantity,
   price: parseFloat(i.unitPrice || (i.totalPrice && i.quantity ? i.totalPrice / i.quantity : 0)),
   imageUrl: undefined,
+  isSubscription: Boolean(i.isSubscription),
+  subscriptionInterval: i.subscriptionInterval || undefined,
+  subscriptionDiscountPercentage: i.subscriptionDiscountPercentage != null
+    ? Number(i.subscriptionDiscountPercentage)
+    : undefined,
 });
 
 /**

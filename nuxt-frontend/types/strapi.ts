@@ -239,6 +239,8 @@ export interface SubscriptionOption {
   discountPercentage: number;
 }
 
+export type SubscriptionInterval = "1_week" | "2_weeks" | "3_weeks" | "1_month" | "2_months";
+
 // Customer Review
 export interface CustomerReview {
   id: number;
@@ -387,6 +389,11 @@ export interface OrderItem {
   unitPrice: number;
   totalPrice: number;
   weight?: string;
+  isSubscription?: boolean;
+  subscriptionInterval?: SubscriptionInterval;
+  subscriptionDiscountPercentage?: number;
+  originalUnitPrice?: number;
+  savingsPerUnit?: number;
 }
 
 export interface Order {
@@ -424,6 +431,11 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedVariant?: ProductVariant;
+  isSubscription?: boolean;
+  subscriptionInterval?: SubscriptionInterval;
+  subscriptionDiscountPercentage?: number;
+  subscriptionOriginalUnitPrice?: number;
+  subscriptionUnitPrice?: number;
 }
 
 export interface Cart {

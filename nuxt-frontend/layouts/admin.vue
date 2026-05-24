@@ -5,6 +5,7 @@ const route = useRoute();
 const navItems = [
   { label: 'Dashboard',   icon: '📊', path: '/store-admin' },
   { label: 'Orders',      icon: '📦', path: '/store-admin/orders' },
+  { label: 'Subscriptions', icon: '🔁', path: '/store-admin/subscriptions' },
   { label: 'Products',    icon: '☕', path: '/store-admin/products' },
   { label: 'Categories',  icon: '🗂️', path: '/store-admin/categories' },
   { label: 'Users',       icon: '👥', path: '/store-admin/users' },

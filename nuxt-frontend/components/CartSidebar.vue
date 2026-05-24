@@ -69,6 +69,18 @@ const closeModal = () => {
   showCheckoutModal.value = false;
 };
 
+const formatSubscriptionInterval = (interval: string) => {
+  const labels: Record<string, string> = {
+    '1_week': 'Every week',
+    '2_weeks': 'Every 2 weeks',
+    '3_weeks': 'Every 3 weeks',
+    '1_month': 'Every 4 weeks',
+    '2_months': 'Every 8 weeks',
+  };
+
+  return labels[interval] || interval;
+};
+
 // Expose toggle function
 defineExpose({ toggleCart });
 
@@ -167,7 +179,7 @@ onMounted(() => {
           <ul class="cart-sidebar__items">
             <li
               v-for="(item, index) in cartStore.items"
-              :key="`${item.product.id}-${item.selectedVariant?.id || 'default'}-${index}`"
+              :key="`${item.product.id}-${item.selectedVariant?.id || 'default'}-${item.subscriptionInterval || 'one-time'}-${index}`"
               class="cart-item"
             >
               <div class="cart-item__image">
@@ -195,12 +207,18 @@ onMounted(() => {
                   </span>
                 </div>
 
+                <p v-if="item.isSubscription" class="cart-item__subscription">
+                  Subscription {{ item.subscriptionInterval ? `(${formatSubscriptionInterval(item.subscriptionInterval)})` : '' }}
+                </p>
+
                 <p class="cart-item__price">
                   {{
                     cartStore.formatPrice(
-                      item.selectedVariant
+                      item.isSubscription && item.subscriptionUnitPrice != null
+                        ? item.subscriptionUnitPrice
+                        : item.selectedVariant
                         ? (item.selectedVariant.salePrice || item.selectedVariant.price)
-                        : (item.product.salePrice || item.product.price)
+                        : (item.product.variants?.[0]?.salePrice || item.product.variants?.[0]?.price || 0)
                     )
                   }}
                 </p>
@@ -211,7 +229,8 @@ onMounted(() => {
                       cartStore.updateQuantity(
                         item.product.id,
                         item.quantity - 1,
-                        item.selectedVariant?.id
+                        item.selectedVariant?.id,
+                        item.subscriptionInterval
                       )
                     "
                   >
@@ -224,7 +243,8 @@ onMounted(() => {
                       cartStore.updateQuantity(
                         item.product.id,
                         item.quantity + 1,
-                        item.selectedVariant?.id
+                        item.selectedVariant?.id,
+                        item.subscriptionInterval
                       )
                     "
                   >
@@ -235,7 +255,7 @@ onMounted(() => {
               <button
                 class="cart-item__remove"
                 aria-label="Remove item"
-                @click="cartStore.removeItem(item.product.id, item.selectedVariant?.id)"
+                @click="cartStore.removeItem(item.product.id, item.selectedVariant?.id, item.subscriptionInterval)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -565,6 +585,17 @@ onMounted(() => {
     font-size: 0.875rem;
     color: #666;
     margin: 0 0 0.5rem;
+  }
+
+  &__subscription {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: #065f46;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 999px;
+    margin: 0 0 0.5rem;
+    padding: 0.15rem 0.5rem;
   }
 
   &__quantity {

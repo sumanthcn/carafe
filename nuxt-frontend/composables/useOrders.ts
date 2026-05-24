@@ -33,6 +33,11 @@ export interface OrderItem {
   unitPrice: number;
   totalPrice: number;
   weight?: string;
+  isSubscription?: boolean;
+  subscriptionInterval?: '1_week' | '2_weeks' | '3_weeks' | '1_month' | '2_months';
+  subscriptionDiscountPercentage?: number;
+  originalUnitPrice?: number;
+  savingsPerUnit?: number;
 }
 
 export interface Order {
