@@ -1,30 +1,11 @@
-import { processDueSubscriptions } from '../src/api/stripe/controllers/stripe';
 import { sendSubscriptionReminderEmail } from '../src/api/order/services/emailService';
 
 export default {
-  // ── Billing: every hour (production-safe) ──────────────────────────────────
-  // Charges subscriptions whose nextBillingDate is in the past.
-  // Hourly is the right balance: real subs (weekly/monthly) fire within 1 hour
-  // of their due time. In dev, set to '* * * * *' for fast 5-minute test subs.
-  '0 * * * *': {
-    task: async () => {
-      try {
-        const result = await processDueSubscriptions();
-        if (result.processed > 0 || result.failed > 0) {
-          strapi.log.info(
-            '[cron] Subscription billing — processed: ' +
-            result.processed + ', failed: ' + result.failed
-          );
-        }
-      } catch (err: any) {
-        strapi.log.error('[cron] Subscription billing job error:', err.message);
-      }
-    },
-  },
-
-  // ── Reminders: daily at 9 AM (UK local time = UTC+1 summer / UTC+0 winter) ─
+  // ── Reminders: daily at 8 AM UTC ───────────────────────────────────────────
   // Sends "your card will be charged tomorrow" emails for subscriptions
   // whose nextBillingDate falls within the next 24–48 hours.
+  // NOTE: Billing is handled by Heroku Scheduler (POST /api/stripe/process-subscriptions)
+  // not by an internal cron, so this file only manages reminder emails.
   '0 8 * * *': {
     task: async () => {
       try {
